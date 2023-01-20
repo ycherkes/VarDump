@@ -1,0 +1,30 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+	<LangVersion>latest</LangVersion>
+	<AssemblyName>VarDump</AssemblyName>
+	<AssemblyVersion>0.0.0.1</AssemblyVersion>
+	<FileVersion>0.0.0.1</FileVersion>
+	<PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
+	<Copyright>Yevhen Cherkes 2022</Copyright>
+	<GeneratePackageOnBuild>True</GeneratePackageOnBuild>
+	<Title>VarDump</Title>
+	<Version>0.0.1</Version>
+	<Description>VarDump is a utility for serialization runtime objects to C# or Visual Basic string.</Description>
+	<PackageProjectUrl>https://github.com/ycherkes/VarDump</PackageProjectUrl>
+	<PackageReadmeFile>README.md</PackageReadmeFile>
+	<RepositoryUrl>https://github.com/ycherkes/VarDump.git</RepositoryUrl>
+	<RepositoryType>git</RepositoryType>
+	<PackageTags>dump;dumpobject;c#;visulabasic;debug</PackageTags>
+	<NeutralLanguage>en</NeutralLanguage>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Include="..\README.md">
+      <Pack>True</Pack>
+      <PackagePath>\</PackagePath>
+    </None>
+  </ItemGroup>
+
+</Project>

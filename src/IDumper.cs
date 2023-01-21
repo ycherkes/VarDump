@@ -1,9 +1,7 @@
-﻿using VarDump.Visitor;
-
-namespace VarDump
+﻿namespace VarDump
 {
     public interface IDumper
     {
-        string Dump(object obj, DumpOptions options = null);
+        string Dump(object obj);
     }
 }

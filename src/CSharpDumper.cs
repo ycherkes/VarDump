@@ -1,5 +1,5 @@
-﻿using System.IO;
-using System.Reflection;
+﻿using System;
+using System.IO;
 using System.Text;
 using VarDump.CodeDom.Common;
 using VarDump.CodeDom.Compiler;
@@ -11,24 +11,20 @@ namespace VarDump
 {
     public class CSharpDumper : IDumper
     {
-        private static DumpOptions DefaultOptions => new()
+        private readonly ObjectVisitor _objectVisitor;
+        public CSharpDumper()
         {
-            IgnoreDefaultValues = true,
-            IgnoreNullValues = true,
-            MaxDepth = 25,
-            ExcludeTypes = new[] { "Avro.Schema" },
-            UseTypeFullName = false,
-            DateTimeInstantiation = DateTimeInstantiation.New,
-            DateKind = DateKind.ConvertToUtc,
-            UseNamedArgumentsForReferenceRecordTypes = false,
-            GetPropertiesBindingFlags = BindingFlags.Instance | BindingFlags.Public,
-            WritablePropertiesOnly = true
-        };
+            _objectVisitor = new ObjectVisitor(DumpOptions.Default);
+        }
 
-        public string Dump(object obj, DumpOptions options = null)
+        public CSharpDumper(DumpOptions options)
         {
-            var objVisitor = new ObjectVisitor(options ?? DefaultOptions);
-            var expression = objVisitor.Visit(obj);
+            _objectVisitor = new ObjectVisitor(options?.Clone() ?? throw new ArgumentNullException(nameof(options)));
+        }
+
+        public string Dump(object obj)
+        {
+            var expression = _objectVisitor.Visit(obj);
             var variableDeclaration = new CodeVariableDeclarationStatement(new CodeImplicitlyTypedTypeReference(),
                 obj != null ? ReflectionUtils.ComposeCsharpVariableName(obj.GetType()) : "nullValue")
             {
@@ -39,14 +35,19 @@ namespace VarDump
             {
                 BracingStyle = "C"
             };
+
             ICodeGenerator generator = new CSharpCodeGenerator();
+
             var stringBuilder = new StringBuilder();
+
             using (var sourceWriter = new StringWriter(stringBuilder))
             {
                 generator.GenerateCodeFromStatement(variableDeclaration, sourceWriter, codeGeneratorOptions);
             }
-            var result = stringBuilder.ToString();
-            return result;
+
+            var csCodeString = stringBuilder.ToString();
+
+            return csCodeString;
         }
     }
 }

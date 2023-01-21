@@ -10,7 +10,7 @@
 	<Copyright>Yevhen Cherkes 2022</Copyright>
 	<GeneratePackageOnBuild>True</GeneratePackageOnBuild>
 	<Title>VarDump</Title>
-	<Version>0.0.2</Version>
+	<Version>0.0.3</Version>
 	<Description>VarDump is a utility for serialization runtime objects to C# or Visual Basic string.</Description>
 	<PackageProjectUrl>https://github.com/ycherkes/VarDump</PackageProjectUrl>
 	<PackageReadmeFile>README.md</PackageReadmeFile>

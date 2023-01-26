@@ -11,21 +11,24 @@ namespace VarDump
 {
     public class VisualBasicDumper : IDumper
     {
-        private readonly ObjectVisitor _objectVisitor;
+        private readonly DumpOptions _options;
 
         public VisualBasicDumper()
         {
-            _objectVisitor = new ObjectVisitor(DumpOptions.Default);
+            _options = DumpOptions.Default;
         }
 
         public VisualBasicDumper(DumpOptions options)
         {
-            _objectVisitor = new ObjectVisitor(options?.Clone() ?? throw new ArgumentNullException(nameof(options)));
+            _options = options?.Clone() ?? throw new ArgumentNullException(nameof(options));
         }
 
         public string Dump(object obj)
         {
-            var expression = _objectVisitor.Visit(obj);
+            var objectVisitor = new ObjectVisitor(_options);
+
+            var expression = objectVisitor.Visit(obj);
+
             var variableDeclaration = new CodeVariableDeclarationStatement(new CodeImplicitlyTypedTypeReference(),
                 obj != null ? ReflectionUtils.ComposeVisualBasicVariableName(obj.GetType()) : "nullValue")
             {

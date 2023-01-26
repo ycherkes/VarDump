@@ -8,6 +8,12 @@ Developed as a free alternative of [ObjectDumper.NET](https://github.com/thomasg
 [![nuget version](https://img.shields.io/badge/Nuget-v0.0.3-blue)](https://www.nuget.org/packages/VarDump)
 [![nuget downloads](https://img.shields.io/nuget/dt/VarDump?label=Downloads)](https://www.nuget.org/packages/VarDump)
 
+# Powered By
+
+| Repository  | License |
+| ------------- | ------------- |
+| [Heavily customized version](https://github.com/ycherkes/VarDump/tree/main/src/CodeDom) of [System.CodeDom](https://github.com/dotnet/runtime/tree/main/src/libraries/System.CodeDom)  | [![MIT](https://img.shields.io/github/license/dotnet/runtime?style=flat-square)](https://github.com/dotnet/runtime/blob/main/LICENSE.TXT)  |
+
 **Privacy Notice:** No personal data is collected at all.
 
 This tool has been working well for my own personal needs, but outside that its future depends on your feedback. Feel free to [open an issue](https://github.com/ycherkes/VarDump/issues).

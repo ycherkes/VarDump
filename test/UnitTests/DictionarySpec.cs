@@ -20,15 +20,7 @@ namespace UnitTests
                 new Person{ Age = 23, FirstName = "Alice"},
             }.ToDictionary(x => x.FirstName);
 
-            var dumper = new VisualBasicDumper(new DumpOptions
-            {
-                IgnoreDefaultValues = true,
-                IgnoreNullValues = true,
-                MaxDepth = 5,
-                UseTypeFullName = false,
-                DateTimeInstantiation = DateTimeInstantiation.New,
-                DateKind = DateKind.ConvertToUtc
-            });
+            var dumper = new VisualBasicDumper();
 
             var result = dumper.Dump(dict);
 
@@ -60,15 +52,7 @@ namespace UnitTests
                 new Person{ Age = 23, FirstName = "Alice"},
             }.ToDictionary(x => x.FirstName);
 
-            var dumper = new CSharpDumper(new DumpOptions
-            {
-                IgnoreDefaultValues = true,
-                IgnoreNullValues = true,
-                MaxDepth = 5,
-                UseTypeFullName = false,
-                DateTimeInstantiation = DateTimeInstantiation.New,
-                DateKind = DateKind.ConvertToUtc
-            });
+            var dumper = new CSharpDumper();
 
             var result = dumper.Dump(dict);
 
@@ -103,15 +87,7 @@ namespace UnitTests
                 new { Age = 23, FirstName = "Alice"},
             }.ToDictionary(x => x.FirstName);
 
-            var dumper = new CSharpDumper(new DumpOptions
-            {
-                IgnoreDefaultValues = true,
-                IgnoreNullValues = true,
-                MaxDepth = 5,
-                UseTypeFullName = false,
-                DateTimeInstantiation = DateTimeInstantiation.New,
-                DateKind = DateKind.ConvertToUtc
-            });
+            var dumper = new CSharpDumper();
 
             var result = dumper.Dump(dict);
 

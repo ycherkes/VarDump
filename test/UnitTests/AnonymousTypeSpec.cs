@@ -46,9 +46,9 @@ namespace UnitTests
                 new { Name = "Peter", Age = (int?)null, Reference = (string)null }
             };
 
-            var Dumpr = new VisualBasicDumper();
+            var dumper = new VisualBasicDumper();
 
-            var result = Dumpr.Dump(anonymous);
+            var result = dumper.Dump(anonymous);
 
             Assert.Equal(
 @"Dim arrayOfAnonymousType = {

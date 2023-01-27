@@ -45,7 +45,7 @@ namespace UnitTests
                 new(2, "Second")
             };
 
-            var Dumpr = new CSharpDumper(new DumpOptions
+            var dumper = new CSharpDumper(new DumpOptions
             {
                 IgnoreDefaultValues = true,
                 IgnoreNullValues = true,
@@ -55,7 +55,7 @@ namespace UnitTests
                 DateKind = DateKind.ConvertToUtc
             });
 
-            var result = Dumpr.Dump(kvpArray);
+            var result = dumper.Dump(kvpArray);
 
             Assert.Equal(
 @"var arrayOfKeyValuePair = new KeyValuePair<int, string>[]

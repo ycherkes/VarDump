@@ -41,7 +41,6 @@ namespace UnitTests
 
             var dumper = new CSharpDumper(new DumpOptions
             {
-                UseTypeFullName = false,
                 DateTimeInstantiation = DateTimeInstantiation.Parse
             });
 
@@ -65,7 +64,6 @@ namespace UnitTests
 
             var dumper = new VisualBasicDumper(new DumpOptions
             {
-                UseTypeFullName = false,
                 DateTimeInstantiation = DateTimeInstantiation.Parse
             });
 
@@ -88,7 +86,6 @@ namespace UnitTests
 
             var dumper = new VisualBasicDumper(new DumpOptions
             {
-                UseTypeFullName = false,
                 DateTimeInstantiation = DateTimeInstantiation.Parse
             });
 

@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Text;
 using VarDump.CodeDom;
@@ -195,7 +196,7 @@ namespace VarDump.Utils
             return isAnonymousType;
         }
 
-        public static bool ContainsAnonymousType(Type type)
+        public static bool ContainsAnonymousType(this Type type)
         {
             var elementType = GetInnerElementType(type);
 
@@ -215,42 +216,42 @@ namespace VarDump.Utils
             return elementType;
         }
 
-        public static bool IsGenericCollection(Type type)
+        public static bool IsGenericCollection(this Type type)
         {
             var hasICollection = type.GetInterfaces().FirstOrDefault(x => x.IsGenericType && x.GetGenericTypeDefinition() == typeof(ICollection<>)) != null;
 
             return hasICollection;
         }
 
-        public static bool IsPublicImmutableCollection(Type type)
+        public static bool IsPublicImmutableCollection(this Type type)
         {
             var typeFullName = type.FullName ?? "";
 
             return type.IsPublic && typeFullName.StartsWith("System.Collections.Immutable");
         }
 
-        public static bool IsReadonlyCollection(Type type)
+        public static bool IsReadonlyCollection(this Type type)
         {
             var typeFullName = type.FullName ?? "";
 
             return type.IsValueType() && typeFullName.StartsWith("System.Collections.ObjectModel.ReadOnlyCollection");
         }
 
-        public static bool IsTuple(Type type)
+        public static bool IsTuple(this Type type)
         {
             var typeFullName = type.FullName ?? "";
 
             return typeFullName.StartsWith("System.Tuple");
         }
 
-        public static bool IsValueTuple(Type type)
+        public static bool IsValueTuple(this Type type)
         {
             var typeFullName = type.FullName ?? "";
 
             return type.IsValueType() && typeFullName.StartsWith("System.ValueTuple");
         }
 
-        public static bool IsKeyValuePair(Type type)
+        public static bool IsKeyValuePair(this Type type)
         {
             if (type.IsGenericType())
             {
@@ -324,7 +325,7 @@ namespace VarDump.Utils
         }
 
 
-        public static bool IsNullableType(Type t)
+        public static bool IsNullableType(this Type t)
         {
             return t.IsGenericType() && t.GetGenericTypeDefinition() == typeof(Nullable<>);
         }
@@ -339,23 +340,76 @@ namespace VarDump.Utils
             return type.IsValueType;
         }
 
-        private static bool IsNullable(Type t)
+        private static bool IsNullable(this Type t)
         {
             return !t.IsValueType() || IsNullableType(t);
         }
 
-        public static bool IsGrouping(Type type)
+        public static bool IsGrouping(this Type type)
         {
             var hasIGrouping = type.GetInterfaces().Concat(new[] { type }).FirstOrDefault(x => x.IsGenericType && x.GetGenericTypeDefinition() == typeof(IGrouping<,>)) != null;
 
             return hasIGrouping;
         }
 
-        public static bool IsLookup(Type type)
+        public static bool IsLookup(this Type type)
         {
             var hasILookup = type.GetInterfaces().Concat(new[] { type }).FirstOrDefault(x => x.IsGenericType && x.GetGenericTypeDefinition() == typeof(ILookup<,>)) != null;
 
             return hasILookup;
+        }
+
+        public static bool IsPrimitiveOrNull(object @object)
+        {
+            return @object == null || IsPrimitive(@object);
+        }
+
+        private static bool IsPrimitive(object @object)
+        {
+            return @object is char
+                   || @object is sbyte
+                   || @object is ushort
+                   || @object is uint
+                   || @object is ulong
+                   || @object is string
+                   || @object is byte
+                   || @object is short
+                   || @object is int
+                   || @object is long
+                   || @object is float
+                   || @object is double
+                   || @object is decimal
+                   || @object is bool;
+        }
+
+        public static bool IsDateOnly(this Type objectType)
+        {
+            return objectType.Namespace == "System" && objectType.Name == "DateOnly";
+        }
+
+        public static bool IsTimeOnly(this Type objectType)
+        {
+            return objectType.Namespace == "System" && objectType.Name == "TimeOnly";
+        }
+
+        public static bool IsRecord(this Type objectType)
+        {
+            var constructor = objectType.GetConstructors().FirstOrDefault();
+
+            if (constructor == null)
+            {
+                return false;
+            }
+
+            if (objectType.GetMethods().All(m => m.Name != "<Clone>$"))
+            {
+                return false;
+            }
+
+            var properties = objectType.GetProperties(BindingFlags.Public | BindingFlags.Instance | BindingFlags.NonPublic).Where(x => x.CanWrite);
+
+            return constructor.GetParameters().Select(x => new { x.Name, Type = x.ParameterType })
+                .SequenceEqual(properties.Select(x => new { x.Name, Type = x.PropertyType }));
         }
     }
 }

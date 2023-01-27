@@ -7,32 +7,20 @@ namespace VarDump.Visitor
 {
     public class DumpOptions
     {
-        public BindingFlags GetPropertiesBindingFlags { get; set; }
+        public BindingFlags GetPropertiesBindingFlags { get; set; } = BindingFlags.Public | BindingFlags.Instance;
         public BindingFlags? GetFieldsBindingFlags { get; set; }
-        public bool IgnoreDefaultValues { get; set; }
-        public bool IgnoreNullValues { get; set; }
+        public bool IgnoreDefaultValues { get; set; } = true;
+        public bool IgnoreNullValues { get; set; } = true;
         public bool UseNamedArgumentsForReferenceRecordTypes { get; set; }
         public bool UseTypeFullName { get; set; }
         public bool WritablePropertiesOnly { get; set; } = true;
-        public DateKind DateKind { get; set; }
-        public DateTimeInstantiation DateTimeInstantiation { get; set; }
-        public ICollection<string> ExcludeTypes { get; set; }
-        public int MaxDepth { get; set; }
+        public DateKind DateKind { get; set; } = DateKind.ConvertToUtc;
+        public DateTimeInstantiation DateTimeInstantiation { get; set; } = DateTimeInstantiation.New;
+        public ICollection<string> ExcludeTypes { get; set; } = new string[0];
+        public int MaxDepth { get; set; } = 25;
         public ListSortDirection? SortDirection { get; set; }
 
-        public static DumpOptions Default { get; } = new()
-        {
-            DateKind = DateKind.ConvertToUtc,
-            DateTimeInstantiation = DateTimeInstantiation.New,
-            ExcludeTypes = new string[0],
-            GetPropertiesBindingFlags = BindingFlags.Instance | BindingFlags.Public,
-            IgnoreDefaultValues = true,
-            IgnoreNullValues = true,
-            MaxDepth = 25,
-            UseNamedArgumentsForReferenceRecordTypes = false,
-            UseTypeFullName = false,
-            WritablePropertiesOnly = true
-        };
+        public static DumpOptions Default { get; } = new();
 
         public DumpOptions Clone()
         {

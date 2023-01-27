@@ -60,7 +60,7 @@ internal class ObjectVisitor
         {
             _depth++;
 
-            if (IsPrimitiveOrNull(@object))
+            if (ReflectionUtils.IsPrimitiveOrNull(@object))
                 return VisitPrimitive(@object);
 
             if (@object is TimeSpan timeSpan)
@@ -71,27 +71,6 @@ internal class ObjectVisitor
 
             if (@object is DateTimeOffset dateTimeOffset)
                 return VisitDateTimeOffset(dateTimeOffset);
-
-            if (IsDateOnly(@object))
-                return VisitDateOnly(@object);
-
-            if (IsTimeOnly(@object))
-                return VisitTimeOnly(@object);
-
-            if (IsRecord(@object))
-                return VisitRecord(@object);
-
-            if (IsAnonymous(@object))
-                return VisitAnonymous(@object);
-
-            if (IsKeyValuePair(@object))
-                return VisitKeyValuePair(@object);
-
-            if (IsTuple(@object))
-                return VisitTuple(@object);
-
-            if (IsValueTuple(@object))
-                return VisitValueTuple(@object);
 
             if (@object is Enum @enum)
                 return VisitEnum(@enum);
@@ -105,26 +84,49 @@ internal class ObjectVisitor
             if (@object is Type type)
                 return VisitType(type);
 
-            if (IsGrouping(@object))
+            var objectType = @object.GetType();
+
+            if (objectType.IsDateOnly())
+                return VisitDateOnly(@object, objectType);
+
+            if (objectType.IsTimeOnly())
+                return VisitTimeOnly(@object, objectType);
+
+            if (objectType.IsRecord())
+                return VisitRecord(@object, objectType);
+
+            if (objectType.IsAnonymousType())
+                return VisitAnonymous(@object, objectType);
+
+            if (objectType.IsKeyValuePair())
+                return VisitKeyValuePair(@object, objectType);
+
+            if (objectType.IsTuple())
+                return VisitTuple(@object, objectType);
+
+            if (objectType.IsValueTuple())
+                return VisitValueTuple(@object, objectType);
+
+            if (objectType.IsGrouping())
                 return VisitGrouping(@object);
 
             if (@object is IDictionary dict)
                 return VisitDictionary(dict);
 
             if (@object is IEnumerable enumerable)
-                return VisitCollection(enumerable);
+                return VisitCollection(enumerable, objectType);
 
             try
             {
                 if (@object is ISerializable serializable)
-                    return VisitSerializable(serializable);
+                    return VisitSerializable(serializable, objectType);
             }
             catch
             {
                 // ignored
             }
 
-            return VisitObject(@object);
+            return VisitObject(@object, objectType);
         }
         finally
         {
@@ -166,9 +168,8 @@ internal class ObjectVisitor
         return Visit(groupingValues);
     }
 
-    private CodeExpression VisitAnonymous(object o)
+    private CodeExpression VisitAnonymous(object o, IReflect objectType)
     {
-        var objectType = o.GetType();
         var result = new CodeObjectCreateAndInitializeExpression(new CodeAnonymousTypeReference())
         {
             InitializeExpressions = new CodeExpressionCollection(objectType.GetProperties(_getPropertiesBindingFlags)
@@ -181,7 +182,7 @@ internal class ObjectVisitor
                 })
                 .Select(pv => (CodeExpression)new CodeAssignExpression(
                     new CodePropertyReferenceExpression(null, pv.PropertyName),
-                    ReflectionUtils.IsNullableType(pv.PropertyType) || pv.Value == null ? new CodeCastExpression(pv.PropertyType, Visit(pv.Value), true) : Visit(pv.Value)))
+                    pv.PropertyType.IsNullableType() || pv.Value == null ? new CodeCastExpression(pv.PropertyType, Visit(pv.Value), true) : Visit(pv.Value)))
                 .ToArray())
         };
 
@@ -233,9 +234,8 @@ internal class ObjectVisitor
             : null;
     }
 
-    private CodeExpression VisitRecord(object o)
+    private CodeExpression VisitRecord(object o, Type objectType)
     {
-        var objectType = o.GetType();
         var properties = objectType.GetProperties(BindingFlags.Public | BindingFlags.Instance | BindingFlags.NonPublic).Where(p => p.CanWrite);
         var argumentValues = _useNamedArgumentsForReferenceRecordTypes ?
             properties.Select(p => (CodeExpression)new CodeNamedArgumentExpression(p.Name, Visit(GetValue(p, o))))
@@ -244,28 +244,6 @@ internal class ObjectVisitor
         return new CodeObjectCreateExpression(
             new CodeTypeReference(objectType, _typeReferenceOptions),
             argumentValues.ToArray());
-    }
-
-    private static bool IsRecord(object o)
-    {
-        var objectType = o.GetType();
-
-        var constructor = objectType.GetConstructors().FirstOrDefault();
-
-        if (constructor == null)
-        {
-            return false;
-        }
-
-        if (objectType.GetMethods().All(m => m.Name != "<Clone>$"))
-        {
-            return false;
-        }
-
-        var properties = objectType.GetProperties(BindingFlags.Public | BindingFlags.Instance | BindingFlags.NonPublic).Where(x => x.CanWrite);
-
-        return constructor.GetParameters().Select(x => new { x.Name, Type = x.ParameterType })
-            .SequenceEqual(properties.Select(x => new { x.Name, Type = x.PropertyType }));
     }
 
     private CodeExpression VisitType(Type type)
@@ -303,15 +281,14 @@ internal class ObjectVisitor
         return bitwiseOrExpression;
     }
 
-    private CodeExpression VisitKeyValuePair(object o)
+    private CodeExpression VisitKeyValuePair(object o, Type objectType)
     {
-        var objectType = o.GetType();
         var propertyValues = objectType.GetProperties().Select(p => GetValue(p, o)).Select(Visit);
         return new CodeObjectCreateExpression(new CodeTypeReference(objectType, _typeReferenceOptions),
             propertyValues.ToArray());
     }
 
-    private CodeExpression VisitTuple(object o)
+    private CodeExpression VisitTuple(object o, Type objectType)
     {
         if (IsVisited(o))
         {
@@ -322,7 +299,6 @@ internal class ObjectVisitor
 
         try
         {
-            var objectType = o.GetType();
             var propertyValues = objectType.GetProperties().Select(p => GetValue(p, o)).Select(Visit);
             var result = new CodeObjectCreateExpression(new CodeTypeReference(objectType, _typeReferenceOptions), propertyValues.ToArray());
             return result;
@@ -356,7 +332,7 @@ internal class ObjectVisitor
         return new CodeImplicitKeyValuePairCreateExpression(propertyValues.First(), propertyValues.Last());
     }
 
-    private CodeExpression VisitSerializable(ISerializable serializable)
+    private CodeExpression VisitSerializable(ISerializable serializable, Type objectType)
     {
         if (IsVisited(serializable))
         {
@@ -367,7 +343,6 @@ internal class ObjectVisitor
 
         try
         {
-            var objectType = serializable.GetType();
             SerializationInfo serializationInfo = new SerializationInfo(objectType, new FormatterConverter());
             serializable.GetObjectData(serializationInfo, new StreamingContext());
 
@@ -400,7 +375,7 @@ internal class ObjectVisitor
         }
     }
 
-    private CodeExpression VisitObject(object o)
+    private CodeExpression VisitObject(object o, Type objectType)
     {
         if (IsVisited(o))
         {
@@ -411,8 +386,6 @@ internal class ObjectVisitor
 
         try
         {
-            var objectType = o.GetType();
-
             var initProperties = objectType.GetProperties(_getPropertiesBindingFlags)
                     .Where(p => p.CanRead
                                 && (p.CanWrite || !_writablePropertiesOnly)
@@ -464,9 +437,8 @@ internal class ObjectVisitor
         }
     }
 
-    private CodeExpression VisitValueTuple(object @object)
+    private CodeExpression VisitValueTuple(object @object, Type objectType)
     {
-        var objectType = @object.GetType();
         var propertyValues = objectType.GetFields().Select(p => GetValue(p, @object)).Select(Visit);
 
         return new CodeValueTupleCreateExpression(propertyValues.ToArray());
@@ -486,8 +458,8 @@ internal class ObjectVisitor
             var valuesType = dict.Values.GetType();
             var keysType = dict.Keys.GetType();
 
-            var result = ReflectionUtils.ContainsAnonymousType(keysType) ||
-                         ReflectionUtils.ContainsAnonymousType(valuesType)
+            var result = keysType.ContainsAnonymousType() ||
+                         valuesType.ContainsAnonymousType()
                 ? VisitAnonymousDictionary(dict)
                 : VisitSimpleDictionary(dict);
 
@@ -504,7 +476,7 @@ internal class ObjectVisitor
         var items = dict.Cast<object>().Select(VisitKeyValuePairGenerateImplicitly);
 
         var type = dict.GetType();
-        var isImmutable = ReflectionUtils.IsPublicImmutableCollection(type);
+        var isImmutable = type.IsPublicImmutableCollection();
 
         if (isImmutable)
         {
@@ -539,7 +511,7 @@ internal class ObjectVisitor
         var keyLambdaExpression = new CodeLambdaExpression(new CodePropertyReferenceExpression(variableReferenceExpression, keyName), variableReferenceExpression);
         var valueLambdaExpression = new CodeLambdaExpression(new CodePropertyReferenceExpression(variableReferenceExpression, valueName), variableReferenceExpression);
 
-        var isImmutable = ReflectionUtils.IsPublicImmutableCollection(type);
+        var isImmutable = type.IsPublicImmutableCollection();
 
         expr = isImmutable
             ? new CodeMethodInvokeExpression(expr, $"To{type.Name.Split('`')[0]}", keyLambdaExpression, valueLambdaExpression)
@@ -548,7 +520,7 @@ internal class ObjectVisitor
         return expr;
     }
 
-    private CodeExpression VisitCollection(IEnumerable collection)
+    private CodeExpression VisitCollection(IEnumerable collection, Type collectionType)
     {
         if (IsVisited(collection))
         {
@@ -559,16 +531,14 @@ internal class ObjectVisitor
 
         try
         {
-            var collectionType = collection.GetType();
-
             var elementType = ReflectionUtils.GetInnerElementType(collectionType);
 
-            if (ReflectionUtils.IsGrouping(elementType))
+            if (elementType.IsGrouping())
             {
                 return VisitGroupingCollection(collection);
             }
 
-            var result = ReflectionUtils.ContainsAnonymousType(collectionType)
+            var result = collectionType.ContainsAnonymousType()
                 ? VisitAnonymousCollection(collection)
                 : VisitSimpleCollection(collection, elementType);
 
@@ -590,7 +560,7 @@ internal class ObjectVisitor
         var keyLambdaExpression = new CodeLambdaExpression(new CodePropertyReferenceExpression(variableReferenceExpression, "Key"), variableReferenceExpression);
         var valueLambdaExpression = new CodeLambdaExpression(new CodePropertyReferenceExpression(variableReferenceExpression, "Element"), variableReferenceExpression);
 
-        var isLookup = ReflectionUtils.IsLookup(type);
+        var isLookup = type.IsLookup();
 
         expr = isLookup
             ? new CodeMethodInvokeExpression(expr, "ToLookup", keyLambdaExpression, valueLambdaExpression)
@@ -614,7 +584,7 @@ internal class ObjectVisitor
 
         var type = enumerable.GetType();
 
-        var isImmutable = ReflectionUtils.IsPublicImmutableCollection(type);
+        var isImmutable = type.IsPublicImmutableCollection();
 
         if (type.IsArray || isImmutable || !IsCollection(enumerable))
         {
@@ -632,7 +602,7 @@ internal class ObjectVisitor
             return expr;
         }
 
-        if (ReflectionUtils.IsReadonlyCollection(type))
+        if (type.IsReadonlyCollection())
         {
             var expression = new CodeObjectCreateExpression(
                 new CodeTypeReference(type, _typeReferenceOptions),
@@ -676,7 +646,7 @@ internal class ObjectVisitor
         var items = enumerable.Cast<object>().Select(Visit);
         var type = enumerable.GetType();
 
-        var isImmutable = ReflectionUtils.IsPublicImmutableCollection(type);
+        var isImmutable = type.IsPublicImmutableCollection();
 
         var typeReference = new CodeAnonymousTypeReference();
 
@@ -891,9 +861,8 @@ internal class ObjectVisitor
             month, day, hour, minute, second, millisecond, kind);
     }
 
-    private CodeExpression VisitDateOnly(object dateOnly)
+    private CodeExpression VisitDateOnly(object dateOnly, Type objectType)
     {
-        var objectType = dateOnly.GetType();
         var dateOnlyCodeTypeReference = new CodeTypeReference(objectType, _typeReferenceOptions);
         var dayNumber = (int?)objectType.GetProperty("DayNumber")?.GetValue(dateOnly);
 
@@ -937,9 +906,8 @@ internal class ObjectVisitor
         return new CodeObjectCreateExpression(dateOnlyCodeTypeReference, year, month, day);
     }
 
-    private CodeExpression VisitTimeOnly(object timeOnly)
+    private CodeExpression VisitTimeOnly(object timeOnly, Type objectType)
     {
-        var objectType = timeOnly.GetType();
         var timeOnlyCodeTypeReference = new CodeTypeReference(objectType, _typeReferenceOptions);
         var ticks = (long?)objectType.GetProperty("Ticks")?.GetValue(timeOnly);
 
@@ -1005,7 +973,7 @@ internal class ObjectVisitor
 
     private static bool IsCollection(object obj)
     {
-        return obj is ICollection || ReflectionUtils.IsGenericCollection(obj.GetType());
+        return obj is ICollection || obj.GetType().IsGenericCollection();
     }
 
     private static CodeExpression GetErrorDetectedExpression(string errorMessage)
@@ -1035,29 +1003,6 @@ internal class ObjectVisitor
             : new CodeDefaultValueExpression(new CodeTypeReference(@object.GetType(), _typeReferenceOptions)),
             new CodeStatementExpression(new CodeCommentStatement(new CodeComment("Max depth") { NoNewLine = true }))
         }, ", ");
-    }
-
-    private static bool IsPrimitiveOrNull(object @object)
-    {
-        return @object == null || IsPrimitive(@object);
-    }
-
-    private static bool IsPrimitive(object @object)
-    {
-        return @object is char
-               || @object is sbyte
-               || @object is ushort
-               || @object is uint
-               || @object is ulong
-               || @object is string
-               || @object is byte
-               || @object is short
-               || @object is int
-               || @object is long
-               || @object is float
-               || @object is double
-               || @object is decimal
-               || @object is bool;
     }
 
     private bool IsVisited(object value)
@@ -1092,45 +1037,5 @@ internal class ObjectVisitor
         {
             return exception.ToString();
         }
-    }
-
-    private static bool IsAnonymous(object o)
-    {
-        return o.GetType().IsAnonymousType();
-    }
-
-    private static bool IsTuple(object o)
-    {
-        var type = o.GetType();
-        return ReflectionUtils.IsTuple(type);
-    }
-
-    private static bool IsKeyValuePair(object o)
-    {
-        var type = o.GetType();
-        return ReflectionUtils.IsKeyValuePair(type);
-    }
-
-    private static bool IsGrouping(object o)
-    {
-        var type = o.GetType();
-        return ReflectionUtils.IsGrouping(type);
-    }
-
-    private static bool IsValueTuple(object o)
-    {
-        var type = o.GetType();
-        return ReflectionUtils.IsValueTuple(type);
-    }
-    private static bool IsDateOnly(object o)
-    {
-        var objectType = o.GetType();
-        return objectType.Namespace == "System" && objectType.Name == "DateOnly";
-    }
-
-    private static bool IsTimeOnly(object o)
-    {
-        var objectType = o.GetType();
-        return objectType.Namespace == "System" && objectType.Name == "TimeOnly";
     }
 }

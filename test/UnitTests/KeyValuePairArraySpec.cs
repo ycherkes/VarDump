@@ -1,6 +1,5 @@
 ﻿using System.Collections.Generic;
 using VarDump;
-using VarDump.Visitor;
 using Xunit;
 
 namespace UnitTests
@@ -16,15 +15,7 @@ namespace UnitTests
                 new(2, "Second")
             };
 
-            var dumper = new VisualBasicDumper(new DumpOptions
-            {
-                IgnoreDefaultValues = true,
-                IgnoreNullValues = true,
-                MaxDepth = 5,
-                UseTypeFullName = false,
-                DateTimeInstantiation = DateTimeInstantiation.New,
-                DateKind = DateKind.ConvertToUtc
-            });
+            var dumper = new VisualBasicDumper();
 
             var result = dumper.Dump(kvpArray);
 
@@ -45,15 +36,7 @@ namespace UnitTests
                 new(2, "Second")
             };
 
-            var dumper = new CSharpDumper(new DumpOptions
-            {
-                IgnoreDefaultValues = true,
-                IgnoreNullValues = true,
-                MaxDepth = 5,
-                UseTypeFullName = false,
-                DateTimeInstantiation = DateTimeInstantiation.New,
-                DateKind = DateKind.ConvertToUtc
-            });
+            var dumper = new CSharpDumper();
 
             var result = dumper.Dump(kvpArray);
 

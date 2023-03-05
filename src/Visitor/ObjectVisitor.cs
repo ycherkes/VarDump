@@ -165,7 +165,7 @@ internal class ObjectVisitor
             .SelectMany(g => g.Value.Cast<object>().Select(e => new { g.Key, Element = e }))
             .ToArray();
 
-        return Visit(groupingValues);
+        return VisitAnonymousCollection(groupingValues);
     }
 
     private CodeExpression VisitAnonymous(object o, IReflect objectType)

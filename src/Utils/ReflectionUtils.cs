@@ -187,11 +187,18 @@ namespace VarDump.Utils
 
         public static bool IsAnonymousType(this Type type)
         {
+            var typeName = type.Name;
+
             var isAnonymousType = Attribute.IsDefined(type, typeof(CompilerGeneratedAttribute), false)
                                     && type.IsGenericType
-                                    && type.Name.Contains("AnonymousType")
-                                    && (type.Name.StartsWith("<>", StringComparison.OrdinalIgnoreCase) ||
-                                        type.Name.StartsWith("VB$", StringComparison.OrdinalIgnoreCase));
+                                    && type.IsSealed
+                                    && type.BaseType == typeof(object)
+                                    && type.IsNotPublic
+                                    && type.Namespace == null
+                                    && (typeName.Contains("AnonymousType") ||
+                                        typeName.Contains("AnonType"))
+                                    && (typeName.IndexOf("<>", StringComparison.OrdinalIgnoreCase) > -1 ||
+                                        typeName.IndexOf("VB$", StringComparison.OrdinalIgnoreCase) > -1);
 
             return isAnonymousType;
         }

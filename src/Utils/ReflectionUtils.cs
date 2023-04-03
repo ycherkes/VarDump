@@ -193,7 +193,6 @@ namespace VarDump.Utils
                                     && type.IsGenericType
                                     && type.IsSealed
                                     && type.BaseType == typeof(object)
-                                    && type.IsNotPublic
                                     && type.Namespace == null
                                     && (typeName.Contains("AnonymousType") ||
                                         typeName.Contains("AnonType"))

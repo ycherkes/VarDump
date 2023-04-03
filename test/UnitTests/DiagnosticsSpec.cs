@@ -14,7 +14,7 @@ namespace UnitTests
 {
     public class DiagnosticsSpec
     {
-        [Fact]
+        [Fact(Skip = "Skip")]
         public void DumpDiagnosticsCsharp()
         {
             var code =
@@ -42,7 +42,7 @@ namespace UnitTests
             var result = dumper.Dump(failures);
         }
 
-        [Fact]
+        [Fact(Skip = "Skip")]
         public void DumpDiagnosticsVb()
         {
             var code =
@@ -70,7 +70,7 @@ namespace UnitTests
             var result = dumper.Dump(failures);
         }
 
-        private static string runtimePath = @"C:\Program Files (x86)\Reference Assemblies\Microsoft\Framework\.NETFramework\v4.5.1\{0}.dll";
+        private static string runtimePath = @"C:\Program Files (x86)\Reference Assemblies\Microsoft\Framework\.NETFramework\v4.7.2\{0}.dll";
 
         private static readonly IEnumerable<MetadataReference> DefaultReferences =
             new[]

@@ -4,6 +4,8 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Globalization;
 using System.Linq;
+using System.Net;
+using System.Net.Sockets;
 using System.Reflection;
 using System.Runtime.Serialization;
 using VarDump.CodeDom.Common;
@@ -63,6 +65,9 @@ internal class ObjectVisitor
             if (ReflectionUtils.IsPrimitiveOrNull(@object))
                 return VisitPrimitive(@object);
 
+            if (@object is Delegate)
+                return GetCodeDefaultValueExpression(@object);
+
             if (@object is TimeSpan timeSpan)
                 return VisitTimeSpan(timeSpan);
 
@@ -83,6 +88,15 @@ internal class ObjectVisitor
 
             if (@object is Type type)
                 return VisitType(type);
+
+            if (@object is IPAddress ipAddress)
+                return VisitIpAddress(ipAddress);
+
+            if (@object is IPEndPoint ipEndPoint)
+                return VisitIpEndPoint(ipEndPoint);
+
+            if (@object is DnsEndPoint dnsEndPoint)
+                return VisitDnsEndPoint(dnsEndPoint);
 
             var objectType = @object.GetType();
 
@@ -279,6 +293,35 @@ internal class ObjectVisitor
         var bitwiseOrExpression = new CodeFlagsBinaryOperatorExpression(CodeBinaryOperatorType.BitwiseOr, expressions);
 
         return bitwiseOrExpression;
+    }
+
+    private CodeExpression VisitIpAddress(IPAddress ipAddress)
+    {
+        return new CodeMethodInvokeExpression(
+                    new CodeMethodReferenceExpression(
+                        new CodeTypeReferenceExpression(
+                            new CodeTypeReference(typeof(IPAddress), _typeReferenceOptions)),
+                        nameof(IPAddress.Parse)),
+                    new CodePrimitiveExpression(ipAddress.ToString()));
+    }
+
+    private CodeExpression VisitIpEndPoint(IPEndPoint ipEndPoint)
+    {
+        return new CodeObjectCreateExpression(new CodeTypeReference(typeof(IPEndPoint), _typeReferenceOptions),
+                    VisitIpAddress(ipEndPoint.Address),
+                    new CodePrimitiveExpression(ipEndPoint.Port));
+    }
+
+    private CodeExpression VisitDnsEndPoint(DnsEndPoint dnsEndPoint)
+    {
+        return dnsEndPoint.AddressFamily == AddressFamily.Unspecified ?
+            new CodeObjectCreateExpression(new CodeTypeReference(typeof(DnsEndPoint), _typeReferenceOptions),
+                    new CodePrimitiveExpression(dnsEndPoint.Host),
+                    new CodePrimitiveExpression(dnsEndPoint.Port))
+            : new CodeObjectCreateExpression(new CodeTypeReference(typeof(DnsEndPoint), _typeReferenceOptions),
+                    new CodePrimitiveExpression(dnsEndPoint.Host),
+                    new CodePrimitiveExpression(dnsEndPoint.Port),
+                    VisitEnum(dnsEndPoint.AddressFamily));
     }
 
     private CodeExpression VisitKeyValuePair(object o, Type objectType)
@@ -1003,6 +1046,11 @@ internal class ObjectVisitor
             : new CodeDefaultValueExpression(new CodeTypeReference(@object.GetType(), _typeReferenceOptions)),
             new CodeStatementExpression(new CodeCommentStatement(new CodeComment("Max depth") { NoNewLine = true }))
         }, ", ");
+    }
+
+    private CodeExpression GetCodeDefaultValueExpression(object @object)
+    {
+        return new CodeDefaultValueExpression(new CodeTypeReference(@object.GetType(), _typeReferenceOptions));
     }
 
     private bool IsVisited(object value)

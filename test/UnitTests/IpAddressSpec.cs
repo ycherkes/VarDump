@@ -9,14 +9,14 @@ namespace UnitTests
         [Fact]
         public void DumpIpAddressCsharp()
         {
-            var ipAddress = IPAddress.Parse("10.202.112.232");
+            var ipAddress = IPAddress.Parse("142.250.74.110");
 
             var dumper = new CSharpDumper();
 
             var result = dumper.Dump(ipAddress);
 
             Assert.Equal(
-@"var iPAddress = IPAddress.Parse(""10.202.112.232"");
+@"var iPAddress = IPAddress.Parse(""142.250.74.110"");
 ", result);
         }
 
@@ -24,14 +24,14 @@ namespace UnitTests
         [Fact]
         public void DumpIpAddressVb()
         {
-            var ipAddress = IPAddress.Parse("10.202.112.232");
+            var ipAddress = IPAddress.Parse("142.250.74.110");
 
             var dumper = new VisualBasicDumper();
 
             var result = dumper.Dump(ipAddress);
 
             Assert.Equal(
-@"Dim iPAddressValue = IPAddress.Parse(""10.202.112.232"")
+@"Dim iPAddressValue = IPAddress.Parse(""142.250.74.110"")
 ", result);
         }
     }

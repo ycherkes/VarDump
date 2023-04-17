@@ -372,20 +372,21 @@ namespace VarDump.Utils
 
         private static bool IsPrimitive(object @object)
         {
-            return @object is char
-                   || @object is sbyte
-                   || @object is ushort
-                   || @object is uint
-                   || @object is ulong
-                   || @object is string
-                   || @object is byte
-                   || @object is short
-                   || @object is int
-                   || @object is long
-                   || @object is float
-                   || @object is double
-                   || @object is decimal
-                   || @object is bool;
+            return @object
+                is char
+                or sbyte
+                or ushort
+                or uint
+                or ulong
+                or string
+                or byte
+                or short
+                or int
+                or long
+                or float
+                or double
+                or decimal
+                or bool;
         }
 
         public static bool IsDateOnly(this Type objectType)
@@ -416,6 +417,28 @@ namespace VarDump.Utils
 
             return constructor.GetParameters().Select(x => new { x.Name, Type = x.ParameterType })
                 .SequenceEqual(properties.Select(x => new { x.Name, Type = x.PropertyType }));
+        }
+
+        public static object GetValue(MemberInfo memberInfo, object instance)
+        {
+            try
+            {
+                return memberInfo switch
+                {
+                    PropertyInfo pi => pi.GetValue(instance),
+                    FieldInfo fi => fi.GetValue(instance),
+                    _ => $"{memberInfo.GetType()} is not supported."
+                };
+            }
+            catch (Exception exception)
+            {
+                return exception.ToString();
+            }
+        }
+
+        public static bool IsIndexer(PropertyInfo propertyInfo)
+        {
+            return propertyInfo.GetIndexParameters().Length > 0;
         }
     }
 }

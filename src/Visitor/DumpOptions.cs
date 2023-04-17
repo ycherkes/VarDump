@@ -2,6 +2,7 @@
 using System.ComponentModel;
 using System.Linq;
 using System.Reflection;
+using VarDump.Visitor.Descriptors;
 
 namespace VarDump.Visitor
 {
@@ -17,6 +18,7 @@ namespace VarDump.Visitor
         public DateKind DateKind { get; set; } = DateKind.ConvertToUtc;
         public DateTimeInstantiation DateTimeInstantiation { get; set; } = DateTimeInstantiation.New;
         public ICollection<string> ExcludeTypes { get; set; } = new string[0];
+        public ICollection<IObjectDescriptorMiddleware> Descriptors { get; set; } = new List<IObjectDescriptorMiddleware>();
         public int MaxDepth { get; set; } = 25;
         public ListSortDirection? SortDirection { get; set; }
 
@@ -37,7 +39,8 @@ namespace VarDump.Visitor
                 SortDirection = SortDirection,
                 UseNamedArgumentsForReferenceRecordTypes = UseNamedArgumentsForReferenceRecordTypes,
                 UseTypeFullName = UseTypeFullName,
-                WritablePropertiesOnly = WritablePropertiesOnly
+                WritablePropertiesOnly = WritablePropertiesOnly,
+                Descriptors = Descriptors.ToArray()
             };
         }
     }

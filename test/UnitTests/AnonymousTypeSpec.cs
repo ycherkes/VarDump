@@ -75,9 +75,7 @@ namespace UnitTests
             var expectedTypeNames = new[]
             {
                 "<>f__AnonymousType0`2[<Name>j__TPar,<Type>j__TPar]",
-                "<>f__AnonymousType1`2[<Key>j__TPar,<Element>j__TPar]",
-                "<>f__AnonymousType2`3[<PropertyName>j__TPar,<Value>j__TPar,<PropertyType>j__TPar]",
-                "<>f__AnonymousType3`3[<Name>j__TPar,<Value>j__TPar,<Type>j__TPar]"
+                "<>f__AnonymousType1`2[<Key>j__TPar,<Element>j__TPar]"
             };
 
             var actualTypeNames = typeof(ObjectVisitor)

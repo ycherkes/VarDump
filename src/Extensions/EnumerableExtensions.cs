@@ -7,10 +7,10 @@ using System.Collections.Generic;
 
 namespace VarDump.Extensions
 {
-
-#if !NET6_0_OR_GREATER
     internal static class EnumerableExtensions
     {
+
+#if !NET6_0_OR_GREATER
         /// <summary>Split the elements of a sequence into chunks of size at most <paramref name="size" />.</summary>
         /// <param name="source">An <see cref="T:System.Collections.Generic.IEnumerable`1" /> whose elements to chunk.</param>
         /// <param name="size">The maximum size of each chunk.</param>
@@ -58,6 +58,16 @@ namespace VarDump.Extensions
                 }
             }
         }
-    }
 #endif
+
+        public static IEnumerable<T> AsEnumerable<T>(Func<T[]> func)
+        {
+            // ReSharper disable once LoopCanBeConvertedToQuery
+            // Important: do not replace with `return func()` as ReSharper suggests - it produces non-deferred code.
+            foreach (var item in func())
+            {
+                yield return item;
+            }
+        }
+    }
 }

@@ -1,5 +1,6 @@
 ﻿using System;
 using VarDump;
+using VarDump.Visitor;
 using Xunit;
 
 namespace UnitTests
@@ -15,7 +16,11 @@ namespace UnitTests
             }
             catch (Exception e)
             {
-                var dumper = new VisualBasicDumper();
+                var dumper = new VisualBasicDumper(new DumpOptions
+                {
+                    WritablePropertiesOnly = false,
+                    MaxDepth = 1
+                });
 
                 var result = dumper.Dump(e);
 

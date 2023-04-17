@@ -7,10 +7,11 @@ using System.Linq;
 using System.Net;
 using System.Net.Sockets;
 using System.Reflection;
-using System.Runtime.Serialization;
 using VarDump.CodeDom.Common;
 using VarDump.Extensions;
 using VarDump.Utils;
+using VarDump.Visitor.Descriptors;
+using VarDump.Visitor.Descriptors.Implementation;
 
 namespace VarDump.Visitor;
 
@@ -26,10 +27,9 @@ internal class ObjectVisitor
     private readonly DateTimeInstantiation _dateTimeInstantiation;
     private readonly DateKind _dateKind;
     private readonly bool _useNamedArgumentsForReferenceRecordTypes;
-    private readonly bool _writablePropertiesOnly;
-    private readonly BindingFlags _getPropertiesBindingFlags;
-    private readonly BindingFlags? _getFieldsBindingFlags;
     private readonly ListSortDirection? _sortDirection;
+    private readonly IObjectDescriptor _objectDescriptor;
+    private readonly IObjectDescriptor _anonymousObjectDescriptor;
 
     public ObjectVisitor(DumpOptions options)
     {
@@ -43,10 +43,21 @@ internal class ObjectVisitor
             : CodeTypeReferenceOptions.ShortTypeName;
         _excludeTypes = options.ExcludeTypes ?? new List<string>();
         _useNamedArgumentsForReferenceRecordTypes = options.UseNamedArgumentsForReferenceRecordTypes;
-        _getPropertiesBindingFlags = options.GetPropertiesBindingFlags;
-        _writablePropertiesOnly = options.WritablePropertiesOnly;
-        _getFieldsBindingFlags = options.GetFieldsBindingFlags;
         _sortDirection = options.SortDirection;
+
+        _anonymousObjectDescriptor = new ObjectPropertiesDescriptor(options.GetPropertiesBindingFlags, false);
+        _objectDescriptor = new ObjectPropertiesDescriptor(options.GetPropertiesBindingFlags, options.WritablePropertiesOnly);
+
+        if (options.GetFieldsBindingFlags != null)
+        {
+            _objectDescriptor = _anonymousObjectDescriptor.Concat(new ObjectFieldsDescriptor(options.GetFieldsBindingFlags.Value));
+        }
+
+        if (options.Descriptors.Count > 0)
+        {
+            _objectDescriptor = _objectDescriptor.ApplyMiddleware(options.Descriptors);
+            _anonymousObjectDescriptor = _anonymousObjectDescriptor.ApplyMiddleware(options.Descriptors);
+        }
 
         _visitedObjects = new Stack<object>();
     }
@@ -64,9 +75,6 @@ internal class ObjectVisitor
 
             if (ReflectionUtils.IsPrimitiveOrNull(@object))
                 return VisitPrimitive(@object);
-
-            if (@object is Delegate)
-                return GetCodeDefaultValueExpression(@object);
 
             if (@object is TimeSpan timeSpan)
                 return VisitTimeSpan(timeSpan);
@@ -130,16 +138,6 @@ internal class ObjectVisitor
             if (@object is IEnumerable enumerable)
                 return VisitCollection(enumerable, objectType);
 
-            try
-            {
-                if (@object is ISerializable serializable)
-                    return VisitSerializable(serializable, objectType);
-            }
-            catch
-            {
-                // ignored
-            }
-
             return VisitObject(@object, objectType);
         }
         finally
@@ -182,21 +180,14 @@ internal class ObjectVisitor
         return VisitAnonymousCollection(groupingValues);
     }
 
-    private CodeExpression VisitAnonymous(object o, IReflect objectType)
+    private CodeExpression VisitAnonymous(object o, Type objectType)
     {
         var result = new CodeObjectCreateAndInitializeExpression(new CodeAnonymousTypeReference())
         {
-            InitializeExpressions = new CodeExpressionCollection(objectType.GetProperties(_getPropertiesBindingFlags)
-                .Where(p => p.CanRead)
-                .Select(p => new
-                {
-                    PropertyName = p.Name,
-                    Value = GetValue(p, o),
-                    p.PropertyType
-                })
+            InitializeExpressions = new CodeExpressionCollection(_anonymousObjectDescriptor.Describe(o, objectType)
                 .Select(pv => (CodeExpression)new CodeAssignExpression(
-                    new CodePropertyReferenceExpression(null, pv.PropertyName),
-                    pv.PropertyType.IsNullableType() || pv.Value == null ? new CodeCastExpression(pv.PropertyType, Visit(pv.Value), true) : Visit(pv.Value)))
+                    new CodePropertyReferenceExpression(null, pv.Name),
+                    pv.Type.IsNullableType() || pv.Value == null ? new CodeCastExpression(pv.Type, Visit(pv.Value), true) : Visit(pv.Value)))
                 .ToArray())
         };
 
@@ -375,49 +366,6 @@ internal class ObjectVisitor
         return new CodeImplicitKeyValuePairCreateExpression(propertyValues.First(), propertyValues.Last());
     }
 
-    private CodeExpression VisitSerializable(ISerializable serializable, Type objectType)
-    {
-        if (IsVisited(serializable))
-        {
-            return GetCircularReferenceDetectedExpression();
-        }
-
-        PushVisited(serializable);
-
-        try
-        {
-            SerializationInfo serializationInfo = new SerializationInfo(objectType, new FormatterConverter());
-            serializable.GetObjectData(serializationInfo, new StreamingContext());
-
-            var serializationEntries = serializationInfo.GetEnumerator()
-                                     .Cast<SerializationEntry>();
-
-            if (_sortDirection != null)
-            {
-                serializationEntries = _sortDirection == ListSortDirection.Ascending
-                    ? serializationEntries.OrderBy(x => x.Name)
-                    : serializationEntries.OrderByDescending(x => x.Name);
-            }
-
-            var result = new CodeObjectCreateAndInitializeExpression(new CodeTypeReference(objectType, _typeReferenceOptions))
-            {
-                InitializeExpressions = new CodeExpressionCollection(serializationEntries
-                                     .Where(se => !_excludeTypes.Contains(se.ObjectType.FullName) &&
-                                                  (!_ignoreNullValues || _ignoreNullValues && se.Value != null) &&
-                                                  (!_ignoreDefaultValues || !se.ObjectType.IsValueType || _ignoreDefaultValues &&
-                                                      ReflectionUtils.GetDefaultValue(se.ObjectType)?.Equals(se.Value) != true))
-                                     .Select(pv => (CodeExpression)new CodeAssignExpression(new CodePropertyReferenceExpression(null, pv.Name), Visit(pv.Value)))
-                                     .ToArray())
-            };
-
-            return result;
-        }
-        finally
-        {
-            PopVisited();
-        }
-    }
-
     private CodeExpression VisitObject(object o, Type objectType)
     {
         if (IsVisited(o))
@@ -429,48 +377,31 @@ internal class ObjectVisitor
 
         try
         {
-            var initProperties = objectType.GetProperties(_getPropertiesBindingFlags)
-                    .Where(p => p.CanRead
-                                && (p.CanWrite || !_writablePropertiesOnly)
-                                // Ignores indexers
-                                && p.GetIndexParameters().Length == 0)
-                    .Select(p => new
-                    {
-                        p.Name,
-                        Value = GetValue(p, o),
-                        Type = p.PropertyType
-                    });
+            var membersAndConstructorParams = _objectDescriptor.Describe(o, objectType).ToArray();
 
-            if (_getFieldsBindingFlags != null)
-            {
-                var fields = objectType.GetFields(_getFieldsBindingFlags.Value)
-                    .Select(f => new
-                    {
-                        f.Name,
-                        Value = GetValue(f, o),
-                        Type = f.FieldType
-                    });
-
-                initProperties = initProperties.Concat(fields);
-            }
+            var members = membersAndConstructorParams.Where(m => m.ReflectionType != ReflectionType.ConstructorParameter);
 
             if (_sortDirection != null)
             {
-                initProperties = _sortDirection == ListSortDirection.Ascending
-                    ? initProperties.OrderBy(x => x.Name)
-                    : initProperties.OrderByDescending(x => x.Name);
+                members = _sortDirection == ListSortDirection.Ascending
+                    ? members.OrderBy(x => x.Name)
+                    : members.OrderByDescending(x => x.Name);
             }
 
-            var result = new CodeObjectCreateAndInitializeExpression(new CodeTypeReference(objectType, _typeReferenceOptions))
-            {
-                InitializeExpressions = new CodeExpressionCollection(initProperties
+            var constructorParams = membersAndConstructorParams
+                .Where(mc => mc.ReflectionType == ReflectionType.ConstructorParameter)
+                .Select(cp => Visit(cp.Value))
+                .ToArray();
+
+            var initializeExpressions = members
                     .Where(pv => !_excludeTypes.Contains(pv.Type.FullName) &&
                                  (!_ignoreNullValues || _ignoreNullValues && pv.Value != null) &&
                                  (!_ignoreDefaultValues || !pv.Type.IsValueType || _ignoreDefaultValues &&
                                      ReflectionUtils.GetDefaultValue(pv.Type)?.Equals(pv.Value) != true))
                     .Select(pv => (CodeExpression)new CodeAssignExpression(new CodePropertyReferenceExpression(null, pv.Name), Visit(pv.Value)))
-                    .ToArray())
-            };
+                    .ToArray();
+
+            var result = new CodeObjectCreateAndInitializeExpression(new CodeTypeReference(objectType, _typeReferenceOptions), initializeExpressions, constructorParams);
 
             return result;
         }
@@ -1046,11 +977,6 @@ internal class ObjectVisitor
             : new CodeDefaultValueExpression(new CodeTypeReference(@object.GetType(), _typeReferenceOptions)),
             new CodeStatementExpression(new CodeCommentStatement(new CodeComment("Max depth") { NoNewLine = true }))
         }, ", ");
-    }
-
-    private CodeExpression GetCodeDefaultValueExpression(object @object)
-    {
-        return new CodeDefaultValueExpression(new CodeTypeReference(@object.GetType(), _typeReferenceOptions));
     }
 
     private bool IsVisited(object value)

@@ -76,9 +76,6 @@ internal class ObjectVisitor
             if (ReflectionUtils.IsPrimitiveOrNull(@object))
                 return VisitPrimitive(@object);
 
-            if (@object is Delegate)
-                return GetCodeDefaultValueExpression(@object);
-
             if (@object is TimeSpan timeSpan)
                 return VisitTimeSpan(timeSpan);
 
@@ -980,11 +977,6 @@ internal class ObjectVisitor
             : new CodeDefaultValueExpression(new CodeTypeReference(@object.GetType(), _typeReferenceOptions)),
             new CodeStatementExpression(new CodeCommentStatement(new CodeComment("Max depth") { NoNewLine = true }))
         }, ", ");
-    }
-
-    private CodeExpression GetCodeDefaultValueExpression(object @object)
-    {
-        return new CodeDefaultValueExpression(new CodeTypeReference(@object.GetType(), _typeReferenceOptions));
     }
 
     private bool IsVisited(object value)

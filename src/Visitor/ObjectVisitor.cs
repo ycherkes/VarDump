@@ -165,7 +165,7 @@ internal class ObjectVisitor
         var objectType = o.GetType();
         var fieldValues = objectType.GetFields(BindingFlags.Instance | BindingFlags.NonPublic)
             .Where(x => x.Name is "_key" or "key" or "_elements" or "elements")
-            .Select(p => GetValue(p, o))
+            .Select(p => ReflectionUtils.GetValue(p, o))
             .ToArray();
 
         return new KeyValuePair<object, IEnumerable>(fieldValues[0], (IEnumerable)fieldValues[1]);
@@ -234,7 +234,7 @@ internal class ObjectVisitor
 
         if (field == null) return null;
 
-        return Equals(GetValue(field, null), @object)
+        return Equals(ReflectionUtils.GetValue(field, null), @object)
             ? new CodeFieldReferenceExpression(new CodeTypeReferenceExpression(objectType), fieldName)
             : null;
     }
@@ -243,8 +243,8 @@ internal class ObjectVisitor
     {
         var properties = objectType.GetProperties(BindingFlags.Public | BindingFlags.Instance | BindingFlags.NonPublic).Where(p => p.CanWrite);
         var argumentValues = _useNamedArgumentsForReferenceRecordTypes ?
-            properties.Select(p => (CodeExpression)new CodeNamedArgumentExpression(p.Name, Visit(GetValue(p, o))))
-            : properties.Select(p => GetValue(p, o)).Select(Visit);
+            properties.Select(p => (CodeExpression)new CodeNamedArgumentExpression(p.Name, Visit(ReflectionUtils.GetValue(p, o))))
+            : properties.Select(p => ReflectionUtils.GetValue(p, o)).Select(Visit);
 
         return new CodeObjectCreateExpression(
             new CodeTypeReference(objectType, _typeReferenceOptions),
@@ -317,7 +317,7 @@ internal class ObjectVisitor
 
     private CodeExpression VisitKeyValuePair(object o, Type objectType)
     {
-        var propertyValues = objectType.GetProperties().Select(p => GetValue(p, o)).Select(Visit);
+        var propertyValues = objectType.GetProperties().Select(p => ReflectionUtils.GetValue(p, o)).Select(Visit);
         return new CodeObjectCreateExpression(new CodeTypeReference(objectType, _typeReferenceOptions),
             propertyValues.ToArray());
     }
@@ -333,7 +333,7 @@ internal class ObjectVisitor
 
         try
         {
-            var propertyValues = objectType.GetProperties().Select(p => GetValue(p, o)).Select(Visit);
+            var propertyValues = objectType.GetProperties().Select(p => ReflectionUtils.GetValue(p, o)).Select(Visit);
             var result = new CodeObjectCreateExpression(new CodeTypeReference(objectType, _typeReferenceOptions), propertyValues.ToArray());
             return result;
         }
@@ -346,7 +346,7 @@ internal class ObjectVisitor
     private CodeExpression VisitKeyValuePairGenerateAnonymousType(object o, string keyName, string valueName)
     {
         var objectType = o.GetType();
-        var propertyValues = objectType.GetProperties().Select(p => GetValue(p, o)).Select(Visit).ToArray();
+        var propertyValues = objectType.GetProperties().Select(p => ReflectionUtils.GetValue(p, o)).Select(Visit).ToArray();
         var result = new CodeObjectCreateAndInitializeExpression(new CodeAnonymousTypeReference())
         {
             InitializeExpressions = new CodeExpressionCollection(new[]
@@ -362,7 +362,7 @@ internal class ObjectVisitor
     private CodeExpression VisitKeyValuePairGenerateImplicitly(object o)
     {
         var objectType = o.GetType();
-        var propertyValues = objectType.GetProperties().Select(p => GetValue(p, o)).Select(Visit).Take(2).ToArray();
+        var propertyValues = objectType.GetProperties().Select(p => ReflectionUtils.GetValue(p, o)).Select(Visit).Take(2).ToArray();
         return new CodeImplicitKeyValuePairCreateExpression(propertyValues.First(), propertyValues.Last());
     }
 
@@ -413,7 +413,7 @@ internal class ObjectVisitor
 
     private CodeExpression VisitValueTuple(object @object, Type objectType)
     {
-        var propertyValues = objectType.GetFields().Select(p => GetValue(p, @object)).Select(Visit);
+        var propertyValues = objectType.GetFields().Select(p => ReflectionUtils.GetValue(p, @object)).Select(Visit);
 
         return new CodeValueTupleCreateExpression(propertyValues.ToArray());
     }
@@ -987,29 +987,5 @@ internal class ObjectVisitor
     private bool IsMaxDepth()
     {
         return _depth > _maxDepth;
-    }
-
-    private static object GetValue(PropertyInfo propertyInfo, object instance)
-    {
-        try
-        {
-            return propertyInfo.GetValue(instance);
-        }
-        catch (Exception exception)
-        {
-            return exception.ToString();
-        }
-    }
-
-    private static object GetValue(FieldInfo fieldInfo, object instance)
-    {
-        try
-        {
-            return fieldInfo.GetValue(instance);
-        }
-        catch (Exception exception)
-        {
-            return exception.ToString();
-        }
     }
 }

@@ -419,16 +419,23 @@ namespace VarDump.Utils
                 .SequenceEqual(properties.Select(x => new { x.Name, Type = x.PropertyType }));
         }
 
-        public static object GetValue(MemberInfo memberInfo, object instance)
+        public static object GetValue(PropertyInfo propertyInfo, object instance)
         {
             try
             {
-                return memberInfo switch
-                {
-                    PropertyInfo pi => pi.GetValue(instance),
-                    FieldInfo fi => fi.GetValue(instance),
-                    _ => $"{memberInfo.GetType()} is not supported."
-                };
+                return propertyInfo.GetValue(instance);
+            }
+            catch (Exception exception)
+            {
+                return exception.ToString();
+            }
+        }
+
+        public static object GetValue(FieldInfo fieldInfo, object instance)
+        {
+            try
+            {
+                return fieldInfo.GetValue(instance);
             }
             catch (Exception exception)
             {

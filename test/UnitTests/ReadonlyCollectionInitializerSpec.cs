@@ -1,4 +1,4 @@
-using System.Collections.Generic;
+using UnitTests.TestModel;
 using VarDump;
 using Xunit;
 
@@ -61,21 +61,41 @@ namespace UnitTests
 };
 ", result);
         }
-    }
 
-    public class CatDictionaryOwner
-    {
-        public IDictionary<string, Cat> Cats { get; } = new Dictionary<string, Cat>();
-    }
+        [Fact]
+        public void DumpCustomCollectionCsharp()
+        {
+            CatCollection collection = new CatCollection
+            {
+                new Cat { Name = "Sylvester", Age = 8 },
+                new Cat { Name = "Whiskers", Age = 2 },
+                new Cat { Name = "Sasha", Age = 14 }
+            };
 
-    public class CatOwner
-    {
-        public ICollection<Cat> Cats { get; init; } = new List<Cat>();
-    }
+            var dumper = new CSharpDumper();
 
-    public class Cat
+            var result = dumper.Dump(collection);
+
+            Assert.Equal(
+                @"var catCollectionOfObject = new CatCollection
+{
+    new Cat
     {
-        public int Age { get; set; }
-        public string Name { get; set; }
+        Age = 8,
+        Name = ""Sylvester""
+    },
+    new Cat
+    {
+        Age = 2,
+        Name = ""Whiskers""
+    },
+    new Cat
+    {
+        Age = 14,
+        Name = ""Sasha""
+    }
+};
+", result);
+        }
     }
 }

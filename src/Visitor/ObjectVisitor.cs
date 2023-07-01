@@ -479,7 +479,7 @@ internal class ObjectVisitor
         var items = dictionary.Cast<object>().Select(o => VisitKeyValuePairGenerateAnonymousType(o, keyName, valueName));
         var type = dictionary.GetType();
 
-        CodeExpression expr = new CodeArrayCreateExpression(new CodeAnonymousTypeReference(), items.ToArray());
+        CodeExpression expr = new CodeArrayCreateExpression(new CodeAnonymousTypeReference{ ArrayRank = 1 }, items.ToArray());
 
         var variableReferenceExpression = new CodeVariableReferenceExpression("kvp");
         var keyLambdaExpression = new CodeLambdaExpression(new CodePropertyReferenceExpression(variableReferenceExpression, keyName), variableReferenceExpression);
@@ -567,8 +567,12 @@ internal class ObjectVisitor
                 items = ChunkMultiDimensionalArrayExpression((Array)enumerable, items);
             }
 
+            //CodeExpression expr = new CodeArrayCreateExpression(
+            //    new CodeTypeReference(type.IsArray ? type : elementType.MakeArrayType(), _typeReferenceOptions),
+            //    items.ToArray());
+
             CodeExpression expr = new CodeArrayCreateExpression(
-                new CodeTypeReference(type.IsArray ? type : elementType.MakeArrayType(), _typeReferenceOptions),
+                new CodeTypeReference(isImmutable ? elementType.MakeArrayType() : type, _typeReferenceOptions),
                 items.ToArray());
 
             if (isImmutable) expr = new CodeMethodInvokeExpression(expr, $"To{type.Name.Split('`')[0]}");
@@ -622,7 +626,7 @@ internal class ObjectVisitor
 
         var isImmutable = type.IsPublicImmutableCollection();
 
-        var typeReference = new CodeAnonymousTypeReference();
+        var typeReference = new CodeAnonymousTypeReference{ ArrayRank = 1 };
 
         if (type.IsArray && ((Array)enumerable).Rank > 1)
         {

@@ -1,6 +1,5 @@
 using System;
 using System.Globalization;
-using System.Xml;
 using VarDump;
 using VarDump.Visitor;
 using Xunit;

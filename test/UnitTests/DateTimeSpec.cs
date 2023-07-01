@@ -1,4 +1,6 @@
 using System;
+using System.Globalization;
+using System.Xml;
 using VarDump;
 using VarDump.Visitor;
 using Xunit;
@@ -28,6 +30,20 @@ namespace UnitTests
 {
     DateOnly = DateOnly.ParseExact(""2022-12-10"", ""O"")
 };
+", result);
+        }
+        
+        [Fact]
+        public void DumpDateTimeOffsetCsharp()
+        {
+            var dto = DateTimeOffset.ParseExact("2022-06-24T11:59:21.7961218+03:00", "O", CultureInfo.InvariantCulture, DateTimeStyles.RoundtripKind);
+            
+            var dumper = new CSharpDumper();
+
+            var result = dumper.Dump(dto);
+
+            Assert.Equal(
+@"var dateTimeOffset = new DateTimeOffset(ticks: 637916687617961218, TimeSpan.FromHours(3));
 ", result);
         }
 

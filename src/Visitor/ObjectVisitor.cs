@@ -678,6 +678,12 @@ internal class ObjectVisitor
             );
         }
 
+        var offsetExpression = VisitTimeSpan(dateTimeOffset.Offset);
+
+        if (dateTimeOffset.Ticks % TimeSpan.TicksPerMillisecond != 0)
+            return new CodeObjectCreateExpression(dateTimeOffsetCodeTypeReference, 
+                new CodeNamedArgumentExpression("ticks", new CodePrimitiveExpression(dateTimeOffset.Ticks)), offsetExpression);
+
         var year = new CodePrimitiveExpression(dateTimeOffset.Year);
         var month = new CodePrimitiveExpression(dateTimeOffset.Month);
         var day = new CodePrimitiveExpression(dateTimeOffset.Day);
@@ -685,8 +691,6 @@ internal class ObjectVisitor
         var minute = new CodePrimitiveExpression(dateTimeOffset.Minute);
         var second = new CodePrimitiveExpression(dateTimeOffset.Second);
         var millisecond = new CodePrimitiveExpression(dateTimeOffset.Millisecond);
-
-        var offsetExpression = VisitTimeSpan(dateTimeOffset.Offset);
 
         return new CodeObjectCreateExpression(dateTimeOffsetCodeTypeReference, year, month, day, hour, minute, second,
             millisecond, offsetExpression);
@@ -817,6 +821,16 @@ internal class ObjectVisitor
             );
         }
 
+        var kind = new CodeFieldReferenceExpression
+        (
+            new CodeTypeReferenceExpression(new CodeTypeReference(typeof(DateTimeKind), _typeReferenceOptions)),
+            dateTime.Kind.ToString()
+        );
+
+        if (dateTime.Ticks % TimeSpan.TicksPerMillisecond != 0)
+            return new CodeObjectCreateExpression(dateTimeCodeTypeReference, 
+                new CodeNamedArgumentExpression("ticks", new CodePrimitiveExpression(dateTime.Ticks)), kind);
+
         var year = new CodePrimitiveExpression(dateTime.Year);
         var month = new CodePrimitiveExpression(dateTime.Month);
         var day = new CodePrimitiveExpression(dateTime.Day);
@@ -824,12 +838,6 @@ internal class ObjectVisitor
         var minute = new CodePrimitiveExpression(dateTime.Minute);
         var second = new CodePrimitiveExpression(dateTime.Second);
         var millisecond = new CodePrimitiveExpression(dateTime.Millisecond);
-
-        var kind = new CodeFieldReferenceExpression
-        (
-            new CodeTypeReferenceExpression(new CodeTypeReference(typeof(DateTimeKind), _typeReferenceOptions)),
-            dateTime.Kind.ToString()
-        );
 
         return new CodeObjectCreateExpression(dateTimeCodeTypeReference, year,
             month, day, hour, minute, second, millisecond, kind);

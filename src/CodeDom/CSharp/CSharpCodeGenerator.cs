@@ -147,18 +147,7 @@ namespace VarDump.CodeDom.CSharp
             if (init.Count > 0)
             {
                 OutputType(e.CreateType);
-                if (e.CreateType.ArrayRank == 0)
-                {
-                    // Unfortunately, many clients are already calling this without array
-                    // types. This will allow new clients to correctly use the array type and
-                    // not break existing clients. For VNext, stop doing this.
-                    Output.WriteLine("[]");
-                }
-                else
-                {
-                    Output.WriteLine("");
-                }
-                //Indent--;
+                Output.WriteLine("");
                 Output.WriteLine("{");
                 OutputExpressionList(init, newlineBetweenItems: true);
                 Output.WriteLine();

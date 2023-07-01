@@ -522,21 +522,11 @@ namespace VarDump.CodeDom.VisualBasic
                 {
                     string typeName = GetTypeOutput(e.CreateType);
                     Output.Write(typeName);
-                    if (e.CreateType.ArrayRank == 0)
-                    {
-                        // Unfortunately, many clients are already calling this without array
-                        // types. This will allow new clients to correctly use the array type and
-                        // not break existing clients. For VNext, stop doing this.
-                        Output.Write("()");
-                    }
                 }
 
-                //Output.WriteLine("");
                 Output.Write("{");
                 Output.WriteLine("");
-                //Indent++;
                 OutputExpressionList(init, newlineBetweenItems: true, newLineContinuation: false);
-                //Indent--;
                 Output.WriteLine("");
                 Output.Write('}');
             }

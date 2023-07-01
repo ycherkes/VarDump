@@ -567,10 +567,6 @@ internal class ObjectVisitor
                 items = ChunkMultiDimensionalArrayExpression((Array)enumerable, items);
             }
 
-            //CodeExpression expr = new CodeArrayCreateExpression(
-            //    new CodeTypeReference(type.IsArray ? type : elementType.MakeArrayType(), _typeReferenceOptions),
-            //    items.ToArray());
-
             CodeExpression expr = new CodeArrayCreateExpression(
                 new CodeTypeReference(isImmutable ? elementType.MakeArrayType() : type, _typeReferenceOptions),
                 items.ToArray());

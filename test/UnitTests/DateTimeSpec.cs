@@ -42,7 +42,7 @@ namespace UnitTests
             var result = dumper.Dump(dto);
 
             Assert.Equal(
-@"var dateTimeOffset = new DateTimeOffset(ticks: 637916687617961218, TimeSpan.FromHours(3));
+@"var dateTimeOffset = DateTimeOffset.ParseExact(""2022-06-24T11:59:21.7961218+03:00"", ""O"", CultureInfo.InvariantCulture, DateTimeStyles.RoundtripKind);
 ", result);
         }
 

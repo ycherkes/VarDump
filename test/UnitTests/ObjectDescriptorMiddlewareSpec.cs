@@ -85,6 +85,7 @@ namespace UnitTests
             var opts = new DumpOptions
             {
                 Descriptors = { new FileSystemInfoMiddleware() },
+                DateKind = DateKind.ConvertToUtc,
                 WritablePropertiesOnly = false
             };
 
@@ -100,12 +101,12 @@ namespace UnitTests
     FullName = ""{expectedFullName}"",
     Extension = """",
     Name = ""{directoryName}"",
-    CreationTime = new DateTime(1601, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
-    CreationTimeUtc = new DateTime(1601, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
-    LastAccessTime = new DateTime(1601, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
-    LastAccessTimeUtc = new DateTime(1601, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
-    LastWriteTime = new DateTime(1601, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
-    LastWriteTimeUtc = new DateTime(1601, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+    CreationTime = DateTime.ParseExact(""1601-01-01T00:00:00.0000000Z"", ""O"", CultureInfo.InvariantCulture, DateTimeStyles.RoundtripKind),
+    CreationTimeUtc = DateTime.ParseExact(""1601-01-01T00:00:00.0000000Z"", ""O"", CultureInfo.InvariantCulture, DateTimeStyles.RoundtripKind),
+    LastAccessTime = DateTime.ParseExact(""1601-01-01T00:00:00.0000000Z"", ""O"", CultureInfo.InvariantCulture, DateTimeStyles.RoundtripKind),
+    LastAccessTimeUtc = DateTime.ParseExact(""1601-01-01T00:00:00.0000000Z"", ""O"", CultureInfo.InvariantCulture, DateTimeStyles.RoundtripKind),
+    LastWriteTime = DateTime.ParseExact(""1601-01-01T00:00:00.0000000Z"", ""O"", CultureInfo.InvariantCulture, DateTimeStyles.RoundtripKind),
+    LastWriteTimeUtc = DateTime.ParseExact(""1601-01-01T00:00:00.0000000Z"", ""O"", CultureInfo.InvariantCulture, DateTimeStyles.RoundtripKind),
     Attributes = FileAttributes.-1
 }};
 ";

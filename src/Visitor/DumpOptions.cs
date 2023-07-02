@@ -15,8 +15,8 @@ namespace VarDump.Visitor
         public bool UseNamedArgumentsForReferenceRecordTypes { get; set; }
         public bool UseTypeFullName { get; set; }
         public bool WritablePropertiesOnly { get; set; } = true;
-        public DateKind DateKind { get; set; } = DateKind.ConvertToUtc;
-        public DateTimeInstantiation DateTimeInstantiation { get; set; } = DateTimeInstantiation.New;
+        public DateKind DateKind { get; set; } = DateKind.Original;
+        public DateTimeInstantiation DateTimeInstantiation { get; set; } = DateTimeInstantiation.Parse;
         public ICollection<string> ExcludeTypes { get; set; } = new string[0];
         public ICollection<IObjectDescriptorMiddleware> Descriptors { get; set; } = new List<IObjectDescriptorMiddleware>();
         public int MaxDepth { get; set; } = 25;

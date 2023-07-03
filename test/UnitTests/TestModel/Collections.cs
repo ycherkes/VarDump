@@ -13,7 +13,19 @@ namespace UnitTests.TestModel
         public ICollection<Cat> Cats { get; init; } = new List<Cat>();
     }
 
-    public class CatCollection : IEnumerable
+    public class CatPublicCollection : IEnumerable
+    {
+        private readonly ArrayList _list = new();
+
+        public void Add(Cat cat) => _list.Add(cat);
+
+        public IEnumerator GetEnumerator()
+        {
+            return _list.GetEnumerator();
+        }
+    }
+
+    internal class CatNonPublicCollection : IEnumerable
     {
         private readonly ArrayList _list = new();
 

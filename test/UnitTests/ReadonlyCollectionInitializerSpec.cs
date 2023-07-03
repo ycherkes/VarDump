@@ -61,41 +61,5 @@ namespace UnitTests
 };
 ", result);
         }
-
-        [Fact]
-        public void DumpCustomCollectionCsharp()
-        {
-            CatCollection collection = new CatCollection
-            {
-                new Cat { Name = "Sylvester", Age = 8 },
-                new Cat { Name = "Whiskers", Age = 2 },
-                new Cat { Name = "Sasha", Age = 14 }
-            };
-
-            var dumper = new CSharpDumper();
-
-            var result = dumper.Dump(collection);
-
-            Assert.Equal(
-                @"var catCollectionOfObject = new CatCollection
-{
-    new Cat
-    {
-        Age = 8,
-        Name = ""Sylvester""
-    },
-    new Cat
-    {
-        Age = 2,
-        Name = ""Whiskers""
-    },
-    new Cat
-    {
-        Age = 14,
-        Name = ""Sasha""
-    }
-};
-", result);
-        }
     }
 }

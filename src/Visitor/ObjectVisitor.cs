@@ -568,7 +568,7 @@ internal class ObjectVisitor
             }
 
             CodeExpression expr = new CodeArrayCreateExpression(
-                new CodeTypeReference(isImmutable ? elementType.MakeArrayType() : type, _typeReferenceOptions),
+                new CodeTypeReference(isImmutable || !type.IsPublic ? elementType.MakeArrayType() : type, _typeReferenceOptions),
                 items.ToArray());
 
             if (isImmutable) expr = new CodeMethodInvokeExpression(expr, $"To{type.Name.Split('`')[0]}");

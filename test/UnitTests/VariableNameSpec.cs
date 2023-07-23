@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using System.Linq;
 using UnitTests.TestModel;
 using VarDump;
+using VarDump.Visitor;
 using Xunit;
 
 namespace UnitTests
@@ -67,6 +68,35 @@ namespace UnitTests
 
             Assert.StartsWith("var stringValue", result);
         }
+        
+        [Fact]
+        public void DoNotGenerateVariableInitializerCSharp()
+        {
+            var stringValue = "Test string value";
 
+            var dumper = new CSharpDumper(new DumpOptions
+            {
+                GenerateVariableInitializer = false
+            });
+
+            var result = dumper.Dump(stringValue);
+
+            Assert.Equal("\"Test string value\"", result);
+        }
+
+        [Fact]
+        public void DoNotGenerateVariableInitializerVb()
+        {
+            var stringValue = "Test string value";
+
+            var dumper = new VisualBasicDumper(new DumpOptions
+            {
+                GenerateVariableInitializer = false
+            });
+
+            var result = dumper.Dump(stringValue);
+
+            Assert.Equal("\"Test string value\"", result);
+        }
     }
 }

@@ -1,9 +1,9 @@
 ﻿using System;
 using System.IO;
-using System.Text;
 using VarDump.CodeDom.Common;
 using VarDump.CodeDom.Compiler;
 using VarDump.CodeDom.VisualBasic;
+using VarDump.Extensions;
 using VarDump.Utils;
 using VarDump.Visitor;
 
@@ -29,22 +29,20 @@ namespace VarDump
 
             var expression = objectVisitor.Visit(obj);
 
-            var variableDeclaration = new CodeVariableDeclarationStatement(new CodeImplicitlyTypedTypeReference(),
-                obj != null ? ReflectionUtils.ComposeVisualBasicVariableName(obj.GetType()) : "nullValue")
-            {
-                InitExpression = expression
-            };
+            CodeObject codeObject = _options.GenerateVariableInitializer
+                ? new CodeVariableDeclarationStatement(new CodeImplicitlyTypedTypeReference(),
+                    obj != null ? ReflectionUtils.ComposeVisualBasicVariableName(obj.GetType()) : "nullValue")
+                {
+                    InitExpression = expression
+                }
+                : expression;
 
             ICodeGenerator generator = new VBCodeGenerator();
+            using var sourceWriter = new StringWriter();
 
-            var stringBuilder = new StringBuilder();
+            generator.GenerateCode(codeObject, sourceWriter, new CodeGeneratorOptions());
 
-            using (var sourceWriter = new StringWriter(stringBuilder))
-            {
-                generator.GenerateCodeFromStatement(variableDeclaration, sourceWriter, new CodeGeneratorOptions());
-            }
-
-            var vbCodeString = stringBuilder.ToString();
+            var vbCodeString = sourceWriter.ToString();
 
             return vbCodeString;
         }

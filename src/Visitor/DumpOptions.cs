@@ -23,6 +23,7 @@ namespace VarDump.Visitor
         public ListSortDirection? SortDirection { get; set; }
 
         public static DumpOptions Default { get; } = new();
+        public bool GenerateVariableInitializer { get; set; } = true;
 
         public DumpOptions Clone()
         {
@@ -30,7 +31,9 @@ namespace VarDump.Visitor
             {
                 DateKind = DateKind,
                 DateTimeInstantiation = DateTimeInstantiation,
+                Descriptors = Descriptors.ToArray(),
                 ExcludeTypes = ExcludeTypes?.ToArray() ?? new string[0],
+                GenerateVariableInitializer = GenerateVariableInitializer,
                 GetFieldsBindingFlags = GetFieldsBindingFlags,
                 GetPropertiesBindingFlags = GetPropertiesBindingFlags,
                 IgnoreDefaultValues = IgnoreDefaultValues,
@@ -39,8 +42,7 @@ namespace VarDump.Visitor
                 SortDirection = SortDirection,
                 UseNamedArgumentsForReferenceRecordTypes = UseNamedArgumentsForReferenceRecordTypes,
                 UseTypeFullName = UseTypeFullName,
-                WritablePropertiesOnly = WritablePropertiesOnly,
-                Descriptors = Descriptors.ToArray()
+                WritablePropertiesOnly = WritablePropertiesOnly
             };
         }
     }

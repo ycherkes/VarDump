@@ -70,7 +70,7 @@ namespace UnitTests
         }
         
         [Fact]
-        public void DoNotGenerateVariableNameCSharp()
+        public void DoNotGenerateVariableInitializerCSharp()
         {
             var stringValue = "Test string value";
 
@@ -85,7 +85,7 @@ namespace UnitTests
         }
 
         [Fact]
-        public void DoNotGenerateVariableNameVb()
+        public void DoNotGenerateVariableInitializerVb()
         {
             var stringValue = "Test string value";
 

@@ -8,22 +8,22 @@ namespace VarDump.Visitor
 {
     public class DumpOptions
     {
+        public DateKind DateKind { get; set; } = DateKind.Original;
+        public DateTimeInstantiation DateTimeInstantiation { get; set; } = DateTimeInstantiation.Parse;
+        public ICollection<IObjectDescriptorMiddleware> Descriptors { get; set; } = new List<IObjectDescriptorMiddleware>();
+        public ICollection<string> ExcludeTypes { get; set; } = new string[0];
+        public bool GenerateVariableInitializer { get; set; } = true;
         public BindingFlags GetPropertiesBindingFlags { get; set; } = BindingFlags.Public | BindingFlags.Instance;
         public BindingFlags? GetFieldsBindingFlags { get; set; }
         public bool IgnoreDefaultValues { get; set; } = true;
         public bool IgnoreNullValues { get; set; } = true;
+        public int MaxDepth { get; set; } = 25;
+        public ListSortDirection? SortDirection { get; set; }
         public bool UseNamedArgumentsForReferenceRecordTypes { get; set; }
         public bool UseTypeFullName { get; set; }
         public bool WritablePropertiesOnly { get; set; } = true;
-        public DateKind DateKind { get; set; } = DateKind.Original;
-        public DateTimeInstantiation DateTimeInstantiation { get; set; } = DateTimeInstantiation.Parse;
-        public ICollection<string> ExcludeTypes { get; set; } = new string[0];
-        public ICollection<IObjectDescriptorMiddleware> Descriptors { get; set; } = new List<IObjectDescriptorMiddleware>();
-        public int MaxDepth { get; set; } = 25;
-        public ListSortDirection? SortDirection { get; set; }
 
         public static DumpOptions Default { get; } = new();
-        public bool GenerateVariableInitializer { get; set; } = true;
 
         public DumpOptions Clone()
         {

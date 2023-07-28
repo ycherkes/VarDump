@@ -20,6 +20,7 @@ public class ReflectionDescriptor : IReflectionDescriptor
         _isValueInitialized = false;
     }
 
+    public ReflectionDetails ReflectionDetails { get; set; }
     public ReflectionType ReflectionType { get; set; }
     public string Name { get; set; }
 

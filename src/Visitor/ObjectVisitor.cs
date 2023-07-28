@@ -64,6 +64,11 @@ internal class ObjectVisitor
 
     public CodeExpression Visit(object @object)
     {
+        return Visit(@object, default);
+    }
+
+    private CodeExpression Visit(object @object, IReflectionDescriptor reflectionDescriptor)
+    {
         if (IsMaxDepth())
         {
             return GetMaxDepthExpression(@object);
@@ -133,10 +138,10 @@ internal class ObjectVisitor
                 return VisitGrouping(@object);
 
             if (@object is IDictionary dict)
-                return VisitDictionary(dict);
+                return VisitDictionary(dict, reflectionDescriptor);
 
             if (@object is IEnumerable enumerable)
-                return VisitCollection(enumerable, objectType);
+                return VisitCollection(enumerable, objectType, reflectionDescriptor);
 
             return VisitObject(@object, objectType);
         }
@@ -398,7 +403,7 @@ internal class ObjectVisitor
                                  (!_ignoreNullValues || _ignoreNullValues && pv.Value != null) &&
                                  (!_ignoreDefaultValues || !pv.Type.IsValueType || _ignoreDefaultValues &&
                                      ReflectionUtils.GetDefaultValue(pv.Type)?.Equals(pv.Value) != true))
-                    .Select(pv => (CodeExpression)new CodeAssignExpression(new CodePropertyReferenceExpression(null, pv.Name), Visit(pv.Value)))
+                    .Select(pv => (CodeExpression)new CodeAssignExpression(new CodePropertyReferenceExpression(null, pv.Name), Visit(pv.Value, pv)))
                     .ToArray();
 
             var result = new CodeObjectCreateAndInitializeExpression(new CodeTypeReference(objectType, _typeReferenceOptions), initializeExpressions, constructorParams);
@@ -418,7 +423,7 @@ internal class ObjectVisitor
         return new CodeValueTupleCreateExpression(propertyValues.ToArray());
     }
 
-    private CodeExpression VisitDictionary(IDictionary dict)
+    private CodeExpression VisitDictionary(IDictionary dict, IReflectionDescriptor reflectionDescriptor)
     {
         if (IsVisited(dict))
         {
@@ -435,7 +440,7 @@ internal class ObjectVisitor
             var result = keysType.ContainsAnonymousType() ||
                          valuesType.ContainsAnonymousType()
                 ? VisitAnonymousDictionary(dict)
-                : VisitSimpleDictionary(dict);
+                : VisitSimpleDictionary(dict, reflectionDescriptor);
 
             return result;
         }
@@ -445,7 +450,7 @@ internal class ObjectVisitor
         }
     }
 
-    private CodeExpression VisitSimpleDictionary(IDictionary dict)
+    private CodeExpression VisitSimpleDictionary(IDictionary dict, IReflectionDescriptor reflectionDescriptor)
     {
         var items = dict.Cast<object>().Select(VisitKeyValuePairGenerateImplicitly);
 
@@ -465,11 +470,15 @@ internal class ObjectVisitor
 
             return dictionaryCreateExpression;
         }
-        else
+
+        var isReadonlyCollectionProperty = IsReadonlyCollectionProperty(reflectionDescriptor);
+
+        if (isReadonlyCollectionProperty)
         {
-            CodeExpression dictionaryCreateExpression = new CodeObjectCreateAndInitializeExpression(new CodeCollectionTypeReference(type, _typeReferenceOptions), items);
-            return dictionaryCreateExpression;
+           return new CodeInitializeCollectionExpression(items);
         }
+
+        return new CodeObjectCreateAndInitializeExpression(new CodeCollectionTypeReference(type, _typeReferenceOptions), items);
     }
 
     private CodeExpression VisitAnonymousDictionary(IEnumerable dictionary)
@@ -494,7 +503,8 @@ internal class ObjectVisitor
         return expr;
     }
 
-    private CodeExpression VisitCollection(IEnumerable collection, Type collectionType)
+    private CodeExpression VisitCollection(IEnumerable collection, Type collectionType,
+        IReflectionDescriptor reflectionDescriptor)
     {
         if (IsVisited(collection))
         {
@@ -514,7 +524,7 @@ internal class ObjectVisitor
 
             var result = collectionType.ContainsAnonymousType()
                 ? VisitAnonymousCollection(collection)
-                : VisitSimpleCollection(collection, elementType);
+                : VisitSimpleCollection(collection, elementType, reflectionDescriptor);
 
             return result;
         }
@@ -522,6 +532,13 @@ internal class ObjectVisitor
         {
             PopVisited();
         }
+    }
+
+    private static bool IsReadonlyCollectionProperty(IReflectionDescriptor reflectionDescriptor)
+    {
+        var isReadonlyCollectionProperty = ((reflectionDescriptor?.ReflectionDetails ?? ReflectionDetails.None) &
+                                            ReflectionDetails.ReadonlyCollectionProperty) > 0;
+        return isReadonlyCollectionProperty;
     }
 
     private CodeExpression VisitGroupingCollection(IEnumerable collection)
@@ -552,7 +569,8 @@ internal class ObjectVisitor
         return expr;
     }
 
-    private CodeExpression VisitSimpleCollection(IEnumerable enumerable, Type elementType)
+    private CodeExpression VisitSimpleCollection(IEnumerable enumerable, Type elementType,
+        IReflectionDescriptor reflectionDescriptor)
     {
         var items = enumerable.Cast<object>().Select(Visit);
 
@@ -585,6 +603,13 @@ internal class ObjectVisitor
                     items.ToArray()));
 
             return expression;
+        }
+
+        var isReadonlyCollectionProperty = IsReadonlyCollectionProperty(reflectionDescriptor);
+
+        if (isReadonlyCollectionProperty)
+        {
+            return new CodeInitializeCollectionExpression(items);
         }
 
         var initializeExpression = new CodeObjectCreateAndInitializeExpression(

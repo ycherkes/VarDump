@@ -23,13 +23,14 @@ internal class ObjectPropertiesDescriptor : IObjectDescriptor
         var properties = EnumerableExtensions.AsEnumerable(() => objectType
             .GetProperties(_getPropertiesBindingFlags))
             .Where(p => p.CanRead &&
-                        (p.CanWrite || !_writablePropertiesOnly) &&
+                        (p.CanWrite || !_writablePropertiesOnly || ReflectionUtils.IsReadonlyPropertyCollectionWithAddMethod(p)) &&
                         !ReflectionUtils.IsIndexer(p))
             .Select(p => new ReflectionDescriptor(() => ReflectionUtils.GetValue(p, @object))
             {
                 Name = p.Name,
                 Type = p.PropertyType,
-                ReflectionType = ReflectionType.Property
+                ReflectionType = ReflectionType.Property,
+                ReflectionDetails = ReflectionUtils.IsReadonlyPropertyCollectionWithAddMethod(p) ? ReflectionDetails.ReadonlyCollectionProperty : ReflectionDetails.None
             });
 
         return properties;

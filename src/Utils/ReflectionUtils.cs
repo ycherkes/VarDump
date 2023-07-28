@@ -447,5 +447,15 @@ namespace VarDump.Utils
         {
             return propertyInfo.GetIndexParameters().Length > 0;
         }
+
+        public static bool IsReadonlyPropertyCollectionWithAddMethod(PropertyInfo p)
+        {
+            var result = !p.CanWrite &&
+                         typeof(IEnumerable).IsAssignableFrom(p.PropertyType) &&
+                         p.PropertyType.GetMethod(nameof(IList<string>.Add), BindingFlags.Instance | BindingFlags.Public) !=
+                         null;
+
+            return result;
+        }
     }
 }

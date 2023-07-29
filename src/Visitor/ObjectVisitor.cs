@@ -106,6 +106,9 @@ internal class ObjectVisitor
             if (@object is DnsEndPoint dnsEndPoint)
                 return VisitDnsEndPoint(dnsEndPoint);
 
+            if (@object is Version version)
+                return VisitVersion(version);
+
             var objectType = @object.GetType();
 
             if (objectType.IsDateOnly())
@@ -313,6 +316,12 @@ internal class ObjectVisitor
                     new CodePrimitiveExpression(dnsEndPoint.Host),
                     new CodePrimitiveExpression(dnsEndPoint.Port),
                     VisitEnum(dnsEndPoint.AddressFamily));
+    }
+
+    private CodeExpression VisitVersion(Version version)
+    {
+        return new CodeObjectCreateExpression(new CodeTypeReference(typeof(Version), _typeReferenceOptions),
+            new CodePrimitiveExpression(version.ToString()));
     }
 
     private CodeExpression VisitKeyValuePair(object o, Type objectType)

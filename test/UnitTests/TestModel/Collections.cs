@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 
+#if !NET6_0_OR_GREATER
 namespace System.Runtime.CompilerServices
 {
     using ComponentModel;
@@ -13,6 +14,7 @@ namespace System.Runtime.CompilerServices
     {
     }
 }
+#endif
 
 namespace UnitTests.TestModel
 {

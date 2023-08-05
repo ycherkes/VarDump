@@ -836,10 +836,6 @@ internal class ObjectVisitor
             dateTime.Kind.ToString()
         );
 
-        if (dateTime.Ticks % TimeSpan.TicksPerMillisecond != 0)
-            return new CodeObjectCreateExpression(dateTimeCodeTypeReference, 
-                new CodeNamedArgumentExpression("ticks", new CodePrimitiveExpression(dateTime.Ticks)), kind);
-
         var year = new CodePrimitiveExpression(dateTime.Year);
         var month = new CodePrimitiveExpression(dateTime.Month);
         var day = new CodePrimitiveExpression(dateTime.Day);
@@ -848,8 +844,21 @@ internal class ObjectVisitor
         var second = new CodePrimitiveExpression(dateTime.Second);
         var millisecond = new CodePrimitiveExpression(dateTime.Millisecond);
 
-        return new CodeObjectCreateExpression(dateTimeCodeTypeReference, year,
+        var createDateTimeExpression = new CodeObjectCreateExpression(dateTimeCodeTypeReference, year,
             month, day, hour, minute, second, millisecond, kind);
+
+        var lessThanMillisecondTicks = dateTime.Ticks % TimeSpan.TicksPerMillisecond;
+
+        if (lessThanMillisecondTicks == 0)
+            return createDateTimeExpression;
+
+        return new CodeMethodInvokeExpression
+        (
+            new CodeMethodReferenceExpression(
+                createDateTimeExpression,
+                nameof(DateTime.AddTicks)),
+            new CodePrimitiveExpression(lessThanMillisecondTicks)
+        );
     }
 
     private CodeExpression VisitDateOnly(object dateOnly, Type objectType)

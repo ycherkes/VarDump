@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -86,7 +87,8 @@ namespace UnitTests
             {
                 Descriptors = { new FileSystemInfoMiddleware() },
                 DateKind = DateKind.ConvertToUtc,
-                WritablePropertiesOnly = false
+                WritablePropertiesOnly = false,
+                SortDirection = ListSortDirection.Ascending
             };
 
             var directoryName = Guid.NewGuid().ToString();
@@ -98,16 +100,16 @@ namespace UnitTests
             var expectedFullName = Path.Combine(Directory.GetCurrentDirectory(), directoryName).Replace(@"\", @"\\");
             var expectedString = @$"var directoryInfo = new DirectoryInfo
 {{
-    FullName = ""{expectedFullName}"",
-    Extension = """",
-    Name = ""{directoryName}"",
+    Attributes = FileAttributes.-1,
     CreationTime = DateTime.ParseExact(""1601-01-01T00:00:00.0000000Z"", ""O"", CultureInfo.InvariantCulture, DateTimeStyles.RoundtripKind),
     CreationTimeUtc = DateTime.ParseExact(""1601-01-01T00:00:00.0000000Z"", ""O"", CultureInfo.InvariantCulture, DateTimeStyles.RoundtripKind),
+    Extension = """",
+    FullName = ""{expectedFullName}"",
     LastAccessTime = DateTime.ParseExact(""1601-01-01T00:00:00.0000000Z"", ""O"", CultureInfo.InvariantCulture, DateTimeStyles.RoundtripKind),
     LastAccessTimeUtc = DateTime.ParseExact(""1601-01-01T00:00:00.0000000Z"", ""O"", CultureInfo.InvariantCulture, DateTimeStyles.RoundtripKind),
     LastWriteTime = DateTime.ParseExact(""1601-01-01T00:00:00.0000000Z"", ""O"", CultureInfo.InvariantCulture, DateTimeStyles.RoundtripKind),
     LastWriteTimeUtc = DateTime.ParseExact(""1601-01-01T00:00:00.0000000Z"", ""O"", CultureInfo.InvariantCulture, DateTimeStyles.RoundtripKind),
-    Attributes = FileAttributes.-1
+    Name = ""{directoryName}""
 }};
 ";
             Assert.Equal(expectedString, actualString);

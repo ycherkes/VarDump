@@ -1,3 +1,4 @@
+#if NET60
 using VarDump;
 using Xunit;
 
@@ -90,3 +91,4 @@ namespace UnitTests
         }
     }
 }
+#endif

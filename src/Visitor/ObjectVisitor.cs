@@ -689,10 +689,6 @@ internal class ObjectVisitor
 
         var offsetExpression = VisitTimeSpan(dateTimeOffset.Offset);
 
-        if (dateTimeOffset.Ticks % TimeSpan.TicksPerMillisecond != 0)
-            return new CodeObjectCreateExpression(dateTimeOffsetCodeTypeReference, 
-                new CodeNamedArgumentExpression("ticks", new CodePrimitiveExpression(dateTimeOffset.Ticks)), offsetExpression);
-
         var year = new CodePrimitiveExpression(dateTimeOffset.Year);
         var month = new CodePrimitiveExpression(dateTimeOffset.Month);
         var day = new CodePrimitiveExpression(dateTimeOffset.Day);
@@ -701,8 +697,21 @@ internal class ObjectVisitor
         var second = new CodePrimitiveExpression(dateTimeOffset.Second);
         var millisecond = new CodePrimitiveExpression(dateTimeOffset.Millisecond);
 
-        return new CodeObjectCreateExpression(dateTimeOffsetCodeTypeReference, year, month, day, hour, minute, second,
+        var createDateTimeOffsetExpression = new CodeObjectCreateExpression(dateTimeOffsetCodeTypeReference, year, month, day, hour, minute, second,
             millisecond, offsetExpression);
+
+        var lessThanMillisecondTicks = dateTimeOffset.Ticks % TimeSpan.TicksPerMillisecond;
+
+        if (lessThanMillisecondTicks == 0)
+            return createDateTimeOffsetExpression;
+
+        return new CodeMethodInvokeExpression
+        (
+            new CodeMethodReferenceExpression(
+                createDateTimeOffsetExpression,
+                nameof(DateTimeOffset.AddTicks)),
+            new CodePrimitiveExpression(lessThanMillisecondTicks)
+        );
     }
 
     private CodeExpression VisitTimeSpan(TimeSpan timeSpan)

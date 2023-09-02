@@ -420,6 +420,11 @@ namespace VarDump.CodeDom.CSharp
                 Output.Write(((ulong)e.Value).ToString(CultureInfo.InvariantCulture));
                 Output.Write("ul");
             }
+            else if (e.Value is long)
+            {
+                Output.Write(((long)e.Value).ToString(CultureInfo.InvariantCulture));
+                Output.Write("L");
+            }
             else
             {
                 GeneratePrimitiveExpressionBase(e);

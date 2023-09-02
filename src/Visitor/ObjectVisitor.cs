@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Globalization;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Net;
 using System.Net.Sockets;
 using System.Reflection;
@@ -15,7 +16,7 @@ using VarDump.Visitor.Descriptors.Implementation;
 
 namespace VarDump.Visitor;
 
-internal class ObjectVisitor
+internal partial class ObjectVisitor
 {
     private readonly ICollection<string> _excludeTypes;
     private readonly bool _ignoreDefaultValues;
@@ -108,6 +109,9 @@ internal class ObjectVisitor
 
             if (@object is Version version)
                 return VisitVersion(version);
+
+            if (@object is Expression expression)
+                return VisitExpression(expression);
 
             var objectType = @object.GetType();
 

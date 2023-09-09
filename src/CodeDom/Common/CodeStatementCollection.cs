@@ -5,67 +5,66 @@
 using System;
 using System.Collections;
 
-namespace VarDump.CodeDom.Common
+namespace VarDump.CodeDom.Common;
+
+internal class CodeStatementCollection : CollectionBase
 {
-    internal class CodeStatementCollection : CollectionBase
+    public CodeStatementCollection() { }
+
+    public CodeStatementCollection(CodeStatementCollection value)
     {
-        public CodeStatementCollection() { }
-
-        public CodeStatementCollection(CodeStatementCollection value)
-        {
-            AddRange(value);
-        }
-
-        public CodeStatementCollection(CodeStatement[] value)
-        {
-            AddRange(value);
-        }
-
-        public CodeStatement this[int index]
-        {
-            get { return (CodeStatement)List[index]; }
-            set { List[index] = value; }
-        }
-
-        public int Add(CodeStatement value) => List.Add(value);
-
-        public int Add(CodeExpression value) => Add(new CodeExpressionStatement(value));
-
-        public void AddRange(CodeStatement[] value)
-        {
-            if (value == null)
-            {
-                throw new ArgumentNullException(nameof(value));
-            }
-
-            for (int i = 0; i < value.Length; i++)
-            {
-                Add(value[i]);
-            }
-        }
-
-        public void AddRange(CodeStatementCollection value)
-        {
-            if (value == null)
-            {
-                throw new ArgumentNullException(nameof(value));
-            }
-
-            int currentCount = value.Count;
-            for (int i = 0; i < currentCount; i++)
-            {
-                Add(value[i]);
-            }
-        }
-
-        public bool Contains(CodeStatement value) => List.Contains(value);
-
-        public void CopyTo(CodeStatement[] array, int index) => List.CopyTo(array, index);
-
-        public int IndexOf(CodeStatement value) => List.IndexOf(value);
-
-        public void Insert(int index, CodeStatement value) => List.Insert(index, value);
-
-        public void Remove(CodeStatement value) => List.Remove(value);
+        AddRange(value);
     }
+
+    public CodeStatementCollection(CodeStatement[] value)
+    {
+        AddRange(value);
+    }
+
+    public CodeStatement this[int index]
+    {
+        get { return (CodeStatement)List[index]; }
+        set { List[index] = value; }
+    }
+
+    public int Add(CodeStatement value) => List.Add(value);
+
+    public int Add(CodeExpression value) => Add(new CodeExpressionStatement(value));
+
+    public void AddRange(CodeStatement[] value)
+    {
+        if (value == null)
+        {
+            throw new ArgumentNullException(nameof(value));
+        }
+
+        for (int i = 0; i < value.Length; i++)
+        {
+            Add(value[i]);
+        }
+    }
+
+    public void AddRange(CodeStatementCollection value)
+    {
+        if (value == null)
+        {
+            throw new ArgumentNullException(nameof(value));
+        }
+
+        int currentCount = value.Count;
+        for (int i = 0; i < currentCount; i++)
+        {
+            Add(value[i]);
+        }
+    }
+
+    public bool Contains(CodeStatement value) => List.Contains(value);
+
+    public void CopyTo(CodeStatement[] array, int index) => List.CopyTo(array, index);
+
+    public int IndexOf(CodeStatement value) => List.IndexOf(value);
+
+    public void Insert(int index, CodeStatement value) => List.Insert(index, value);
+
+    public void Remove(CodeStatement value) => List.Remove(value);
 }

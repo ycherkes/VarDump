@@ -1,8 +1,7 @@
-﻿namespace UnitTests.TestModel
+﻿namespace UnitTests.TestModel;
+
+public class Person
 {
-    public class Person
-    {
-        public string FirstName { get; set; }
-        public int Age { get; set; }
-    }
+    public string FirstName { get; set; }
+    public int Age { get; set; }
 }

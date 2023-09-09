@@ -2,23 +2,22 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-namespace VarDump.CodeDom.Common
+namespace VarDump.CodeDom.Common;
+
+internal class CodeBinaryOperatorExpression : CodeExpression
 {
-    internal class CodeBinaryOperatorExpression : CodeExpression
+    public CodeBinaryOperatorExpression() { }
+
+    public CodeBinaryOperatorExpression(CodeExpression left, CodeBinaryOperatorType op, CodeExpression right)
     {
-        public CodeBinaryOperatorExpression() { }
-
-        public CodeBinaryOperatorExpression(CodeExpression left, CodeBinaryOperatorType op, CodeExpression right)
-        {
-            Right = right;
-            Operator = op;
-            Left = left;
-        }
-
-        public CodeExpression Right { get; set; }
-
-        public CodeExpression Left { get; set; }
-
-        public CodeBinaryOperatorType Operator { get; set; }
+        Right = right;
+        Operator = op;
+        Left = left;
     }
+
+    public CodeExpression Right { get; set; }
+
+    public CodeExpression Left { get; set; }
+
+    public CodeBinaryOperatorType Operator { get; set; }
 }

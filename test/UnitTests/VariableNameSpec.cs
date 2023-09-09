@@ -5,98 +5,97 @@ using VarDump;
 using VarDump.Visitor;
 using Xunit;
 
-namespace UnitTests
+namespace UnitTests;
+
+public class VariableNameSpec
 {
-    public class VariableNameSpec
+    [Fact]
+    public void Dictionary()
     {
-        [Fact]
-        public void Dictionary()
+        var dict = new[]
         {
-            var dict = new[]
-            {
-                new Person{ Age = 32, FirstName = "Bob"},
-                new Person{ Age = 23, FirstName = "Alice"},
-            }.ToDictionary(x => x.FirstName);
+            new Person{ Age = 32, FirstName = "Bob"},
+            new Person{ Age = 23, FirstName = "Alice"},
+        }.ToDictionary(x => x.FirstName);
 
-            var dumper = new CSharpDumper();
+        var dumper = new CSharpDumper();
 
-            var result = dumper.Dump(dict);
+        var result = dumper.Dump(dict);
 
-            Assert.StartsWith("var dictionaryOfPerson", result);
-        }
+        Assert.StartsWith("var dictionaryOfPerson", result);
+    }
 
-        [Fact]
-        public void DictionaryOfListOfPerson()
+    [Fact]
+    public void DictionaryOfListOfPerson()
+    {
+        var dict = new[]
         {
-            var dict = new[]
-            {
-                new Person{ Age = 32, FirstName = "Bob"},
-                new Person{ Age = 23, FirstName = "Alice"},
-            }.ToDictionary(x => x.FirstName, x => new List<Person> { x });
+            new Person{ Age = 32, FirstName = "Bob"},
+            new Person{ Age = 23, FirstName = "Alice"},
+        }.ToDictionary(x => x.FirstName, x => new List<Person> { x });
 
-            var dumper = new CSharpDumper();
+        var dumper = new CSharpDumper();
 
-            var result = dumper.Dump(dict);
+        var result = dumper.Dump(dict);
 
-            Assert.StartsWith("var dictionaryOfListOfPerson", result);
-        }
+        Assert.StartsWith("var dictionaryOfListOfPerson", result);
+    }
 
-        [Fact]
-        public void HashSet()
+    [Fact]
+    public void HashSet()
+    {
+        var hashSet = new HashSet<Person>
         {
-            var hashSet = new HashSet<Person>
-            {
-                new Person{ Age = 32, FirstName = "Bob"},
-                new Person{ Age = 23, FirstName = "Alice"},
-            };
+            new Person{ Age = 32, FirstName = "Bob"},
+            new Person{ Age = 23, FirstName = "Alice"},
+        };
 
-            var dumper = new CSharpDumper();
+        var dumper = new CSharpDumper();
 
-            var result = dumper.Dump(hashSet);
+        var result = dumper.Dump(hashSet);
 
-            Assert.StartsWith("var hashSetOfPerson", result);
-        }
+        Assert.StartsWith("var hashSetOfPerson", result);
+    }
 
-        [Fact]
-        public void String()
-        {
-            var stringValue = "Test string value";
+    [Fact]
+    public void String()
+    {
+        var stringValue = "Test string value";
 
-            var dumper = new CSharpDumper();
+        var dumper = new CSharpDumper();
 
-            var result = dumper.Dump(stringValue);
+        var result = dumper.Dump(stringValue);
 
-            Assert.StartsWith("var stringValue", result);
-        }
+        Assert.StartsWith("var stringValue", result);
+    }
         
-        [Fact]
-        public void DoNotGenerateVariableInitializerCSharp()
+    [Fact]
+    public void DoNotGenerateVariableInitializerCSharp()
+    {
+        var stringValue = "Test string value";
+
+        var dumper = new CSharpDumper(new DumpOptions
         {
-            var stringValue = "Test string value";
+            GenerateVariableInitializer = false
+        });
 
-            var dumper = new CSharpDumper(new DumpOptions
-            {
-                GenerateVariableInitializer = false
-            });
+        var result = dumper.Dump(stringValue);
 
-            var result = dumper.Dump(stringValue);
+        Assert.Equal("\"Test string value\"", result);
+    }
 
-            Assert.Equal("\"Test string value\"", result);
-        }
+    [Fact]
+    public void DoNotGenerateVariableInitializerVb()
+    {
+        var stringValue = "Test string value";
 
-        [Fact]
-        public void DoNotGenerateVariableInitializerVb()
+        var dumper = new VisualBasicDumper(new DumpOptions
         {
-            var stringValue = "Test string value";
+            GenerateVariableInitializer = false
+        });
 
-            var dumper = new VisualBasicDumper(new DumpOptions
-            {
-                GenerateVariableInitializer = false
-            });
+        var result = dumper.Dump(stringValue);
 
-            var result = dumper.Dump(stringValue);
-
-            Assert.Equal("\"Test string value\"", result);
-        }
+        Assert.Equal("\"Test string value\"", result);
     }
 }

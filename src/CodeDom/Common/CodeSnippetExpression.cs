@@ -2,23 +2,22 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-namespace VarDump.CodeDom.Common
+namespace VarDump.CodeDom.Common;
+
+internal class CodeSnippetExpression : CodeExpression
 {
-    internal class CodeSnippetExpression : CodeExpression
+    private string _value;
+
+    public CodeSnippetExpression() { }
+
+    public CodeSnippetExpression(string value)
     {
-        private string _value;
+        Value = value;
+    }
 
-        public CodeSnippetExpression() { }
-
-        public CodeSnippetExpression(string value)
-        {
-            Value = value;
-        }
-
-        public string Value
-        {
-            get { return _value ?? string.Empty; }
-            set { _value = value; }
-        }
+    public string Value
+    {
+        get { return _value ?? string.Empty; }
+        set { _value = value; }
     }
 }

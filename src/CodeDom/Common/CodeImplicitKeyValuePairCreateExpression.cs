@@ -2,18 +2,17 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-namespace VarDump.CodeDom.Common
-{
-    internal class CodeImplicitKeyValuePairCreateExpression : CodeExpression
-    {
-        public CodeExpression Key { get; }
-        public CodeExpression Value { get; }
-        public CodeImplicitKeyValuePairCreateExpression() { }
+namespace VarDump.CodeDom.Common;
 
-        public CodeImplicitKeyValuePairCreateExpression(CodeExpression key, CodeExpression value)
-        {
-            Key = key;
-            Value = value;
-        }
+internal class CodeImplicitKeyValuePairCreateExpression : CodeExpression
+{
+    public CodeExpression Key { get; }
+    public CodeExpression Value { get; }
+    public CodeImplicitKeyValuePairCreateExpression() { }
+
+    public CodeImplicitKeyValuePairCreateExpression(CodeExpression key, CodeExpression value)
+    {
+        Key = key;
+        Value = value;
     }
 }

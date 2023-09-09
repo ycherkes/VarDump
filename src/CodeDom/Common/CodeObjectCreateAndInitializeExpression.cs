@@ -6,39 +6,38 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace VarDump.CodeDom.Common
+namespace VarDump.CodeDom.Common;
+
+internal class CodeObjectCreateAndInitializeExpression : CodeObjectCreateExpression
 {
-    internal class CodeObjectCreateAndInitializeExpression : CodeObjectCreateExpression
+    public CodeExpressionCollection InitializeExpressions { get; set; } = new CodeExpressionCollection();
+
+    public CodeObjectCreateAndInitializeExpression() { }
+
+    public CodeObjectCreateAndInitializeExpression(CodeTypeReference createType, IEnumerable<CodeExpression> initializeExpressions = null, params CodeExpression[] parameters)
+        : base(createType, parameters)
     {
-        public CodeExpressionCollection InitializeExpressions { get; set; } = new CodeExpressionCollection();
-
-        public CodeObjectCreateAndInitializeExpression() { }
-
-        public CodeObjectCreateAndInitializeExpression(CodeTypeReference createType, IEnumerable<CodeExpression> initializeExpressions = null, params CodeExpression[] parameters)
-            : base(createType, parameters)
+        if (initializeExpressions != null)
         {
-            if (initializeExpressions != null)
-            {
-                InitializeExpressions = new CodeExpressionCollection(initializeExpressions.ToArray());
-            }
+            InitializeExpressions = new CodeExpressionCollection(initializeExpressions.ToArray());
         }
+    }
 
-        public CodeObjectCreateAndInitializeExpression(string createType, IEnumerable<CodeExpression> initializeExpressions = null, params CodeExpression[] parameters)
-            : base(createType, parameters)
+    public CodeObjectCreateAndInitializeExpression(string createType, IEnumerable<CodeExpression> initializeExpressions = null, params CodeExpression[] parameters)
+        : base(createType, parameters)
+    {
+        if (initializeExpressions != null)
         {
-            if (initializeExpressions != null)
-            {
-                InitializeExpressions = new CodeExpressionCollection(initializeExpressions.ToArray());
-            }
+            InitializeExpressions = new CodeExpressionCollection(initializeExpressions.ToArray());
         }
+    }
 
-        public CodeObjectCreateAndInitializeExpression(Type createType, IEnumerable<CodeExpression> initializeExpressions = null, params CodeExpression[] parameters)
-            : base(createType, parameters)
+    public CodeObjectCreateAndInitializeExpression(Type createType, IEnumerable<CodeExpression> initializeExpressions = null, params CodeExpression[] parameters)
+        : base(createType, parameters)
+    {
+        if (initializeExpressions != null)
         {
-            if (initializeExpressions != null)
-            {
-                InitializeExpressions = new CodeExpressionCollection(initializeExpressions.ToArray());
-            }
+            InitializeExpressions = new CodeExpressionCollection(initializeExpressions.ToArray());
         }
     }
 }

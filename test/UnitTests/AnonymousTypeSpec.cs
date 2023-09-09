@@ -4,25 +4,25 @@ using VarDump.Utils;
 using VarDump.Visitor;
 using Xunit;
 
-namespace UnitTests
+namespace UnitTests;
+
+public class AnonymousTypeSpec
 {
-    public class AnonymousTypeSpec
+    [Fact]
+    public void DumpAnonymousTypeCsharp()
     {
-        [Fact]
-        public void DumpAnonymousTypeCsharp()
+        var anonymous = new[]
         {
-            var anonymous = new[]
-            {
-                new { Name = "Steeve", Age = (int?)int.MaxValue, Reference = "Test reference" },
-                new { Name = "Peter", Age = (int?)null, Reference = (string)null }
-            };
+            new { Name = "Steeve", Age = (int?)int.MaxValue, Reference = "Test reference" },
+            new { Name = "Peter", Age = (int?)null, Reference = (string)null }
+        };
 
-            var dumper = new CSharpDumper();
+        var dumper = new CSharpDumper();
 
-            var result = dumper.Dump(anonymous);
+        var result = dumper.Dump(anonymous);
 
-            Assert.Equal(
-@"var arrayOfAnonymousType = new []
+        Assert.Equal(
+            @"var arrayOfAnonymousType = new []
 {
     new 
     {
@@ -38,23 +38,23 @@ namespace UnitTests
     }
 };
 ", result);
-        }
+    }
 
-        [Fact]
-        public void DumpAnonymousTypeVb()
+    [Fact]
+    public void DumpAnonymousTypeVb()
+    {
+        var anonymous = new[]
         {
-            var anonymous = new[]
-            {
-                new { Name = "Steeve", Age = (int?)int.MaxValue, Reference = "Test reference" },
-                new { Name = "Peter", Age = (int?)null, Reference = (string)null }
-            };
+            new { Name = "Steeve", Age = (int?)int.MaxValue, Reference = "Test reference" },
+            new { Name = "Peter", Age = (int?)null, Reference = (string)null }
+        };
 
-            var dumper = new VisualBasicDumper();
+        var dumper = new VisualBasicDumper();
 
-            var result = dumper.Dump(anonymous);
+        var result = dumper.Dump(anonymous);
 
-            Assert.Equal(
-@"Dim arrayOfAnonymousType = {
+        Assert.Equal(
+            @"Dim arrayOfAnonymousType = {
     New With {
         .Name = ""Steeve"",
         .Age = CType(Integer.MaxValue, Integer?),
@@ -67,26 +67,25 @@ namespace UnitTests
     }
 }
 ", result);
-        }
+    }
 
-        [Fact]
-        public void DetectAnonymousType()
+    [Fact]
+    public void DetectAnonymousType()
+    {
+        var expectedTypeNames = new[]
         {
-            var expectedTypeNames = new[]
-            {
-                "<>f__AnonymousType0`2[<Name>j__TPar,<Type>j__TPar]",
-                "<>f__AnonymousType1`2[<Key>j__TPar,<Element>j__TPar]"
-            };
+            "<>f__AnonymousType0`2[<Name>j__TPar,<Type>j__TPar]",
+            "<>f__AnonymousType1`2[<Key>j__TPar,<Element>j__TPar]"
+        };
 
-            var actualTypeNames = typeof(ObjectVisitor)
-                .Assembly
-                .GetTypes()
-                .Where(ReflectionUtils.IsAnonymousType)
-                .Select(x => x.ToString())
-                .ToArray();
+        var actualTypeNames = typeof(ObjectVisitor)
+            .Assembly
+            .GetTypes()
+            .Where(ReflectionUtils.IsAnonymousType)
+            .Select(x => x.ToString())
+            .ToArray();
 
 
-            Assert.Equal(expectedTypeNames, actualTypeNames);
-        }
+        Assert.Equal(expectedTypeNames, actualTypeNames);
     }
 }

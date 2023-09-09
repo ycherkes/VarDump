@@ -2,39 +2,38 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-namespace VarDump.CodeDom.Common
+namespace VarDump.CodeDom.Common;
+
+internal class CodeMethodReferenceExpression : CodeExpression
 {
-    internal class CodeMethodReferenceExpression : CodeExpression
+    private string _methodName;
+    private CodeTypeReferenceCollection _typeArguments;
+
+    public CodeMethodReferenceExpression() { }
+
+    public CodeMethodReferenceExpression(CodeExpression targetObject, string methodName)
     {
-        private string _methodName;
-        private CodeTypeReferenceCollection _typeArguments;
-
-        public CodeMethodReferenceExpression() { }
-
-        public CodeMethodReferenceExpression(CodeExpression targetObject, string methodName)
-        {
-            TargetObject = targetObject;
-            MethodName = methodName;
-        }
-
-        public CodeMethodReferenceExpression(CodeExpression targetObject, string methodName, params CodeTypeReference[] typeParameters)
-        {
-            TargetObject = targetObject;
-            MethodName = methodName;
-            if (typeParameters != null && typeParameters.Length > 0)
-            {
-                TypeArguments.AddRange(typeParameters);
-            }
-        }
-
-        public CodeExpression TargetObject { get; set; }
-
-        public string MethodName
-        {
-            get => _methodName ?? string.Empty;
-            set => _methodName = value;
-        }
-
-        public CodeTypeReferenceCollection TypeArguments => _typeArguments ??= new CodeTypeReferenceCollection();
+        TargetObject = targetObject;
+        MethodName = methodName;
     }
+
+    public CodeMethodReferenceExpression(CodeExpression targetObject, string methodName, params CodeTypeReference[] typeParameters)
+    {
+        TargetObject = targetObject;
+        MethodName = methodName;
+        if (typeParameters != null && typeParameters.Length > 0)
+        {
+            TypeArguments.AddRange(typeParameters);
+        }
+    }
+
+    public CodeExpression TargetObject { get; set; }
+
+    public string MethodName
+    {
+        get => _methodName ?? string.Empty;
+        set => _methodName = value;
+    }
+
+    public CodeTypeReferenceCollection TypeArguments => _typeArguments ??= new CodeTypeReferenceCollection();
 }

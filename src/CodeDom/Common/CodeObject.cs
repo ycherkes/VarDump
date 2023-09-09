@@ -5,14 +5,13 @@
 using System.Collections;
 using System.Collections.Specialized;
 
-namespace VarDump.CodeDom.Common
+namespace VarDump.CodeDom.Common;
+
+internal class CodeObject
 {
-    internal class CodeObject
-    {
-        private IDictionary _userData = null;
+    private IDictionary _userData;
 
-        public CodeObject() { }
+    public CodeObject() { }
 
-        public IDictionary UserData => _userData ?? new ListDictionary();
-    }
+    public IDictionary UserData => _userData ??= new ListDictionary();
 }

@@ -2,29 +2,29 @@ using UnitTests.TestModel;
 using VarDump;
 using Xunit;
 
-namespace UnitTests
+namespace UnitTests;
+
+public class ReadonlyCollectionInitializerSpec
 {
-    public class ReadonlyCollectionInitializerSpec
+    [Fact(Skip = "Not implemented yet")]
+    public void DumpReadonlyPropertyCollectionInitializerCsharp()
     {
-        [Fact(Skip = "Not implemented yet")]
-        public void DumpReadonlyPropertyCollectionInitializerCsharp()
+        CatOwner owner = new CatOwner
         {
-            CatOwner owner = new CatOwner
+            Cats =
             {
-                Cats =
-                {
-                    new Cat { Name = "Sylvester", Age = 8 },
-                    new Cat { Name = "Whiskers", Age = 2 },
-                    new Cat { Name = "Sasha", Age = 14 }
-                }
-            };
+                new Cat { Name = "Sylvester", Age = 8 },
+                new Cat { Name = "Whiskers", Age = 2 },
+                new Cat { Name = "Sasha", Age = 14 }
+            }
+        };
 
-            var dumper = new CSharpDumper();
+        var dumper = new CSharpDumper();
 
-            var result = dumper.Dump(owner);
+        var result = dumper.Dump(owner);
 
-            Assert.Equal(
-@"var arrayOfArrayOfInt = new int[][]
+        Assert.Equal(
+            @"var arrayOfArrayOfInt = new int[][]
 {
     new int[]
     {
@@ -32,27 +32,27 @@ namespace UnitTests
     }
 };
 ", result);
-        }
+    }
 
-        [Fact(Skip = "Not implemented yet")]
-        public void DumpReadonlyPropertyDictionaryInitializerCsharp()
+    [Fact(Skip = "Not implemented yet")]
+    public void DumpReadonlyPropertyDictionaryInitializerCsharp()
+    {
+        var owner = new CatDictionaryOwner
         {
-            var owner = new CatDictionaryOwner
+            Cats =
             {
-                Cats =
-                {
-                    { "Sylvester", new Cat { Name = "Sylvester", Age = 8 } },
-                    { "Whiskers", new Cat { Name = "Whiskers", Age = 2 } },
-                    { "Sasha", new Cat { Name = "Sasha", Age = 14 } }
-                }
-            };
+                { "Sylvester", new Cat { Name = "Sylvester", Age = 8 } },
+                { "Whiskers", new Cat { Name = "Whiskers", Age = 2 } },
+                { "Sasha", new Cat { Name = "Sasha", Age = 14 } }
+            }
+        };
 
-            var dumper = new CSharpDumper();
+        var dumper = new CSharpDumper();
 
-            var result = dumper.Dump(owner);
+        var result = dumper.Dump(owner);
 
-            Assert.Equal(
-@"var arrayOfArrayOfInt = new int[][]
+        Assert.Equal(
+            @"var arrayOfArrayOfInt = new int[][]
 {
     new int[]
     {
@@ -60,6 +60,5 @@ namespace UnitTests
     }
 };
 ", result);
-        }
     }
 }

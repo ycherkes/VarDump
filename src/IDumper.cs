@@ -1,7 +1,6 @@
-﻿namespace VarDump
+﻿namespace VarDump;
+
+public interface IDumper
 {
-    public interface IDumper
-    {
-        string Dump(object obj);
-    }
+    string Dump(object obj);
 }

@@ -7,24 +7,24 @@ using VarDump;
 using VarDump.Visitor;
 using Xunit;
 
-namespace UnitTests
+namespace UnitTests;
+
+public class DictionarySpec
 {
-    public class DictionarySpec
+    [Fact]
+    public void DumpDictionaryVisualBasic()
     {
-        [Fact]
-        public void DumpDictionaryVisualBasic()
+        var dict = new[]
         {
-            var dict = new[]
-            {
-                new Person{ Age = 32, FirstName = "Bob"},
-                new Person{ Age = 23, FirstName = "Alice"},
-            }.ToDictionary(x => x.FirstName);
+            new Person{ Age = 32, FirstName = "Bob"},
+            new Person{ Age = 23, FirstName = "Alice"},
+        }.ToDictionary(x => x.FirstName);
 
-            var dumper = new VisualBasicDumper();
+        var dumper = new VisualBasicDumper();
 
-            var result = dumper.Dump(dict);
+        var result = dumper.Dump(dict);
 
-            Assert.Equal(@"Dim dictionaryOfPerson = New Dictionary(Of String, Person) From {
+        Assert.Equal(@"Dim dictionaryOfPerson = New Dictionary(Of String, Person) From {
     {
         ""Bob"",
         New Person With {
@@ -41,22 +41,22 @@ namespace UnitTests
     }
 }
 ", result);
-        }
+    }
 
-        [Fact]
-        public void DumpDictionaryCSharp()
+    [Fact]
+    public void DumpDictionaryCSharp()
+    {
+        var dict = new[]
         {
-            var dict = new[]
-            {
-                new Person{ Age = 32, FirstName = "Bob"},
-                new Person{ Age = 23, FirstName = "Alice"},
-            }.ToDictionary(x => x.FirstName);
+            new Person{ Age = 32, FirstName = "Bob"},
+            new Person{ Age = 23, FirstName = "Alice"},
+        }.ToDictionary(x => x.FirstName);
 
-            var dumper = new CSharpDumper();
+        var dumper = new CSharpDumper();
 
-            var result = dumper.Dump(dict);
+        var result = dumper.Dump(dict);
 
-            Assert.Equal(@"var dictionaryOfPerson = new Dictionary<string, Person>
+        Assert.Equal(@"var dictionaryOfPerson = new Dictionary<string, Person>
 {
     {
         ""Bob"",
@@ -76,23 +76,23 @@ namespace UnitTests
     }
 };
 ", result);
-        }
+    }
 
-        [Fact]
-        public void DumpDictionaryOfAnonymousTypeCSharp()
+    [Fact]
+    public void DumpDictionaryOfAnonymousTypeCSharp()
+    {
+        var dict = new[]
         {
-            var dict = new[]
-            {
-                new { Age = 32, FirstName = "Bob"},
-                new { Age = 23, FirstName = "Alice"},
-            }.ToDictionary(x => x.FirstName);
+            new { Age = 32, FirstName = "Bob"},
+            new { Age = 23, FirstName = "Alice"},
+        }.ToDictionary(x => x.FirstName);
 
-            var dumper = new CSharpDumper();
+        var dumper = new CSharpDumper();
 
-            var result = dumper.Dump(dict);
+        var result = dumper.Dump(dict);
 
-            Assert.Equal(
-@"var dictionaryOfAnonymousType = new []
+        Assert.Equal(
+            @"var dictionaryOfAnonymousType = new []
 {
     new 
     {
@@ -114,30 +114,30 @@ namespace UnitTests
     }
 }.ToDictionary(kvp => kvp.Key, kvp => kvp.Value);
 ", result);
-        }
+    }
 
-        [Fact]
-        public void DumpDictionaryOfTypeArrayCSharp()
+    [Fact]
+    public void DumpDictionaryOfTypeArrayCSharp()
+    {
+        var dict = new Dictionary<string, Type[]>
         {
-            var dict = new Dictionary<string, Type[]>
-            {
-                {"First",  new[]{ typeof(Person) } },
-                {"Second", new[]{ typeof(string) } }
-            };
+            {"First",  new[]{ typeof(Person) } },
+            {"Second", new[]{ typeof(string) } }
+        };
 
-            var dumper = new CSharpDumper(new DumpOptions
-            {
-                IgnoreDefaultValues = true,
-                IgnoreNullValues = true,
-                MaxDepth = 5,
-                UseTypeFullName = false,
-                DateTimeInstantiation = DateTimeInstantiation.New,
-                DateKind = DateKind.ConvertToUtc
-            });
+        var dumper = new CSharpDumper(new DumpOptions
+        {
+            IgnoreDefaultValues = true,
+            IgnoreNullValues = true,
+            MaxDepth = 5,
+            UseTypeFullName = false,
+            DateTimeInstantiation = DateTimeInstantiation.New,
+            DateKind = DateKind.ConvertToUtc
+        });
 
-            var result = dumper.Dump(dict);
+        var result = dumper.Dump(dict);
 
-            Assert.Equal(@"var dictionaryOfArrayOfType = new Dictionary<string, Type[]>
+        Assert.Equal(@"var dictionaryOfArrayOfType = new Dictionary<string, Type[]>
 {
     {
         ""First"",
@@ -155,21 +155,21 @@ namespace UnitTests
     }
 };
 ", result);
-        }
+    }
 
-        [Fact]
-        public void DumpImmutableDictionaryCsharp()
+    [Fact]
+    public void DumpImmutableDictionaryCsharp()
+    {
+        var immutableDictionary = new Dictionary<string, string>
         {
-            var immutableDictionary = new Dictionary<string, string>
-            {
-                { "Steeve", "Test reference" }
-            }.ToImmutableDictionary();
+            { "Steeve", "Test reference" }
+        }.ToImmutableDictionary();
 
-            var dumper = new CSharpDumper();
+        var dumper = new CSharpDumper();
 
-            var result = dumper.Dump(immutableDictionary);
+        var result = dumper.Dump(immutableDictionary);
 
-            Assert.Equal(@"var immutableDictionaryOfString = new Dictionary<string, string>
+        Assert.Equal(@"var immutableDictionaryOfString = new Dictionary<string, string>
 {
     {
         ""Steeve"",
@@ -177,27 +177,26 @@ namespace UnitTests
     }
 }.ToImmutableDictionary();
 ", result);
-        }
+    }
 
-        [Fact]
-        public void DumpImmutableDictionaryVb()
+    [Fact]
+    public void DumpImmutableDictionaryVb()
+    {
+        var immutableDictionary = new Dictionary<string, string>
         {
-            var immutableDictionary = new Dictionary<string, string>
-            {
-                { "Steeve", "Test reference" }
-            }.ToImmutableDictionary();
+            { "Steeve", "Test reference" }
+        }.ToImmutableDictionary();
 
-            var dumper = new VisualBasicDumper();
+        var dumper = new VisualBasicDumper();
 
-            var result = dumper.Dump(immutableDictionary);
+        var result = dumper.Dump(immutableDictionary);
 
-            Assert.Equal(@"Dim immutableDictionaryOfString = New Dictionary(Of String, String) From {
+        Assert.Equal(@"Dim immutableDictionaryOfString = New Dictionary(Of String, String) From {
     {
         ""Steeve"",
         ""Test reference""
     }
 }.ToImmutableDictionary()
 ", result);
-        }
     }
 }

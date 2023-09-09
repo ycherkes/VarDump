@@ -2,23 +2,22 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-namespace VarDump.CodeDom.Common
+namespace VarDump.CodeDom.Common;
+
+internal class CodeDefaultValueExpression : CodeExpression
 {
-    internal class CodeDefaultValueExpression : CodeExpression
+    private CodeTypeReference _type;
+
+    public CodeDefaultValueExpression() { }
+
+    public CodeDefaultValueExpression(CodeTypeReference type)
     {
-        private CodeTypeReference _type;
+        _type = type;
+    }
 
-        public CodeDefaultValueExpression() { }
-
-        public CodeDefaultValueExpression(CodeTypeReference type)
-        {
-            _type = type;
-        }
-
-        public CodeTypeReference Type
-        {
-            get { return _type ?? (_type = new CodeTypeReference("")); }
-            set { _type = value; }
-        }
+    public CodeTypeReference Type
+    {
+        get { return _type ?? (_type = new CodeTypeReference("")); }
+        set { _type = value; }
     }
 }

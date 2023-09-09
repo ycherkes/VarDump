@@ -1,12 +1,11 @@
-﻿namespace VarDump.CodeDom.Common
-{
-    internal class CodeArrayDimensionExpression : CodeExpression
-    {
-        public CodeExpressionCollection Initializers { get; } = new();
+﻿namespace VarDump.CodeDom.Common;
 
-        public CodeArrayDimensionExpression(CodeExpression[] initializers)
-        {
-            Initializers.AddRange(initializers);
-        }
+internal class CodeArrayDimensionExpression : CodeExpression
+{
+    public CodeExpressionCollection Initializers { get; } = new();
+
+    public CodeArrayDimensionExpression(CodeExpression[] initializers)
+    {
+        Initializers.AddRange(initializers);
     }
 }

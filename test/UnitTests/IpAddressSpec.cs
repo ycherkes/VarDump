@@ -2,37 +2,36 @@ using System.Net;
 using VarDump;
 using Xunit;
 
-namespace UnitTests
+namespace UnitTests;
+
+public class IpAddressSpec
 {
-    public class IpAddressSpec
+    [Fact]
+    public void DumpIpAddressCsharp()
     {
-        [Fact]
-        public void DumpIpAddressCsharp()
-        {
-            var ipAddress = IPAddress.Parse("142.250.74.110");
+        var ipAddress = IPAddress.Parse("142.250.74.110");
 
-            var dumper = new CSharpDumper();
+        var dumper = new CSharpDumper();
 
-            var result = dumper.Dump(ipAddress);
+        var result = dumper.Dump(ipAddress);
 
-            Assert.Equal(
-@"var iPAddress = IPAddress.Parse(""142.250.74.110"");
+        Assert.Equal(
+            @"var iPAddress = IPAddress.Parse(""142.250.74.110"");
 ", result);
-        }
+    }
 
 
-        [Fact]
-        public void DumpIpAddressVb()
-        {
-            var ipAddress = IPAddress.Parse("142.250.74.110");
+    [Fact]
+    public void DumpIpAddressVb()
+    {
+        var ipAddress = IPAddress.Parse("142.250.74.110");
 
-            var dumper = new VisualBasicDumper();
+        var dumper = new VisualBasicDumper();
 
-            var result = dumper.Dump(ipAddress);
+        var result = dumper.Dump(ipAddress);
 
-            Assert.Equal(
-@"Dim iPAddressValue = IPAddress.Parse(""142.250.74.110"")
+        Assert.Equal(
+            @"Dim iPAddressValue = IPAddress.Parse(""142.250.74.110"")
 ", result);
-        }
     }
 }

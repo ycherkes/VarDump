@@ -9,34 +9,34 @@ using VarDump.Visitor;
 using VarDump.Visitor.Descriptors;
 using Xunit;
 
-namespace UnitTests
+namespace UnitTests;
+
+public class ObjectDescriptorMiddlewareSpec
 {
-    public class ObjectDescriptorMiddlewareSpec
+    [Fact]
+    public void DumpFormattableStringCsharp()
     {
-        [Fact]
-        public void DumpFormattableStringCsharp()
+        const string name = "World";
+        FormattableString str = $"Hello, {name}";
+
+        var opts = new DumpOptions
         {
-            const string name = "World";
-            FormattableString str = $"Hello, {name}";
-
-            var opts = new DumpOptions
+            Descriptors =
             {
-                Descriptors =
-                {
-                    new FileSystemInfoMiddleware(),
-                    new FileInfoMiddleware(),
-                    new DriveInfoMiddleware(),
-                    new MemberInfoMiddleware(),
-                    new FormattableStringMiddleware()
-                }
-            };
+                new FileSystemInfoMiddleware(),
+                new FileInfoMiddleware(),
+                new DriveInfoMiddleware(),
+                new MemberInfoMiddleware(),
+                new FormattableStringMiddleware()
+            }
+        };
 
-            var dumper = new CSharpDumper(opts);
+        var dumper = new CSharpDumper(opts);
 
-            var result = dumper.Dump(str);
+        var result = dumper.Dump(str);
 
-            Assert.Equal(
-@"var concreteFormattableString = new ConcreteFormattableString
+        Assert.Equal(
+            @"var concreteFormattableString = new ConcreteFormattableString
 {
     Format = ""Hello, {0}"",
     Arguments = new object[]
@@ -45,28 +45,28 @@ namespace UnitTests
     }
 };
 ", result);
+    }
+
+    [Fact]
+    public void DumpDelegateCsharp()
+    {
+        static void EventHandler(object sender, EventArgs args)
+        {
         }
 
-        [Fact]
-        public void DumpDelegateCsharp()
+        var opts = new DumpOptions
         {
-            static void EventHandler(object sender, EventArgs args)
-            {
-            }
+            Descriptors = { new MemberInfoMiddleware() },
+            WritablePropertiesOnly = false
+        };
 
-            var opts = new DumpOptions
-            {
-                Descriptors = { new MemberInfoMiddleware() },
-                WritablePropertiesOnly = false
-            };
+        var dumper = new CSharpDumper(opts);
+        var delegateObject = (Delegate)(EventHandler)EventHandler;
 
-            var dumper = new CSharpDumper(opts);
-            var delegateObject = (Delegate)(EventHandler)EventHandler;
+        var result = dumper.Dump(delegateObject);
 
-            var result = dumper.Dump(delegateObject);
-
-            Assert.Equal(
-@$"var eventHandler = new EventHandler
+        Assert.Equal(
+            @$"var eventHandler = new EventHandler
 {{
     Method = new RuntimeMethodInfo
     {{
@@ -78,27 +78,27 @@ namespace UnitTests
     }}
 }};
 ", result);
-        }
+    }
 
-        [Fact]
-        public void DumpDirectoryInfoCsharp()
+    [Fact]
+    public void DumpDirectoryInfoCsharp()
+    {
+        var opts = new DumpOptions
         {
-            var opts = new DumpOptions
-            {
-                Descriptors = { new FileSystemInfoMiddleware() },
-                DateKind = DateKind.ConvertToUtc,
-                WritablePropertiesOnly = false,
-                SortDirection = ListSortDirection.Ascending
-            };
+            Descriptors = { new FileSystemInfoMiddleware() },
+            DateKind = DateKind.ConvertToUtc,
+            WritablePropertiesOnly = false,
+            SortDirection = ListSortDirection.Ascending
+        };
 
-            var directoryName = Guid.NewGuid().ToString();
+        var directoryName = Guid.NewGuid().ToString();
 
-            var dumper = new CSharpDumper(opts);
+        var dumper = new CSharpDumper(opts);
 
-            var actualString = dumper.Dump(new DirectoryInfo(directoryName));
+        var actualString = dumper.Dump(new DirectoryInfo(directoryName));
 
-            var expectedFullName = Path.Combine(Directory.GetCurrentDirectory(), directoryName).Replace(@"\", @"\\");
-            var expectedString = @$"var directoryInfo = new DirectoryInfo
+        var expectedFullName = Path.Combine(Directory.GetCurrentDirectory(), directoryName).Replace(@"\", @"\\");
+        var expectedString = @$"var directoryInfo = new DirectoryInfo
 {{
     Attributes = FileAttributes.-1,
     CreationTime = DateTime.ParseExact(""1601-01-01T00:00:00.0000000Z"", ""O"", CultureInfo.InvariantCulture, DateTimeStyles.RoundtripKind),
@@ -112,70 +112,70 @@ namespace UnitTests
     Name = ""{directoryName}""
 }};
 ";
-            Assert.Equal(expectedString, actualString);
+        Assert.Equal(expectedString, actualString);
+    }
+
+    [Fact]
+    public void DumpFileInfoCsharp()
+    {
+        var opts = new DumpOptions
+        {
+            Descriptors = { new FileInfoMiddleware() }
+        };
+
+        var fileName = $"{Guid.NewGuid()}.txt";
+
+        var dumper = new CSharpDumper(opts);
+
+        var actualString = dumper.Dump(new FileInfo(fileName));
+
+        var expectedFullName = Path.Combine(Directory.GetCurrentDirectory(), fileName).Replace(@"\", @"\\");
+        var expectedString = $"var fileInfo = new FileInfo(\"{expectedFullName}\");\r\n";
+
+        Assert.Equal(expectedString, actualString);
+    }
+
+    [Fact]
+    public void DumpDriveInfoCsharp()
+    {
+        var opts = new DumpOptions
+        {
+            Descriptors = { new DriveInfoMiddleware() }
+        };
+
+        var driveName = "C:";
+
+        var dumper = new CSharpDumper(opts);
+
+        var actualString = dumper.Dump(new DriveInfo(driveName));
+
+        var expectedString = "var driveInfo = new DriveInfo(\"C:\\\\\");\r\n";
+
+        Assert.Equal(expectedString, actualString);
+    }
+
+
+    [Fact]
+    public void DumpDelegateVb()
+    {
+        static void EventHandler(object sender, EventArgs args)
+        {
         }
 
-        [Fact]
-        public void DumpFileInfoCsharp()
+        var opts = new DumpOptions
         {
-            var opts = new DumpOptions
-            {
-                Descriptors = { new FileInfoMiddleware() }
-            };
+            Descriptors = { new MemberInfoMiddleware() },
+            WritablePropertiesOnly = false
+        };
 
-            var fileName = $"{Guid.NewGuid()}.txt";
+        var dumper = new VisualBasicDumper(opts);
 
-            var dumper = new CSharpDumper(opts);
+        var delegateObject = (Delegate)(EventHandler)EventHandler;
 
-            var actualString = dumper.Dump(new FileInfo(fileName));
+        var result = dumper.Dump(delegateObject);
 
-            var expectedFullName = Path.Combine(Directory.GetCurrentDirectory(), fileName).Replace(@"\", @"\\");
-            var expectedString = $"var fileInfo = new FileInfo(\"{expectedFullName}\");\r\n";
-
-            Assert.Equal(expectedString, actualString);
-        }
-
-        [Fact]
-        public void DumpDriveInfoCsharp()
-        {
-            var opts = new DumpOptions
-            {
-                Descriptors = { new DriveInfoMiddleware() }
-            };
-
-            var driveName = "C:";
-
-            var dumper = new CSharpDumper(opts);
-
-            var actualString = dumper.Dump(new DriveInfo(driveName));
-
-            var expectedString = "var driveInfo = new DriveInfo(\"C:\\\\\");\r\n";
-
-            Assert.Equal(expectedString, actualString);
-        }
-
-
-        [Fact]
-        public void DumpDelegateVb()
-        {
-            static void EventHandler(object sender, EventArgs args)
-            {
-            }
-
-            var opts = new DumpOptions
-            {
-                Descriptors = { new MemberInfoMiddleware() },
-                WritablePropertiesOnly = false
-            };
-
-            var dumper = new VisualBasicDumper(opts);
-
-            var delegateObject = (Delegate)(EventHandler)EventHandler;
-
-            var result = dumper.Dump(delegateObject);
-
-            Assert.Equal(
-@$"Dim eventHandlerValue = New EventHandler With {{
+        Assert.Equal(
+            @$"Dim eventHandlerValue = New EventHandler With {{
     .Method = New RuntimeMethodInfo With {{
         .Name = ""{delegateObject.Method.Name}"",
         .DeclaringType = GetType({nameof(ObjectDescriptorMiddlewareSpec)}),
@@ -185,106 +185,105 @@ namespace UnitTests
     }}
 }}
 ", result);
-        }
+    }
 
-        private class MemberInfoMiddleware : IObjectDescriptorMiddleware
+    private class MemberInfoMiddleware : IObjectDescriptorMiddleware
+    {
+        private readonly HashSet<string> _includeProperties = new()
         {
-            private readonly HashSet<string> _includeProperties = new()
+            "Name",
+            "DeclaringType",
+            "ReflectedType",
+            "MemberType",
+            "Attributes"
+        };
+
+        public IEnumerable<IReflectionDescriptor> Describe(object @object, Type objectType, Func<IEnumerable<IReflectionDescriptor>> prev)
+        {
+            var members = prev();
+
+            if (typeof(MemberInfo).IsAssignableFrom(objectType))
             {
-                "Name",
-                "DeclaringType",
-                "ReflectedType",
-                "MemberType",
-                "Attributes"
-            };
-
-            public IEnumerable<IReflectionDescriptor> Describe(object @object, Type objectType, Func<IEnumerable<IReflectionDescriptor>> prev)
-            {
-                var members = prev();
-
-                if (typeof(MemberInfo).IsAssignableFrom(objectType))
-                {
-                    members = members.Where(m => _includeProperties.Contains(m.Name));
-                }
-
-                return members;
+                members = members.Where(m => _includeProperties.Contains(m.Name));
             }
+
+            return members;
         }
+    }
 
-        private class FileSystemInfoMiddleware : IObjectDescriptorMiddleware
+    private class FileSystemInfoMiddleware : IObjectDescriptorMiddleware
+    {
+        private readonly HashSet<string> _excludeProperties = new()
         {
-            private readonly HashSet<string> _excludeProperties = new()
+            "Parent",
+            "Directory",
+            "Root"
+        };
+
+        public IEnumerable<IReflectionDescriptor> Describe(object @object, Type objectType, Func<IEnumerable<IReflectionDescriptor>> prev)
+        {
+            var members = prev();
+
+            if (typeof(FileSystemInfo).IsAssignableFrom(objectType))
             {
-                "Parent",
-                "Directory",
-                "Root"
-            };
-
-            public IEnumerable<IReflectionDescriptor> Describe(object @object, Type objectType, Func<IEnumerable<IReflectionDescriptor>> prev)
-            {
-                var members = prev();
-
-                if (typeof(FileSystemInfo).IsAssignableFrom(objectType))
-                {
-                    members = members.Where(m => !_excludeProperties.Contains(m.Name));
-                }
-
-                return members;
+                members = members.Where(m => !_excludeProperties.Contains(m.Name));
             }
-        }
 
-        private class FileInfoMiddleware : IObjectDescriptorMiddleware
+            return members;
+        }
+    }
+
+    private class FileInfoMiddleware : IObjectDescriptorMiddleware
+    {
+        public IEnumerable<IReflectionDescriptor> Describe(object @object, Type objectType, Func<IEnumerable<IReflectionDescriptor>> prev)
         {
-            public IEnumerable<IReflectionDescriptor> Describe(object @object, Type objectType, Func<IEnumerable<IReflectionDescriptor>> prev)
+            if (@object is FileInfo fileInfo)
             {
-                if (@object is FileInfo fileInfo)
+                return new[]
                 {
-                    return new[]
+                    new ReflectionDescriptor(fileInfo.FullName)
                     {
-                        new ReflectionDescriptor(fileInfo.FullName)
-                        {
-                            ReflectionType = ReflectionType.ConstructorParameter
-                        }
-                    };
-                }
-
-                return prev();
+                        ReflectionType = ReflectionType.ConstructorParameter
+                    }
+                };
             }
+
+            return prev();
         }
+    }
 
-        private class DriveInfoMiddleware : IObjectDescriptorMiddleware
+    private class DriveInfoMiddleware : IObjectDescriptorMiddleware
+    {
+        public IEnumerable<IReflectionDescriptor> Describe(object @object, Type objectType, Func<IEnumerable<IReflectionDescriptor>> prev)
         {
-            public IEnumerable<IReflectionDescriptor> Describe(object @object, Type objectType, Func<IEnumerable<IReflectionDescriptor>> prev)
+            if (@object is DriveInfo driveInfo)
             {
-                if (@object is DriveInfo driveInfo)
+                return new[]
                 {
-                    return new[]
+                    new ReflectionDescriptor(driveInfo.Name)
                     {
-                            new ReflectionDescriptor(driveInfo.Name)
-                            {
-                                ReflectionType = ReflectionType.ConstructorParameter
-                            }
-                        };
-                }
-
-                return prev();
+                        ReflectionType = ReflectionType.ConstructorParameter
+                    }
+                };
             }
+
+            return prev();
         }
-        private class FormattableStringMiddleware : IObjectDescriptorMiddleware
+    }
+    private class FormattableStringMiddleware : IObjectDescriptorMiddleware
+    {
+        public IEnumerable<IReflectionDescriptor> Describe(object @object, Type objectType, Func<IEnumerable<IReflectionDescriptor>> prev)
         {
-            public IEnumerable<IReflectionDescriptor> Describe(object @object, Type objectType, Func<IEnumerable<IReflectionDescriptor>> prev)
+            if (@object is FormattableString fs)
             {
-                if (@object is FormattableString fs)
+                return Descriptor.FromObject(new
                 {
-                    return Descriptor.FromObject(new
-                    {
-                        fs.Format,
-                        Arguments = fs.GetArguments()
-                    });
-                }
-
-                return prev();
+                    fs.Format,
+                    Arguments = fs.GetArguments()
+                });
             }
+
+            return prev();
         }
     }
 }

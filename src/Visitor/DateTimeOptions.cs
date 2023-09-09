@@ -1,14 +1,13 @@
-﻿namespace VarDump.Visitor
-{
-    public enum DateTimeInstantiation
-    {
-        New = 0,
-        Parse = 1
-    }
+﻿namespace VarDump.Visitor;
 
-    public enum DateKind
-    {
-        ConvertToUtc = 0,
-        Original = 1
-    }
+public enum DateTimeInstantiation
+{
+    New = 0,
+    Parse = 1
+}
+
+public enum DateKind
+{
+    ConvertToUtc = 0,
+    Original = 1
 }

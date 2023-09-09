@@ -2,21 +2,21 @@ using System.Linq;
 using VarDump;
 using Xunit;
 
-namespace UnitTests
+namespace UnitTests;
+
+public class EnumerableRangeSpec
 {
-    public class EnumerableRangeSpec
+    [Fact]
+    public void DumpAnonymousTypeCsharp()
     {
-        [Fact]
-        public void DumpAnonymousTypeCsharp()
-        {
-            var range = Enumerable.Range(5, 2).Select((x, i) => new { i, x });
+        var range = Enumerable.Range(5, 2).Select((x, i) => new { i, x });
 
-            var dumper = new CSharpDumper();
+        var dumper = new CSharpDumper();
 
-            var result = dumper.Dump(range);
+        var result = dumper.Dump(range);
 
-            Assert.Equal(
-@"var selectIteratorOfAnonymousType = new []
+        Assert.Equal(
+            @"var selectIteratorOfAnonymousType = new []
 {
     new 
     {
@@ -30,19 +30,19 @@ namespace UnitTests
     }
 };
 ", result);
-        }
+    }
 
-        [Fact]
-        public void DumpAnonymousTypeVb()
-        {
-            var range = Enumerable.Range(5, 2).Select((i, x) => new { i, x });
+    [Fact]
+    public void DumpAnonymousTypeVb()
+    {
+        var range = Enumerable.Range(5, 2).Select((i, x) => new { i, x });
 
-            var dumper = new VisualBasicDumper();
+        var dumper = new VisualBasicDumper();
 
-            var result = dumper.Dump(range);
+        var result = dumper.Dump(range);
 
-            Assert.Equal(
-@"Dim selectIteratorOfAnonymousType = {
+        Assert.Equal(
+            @"Dim selectIteratorOfAnonymousType = {
     New With {
         .i = 5,
         .x = 0
@@ -53,6 +53,5 @@ namespace UnitTests
     }
 }
 ", result);
-        }
     }
 }

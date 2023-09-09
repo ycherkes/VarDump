@@ -1,32 +1,31 @@
 ﻿using VarDump;
 using Xunit;
 
-namespace UnitTests
+namespace UnitTests;
+
+public class StringSpec
 {
-    public class StringSpec
+    [Fact]
+    public void DumpLongStringCSharp()
     {
-        [Fact]
-        public void DumpLongStringCSharp()
-        {
-            var stringVar = "C:\\temp\\postgresql-13.1-1-windows-x64-binaries\\pgsql\\pgAdmin 4\\docs\\en_US\\html\\_sources\\add_restore_point_dialog.rst.txt";
+        var stringVar = "C:\\temp\\postgresql-13.1-1-windows-x64-binaries\\pgsql\\pgAdmin 4\\docs\\en_US\\html\\_sources\\add_restore_point_dialog.rst.txt";
 
-            var dumper = new CSharpDumper();
+        var dumper = new CSharpDumper();
 
-            var result = dumper.Dump(stringVar);
+        var result = dumper.Dump(stringVar);
 
-            Assert.DoesNotContain("+", result);
-        }
+        Assert.DoesNotContain("+", result);
+    }
 
-        [Fact]
-        public void DumpLongStringVisualBasic()
-        {
-            var stringVar = "C:\\temp\\postgresql-13.1-1-windows-x64-binaries\\pgsql\\pgAdmin 4\\docs\\en_US\\html\\_sources\\add_restore_point_dialog.rst.txt";
+    [Fact]
+    public void DumpLongStringVisualBasic()
+    {
+        var stringVar = "C:\\temp\\postgresql-13.1-1-windows-x64-binaries\\pgsql\\pgAdmin 4\\docs\\en_US\\html\\_sources\\add_restore_point_dialog.rst.txt";
 
-            var dumper = new VisualBasicDumper();
+        var dumper = new VisualBasicDumper();
 
-            var result = dumper.Dump(stringVar);
+        var result = dumper.Dump(stringVar);
 
-            Assert.DoesNotContain("& _", result);
-        }
+        Assert.DoesNotContain("& _", result);
     }
 }

@@ -3,29 +3,28 @@ using VarDump;
 using VarDump.Visitor;
 using Xunit;
 
-namespace UnitTests
+namespace UnitTests;
+
+public class ExceptionSpec
 {
-    public class ExceptionSpec
+    [Fact]
+    public void DumpExceptionVisualBasic()
     {
-        [Fact]
-        public void DumpExceptionVisualBasic()
+        try
         {
-            try
+            _ = new[] { "test" }[1];
+        }
+        catch (Exception e)
+        {
+            var dumper = new VisualBasicDumper(new DumpOptions
             {
-                _ = new[] { "test" }[1];
-            }
-            catch (Exception e)
-            {
-                var dumper = new VisualBasicDumper(new DumpOptions
-                {
-                    WritablePropertiesOnly = false,
-                    MaxDepth = 1
-                });
+                WritablePropertiesOnly = false,
+                MaxDepth = 1
+            });
 
-                var result = dumper.Dump(e);
+            var result = dumper.Dump(e);
 
-                Assert.Contains(".Message = \"Index was outside the bounds of the array.\"", result);
-            }
+            Assert.Contains(".Message = \"Index was outside the bounds of the array.\"", result);
         }
     }
 }

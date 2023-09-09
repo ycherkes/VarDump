@@ -2,37 +2,36 @@ using System.Net;
 using VarDump;
 using Xunit;
 
-namespace UnitTests
+namespace UnitTests;
+
+public class IpEndPointSpec
 {
-    public class IpEndPointSpec
+    [Fact]
+    public void DumpIpEndPointCsharp()
     {
-        [Fact]
-        public void DumpIpEndPointCsharp()
-        {
-            var ipEndPoint = new IPEndPoint(IPAddress.Parse("142.250.74.110"), 12345);
+        var ipEndPoint = new IPEndPoint(IPAddress.Parse("142.250.74.110"), 12345);
 
-            var dumper = new CSharpDumper();
+        var dumper = new CSharpDumper();
 
-            var result = dumper.Dump(ipEndPoint);
+        var result = dumper.Dump(ipEndPoint);
 
-            Assert.Equal(
-@"var iPEndPoint = new IPEndPoint(IPAddress.Parse(""142.250.74.110""), 12345);
+        Assert.Equal(
+            @"var iPEndPoint = new IPEndPoint(IPAddress.Parse(""142.250.74.110""), 12345);
 ", result);
-        }
+    }
 
 
-        [Fact]
-        public void DumpIpEndPointVb()
-        {
-            var ipEndPoint = new IPEndPoint(IPAddress.Parse("142.250.74.110"), 12345);
+    [Fact]
+    public void DumpIpEndPointVb()
+    {
+        var ipEndPoint = new IPEndPoint(IPAddress.Parse("142.250.74.110"), 12345);
 
-            var dumper = new VisualBasicDumper();
+        var dumper = new VisualBasicDumper();
 
-            var result = dumper.Dump(ipEndPoint);
+        var result = dumper.Dump(ipEndPoint);
 
-            Assert.Equal(
-@"Dim iPEndPointValue = New IPEndPoint(IPAddress.Parse(""142.250.74.110""), 12345)
+        Assert.Equal(
+            @"Dim iPEndPointValue = New IPEndPoint(IPAddress.Parse(""142.250.74.110""), 12345)
 ", result);
-        }
     }
 }

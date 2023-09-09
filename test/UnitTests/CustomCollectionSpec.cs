@@ -2,26 +2,26 @@
 using VarDump;
 using Xunit;
 
-namespace UnitTests
+namespace UnitTests;
+
+public class CustomCollectionSpec
 {
-    public class CustomCollectionSpec
+    [Fact]
+    public void DumpCustomPublicCollectionVisualBasic()
     {
-        [Fact]
-        public void DumpCustomPublicCollectionVisualBasic()
+        var collection = new CatPublicCollection
         {
-            var collection = new CatPublicCollection
-            {
-                new Cat { Name = "Sylvester", Age = 8 },
-                new Cat { Name = "Whiskers", Age = 2 },
-                new Cat { Name = "Sasha", Age = 14 }
-            };
+            new Cat { Name = "Sylvester", Age = 8 },
+            new Cat { Name = "Whiskers", Age = 2 },
+            new Cat { Name = "Sasha", Age = 14 }
+        };
 
-            var dumper = new VisualBasicDumper();
+        var dumper = new VisualBasicDumper();
 
-            var result = dumper.Dump(collection);
+        var result = dumper.Dump(collection);
 
-            Assert.Equal(
-@"Dim catPublicCollectionOfObject = New CatPublicCollection{
+        Assert.Equal(
+            @"Dim catPublicCollectionOfObject = New CatPublicCollection{
     New Cat With {
         .Age = 8,
         .Name = ""Sylvester""
@@ -36,24 +36,24 @@ namespace UnitTests
     }
 }
 ", result);
-        }
+    }
 
-        [Fact]
-        public void DumpCustomPublicCollectionCsharp()
+    [Fact]
+    public void DumpCustomPublicCollectionCsharp()
+    {
+        var collection = new CatPublicCollection
         {
-            var collection = new CatPublicCollection
-            {
-                new Cat { Name = "Sylvester", Age = 8 },
-                new Cat { Name = "Whiskers", Age = 2 },
-                new Cat { Name = "Sasha", Age = 14 }
-            };
+            new Cat { Name = "Sylvester", Age = 8 },
+            new Cat { Name = "Whiskers", Age = 2 },
+            new Cat { Name = "Sasha", Age = 14 }
+        };
 
-            var dumper = new CSharpDumper();
+        var dumper = new CSharpDumper();
 
-            var result = dumper.Dump(collection);
+        var result = dumper.Dump(collection);
 
-            Assert.Equal(
-                @"var catPublicCollectionOfObject = new CatPublicCollection
+        Assert.Equal(
+            @"var catPublicCollectionOfObject = new CatPublicCollection
 {
     new Cat
     {
@@ -72,24 +72,24 @@ namespace UnitTests
     }
 };
 ", result);
-        }
+    }
 
-        [Fact]
-        public void DumpCustomNonPublicCollectionVisualBasic()
+    [Fact]
+    public void DumpCustomNonPublicCollectionVisualBasic()
+    {
+        var collection = new CatNonPublicCollection
         {
-            var collection = new CatNonPublicCollection
-            {
-                new Cat { Name = "Sylvester", Age = 8 },
-                new Cat { Name = "Whiskers", Age = 2 },
-                new Cat { Name = "Sasha", Age = 14 }
-            };
+            new Cat { Name = "Sylvester", Age = 8 },
+            new Cat { Name = "Whiskers", Age = 2 },
+            new Cat { Name = "Sasha", Age = 14 }
+        };
 
-            var dumper = new VisualBasicDumper();
+        var dumper = new VisualBasicDumper();
 
-            var result = dumper.Dump(collection);
+        var result = dumper.Dump(collection);
 
-            Assert.Equal(
-                @"Dim catNonPublicCollectionOfObject = New Object(){
+        Assert.Equal(
+            @"Dim catNonPublicCollectionOfObject = New Object(){
     New Cat With {
         .Age = 8,
         .Name = ""Sylvester""
@@ -104,24 +104,24 @@ namespace UnitTests
     }
 }
 ", result);
-        }
+    }
 
-        [Fact]
-        public void DumpCustomNonPublicCollectionCsharp()
+    [Fact]
+    public void DumpCustomNonPublicCollectionCsharp()
+    {
+        var collection = new CatNonPublicCollection
         {
-            var collection = new CatNonPublicCollection
-            {
-                new Cat { Name = "Sylvester", Age = 8 },
-                new Cat { Name = "Whiskers", Age = 2 },
-                new Cat { Name = "Sasha", Age = 14 }
-            };
+            new Cat { Name = "Sylvester", Age = 8 },
+            new Cat { Name = "Whiskers", Age = 2 },
+            new Cat { Name = "Sasha", Age = 14 }
+        };
 
-            var dumper = new CSharpDumper();
+        var dumper = new CSharpDumper();
 
-            var result = dumper.Dump(collection);
+        var result = dumper.Dump(collection);
 
-            Assert.Equal(
-                @"var catNonPublicCollectionOfObject = new object[]
+        Assert.Equal(
+            @"var catNonPublicCollectionOfObject = new object[]
 {
     new Cat
     {
@@ -140,7 +140,6 @@ namespace UnitTests
     }
 };
 ", result);
-        }
-
     }
+
 }

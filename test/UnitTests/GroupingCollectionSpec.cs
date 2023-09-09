@@ -3,25 +3,25 @@ using UnitTests.TestModel;
 using VarDump;
 using Xunit;
 
-namespace UnitTests
+namespace UnitTests;
+
+public class GroupingCollectionSpec
 {
-    public class GroupingCollectionSpec
+    [Fact]
+    public void DumpGroupingCollectionVisualBasic()
     {
-        [Fact]
-        public void DumpGroupingCollectionVisualBasic()
+        var grouping = new[]
         {
-            var grouping = new[]
-            {
-                new Person{ Age = 32, FirstName = "Bob"},
-                new Person{ Age = 23, FirstName = "Alice"}
-            }.ToLookup(x => x.FirstName);
+            new Person{ Age = 32, FirstName = "Bob"},
+            new Person{ Age = 23, FirstName = "Alice"}
+        }.ToLookup(x => x.FirstName);
 
-            var dumper = new VisualBasicDumper();
+        var dumper = new VisualBasicDumper();
 
-            var result = dumper.Dump(grouping);
+        var result = dumper.Dump(grouping);
 
-            Assert.Equal(
-@"Dim lookupOfGroupingOfPerson = {
+        Assert.Equal(
+            @"Dim lookupOfGroupingOfPerson = {
     New With {
         .Key = ""Bob"",
         .Element = New Person With {
@@ -38,23 +38,23 @@ namespace UnitTests
     }
 }.ToLookup(Function (grp) grp.Key, Function (grp) grp.Element)
 ", result);
-        }
+    }
 
-        [Fact]
-        public void DumpGroupingCollectionCSharp()
+    [Fact]
+    public void DumpGroupingCollectionCSharp()
+    {
+        var grouping = new[]
         {
-            var grouping = new[]
-             {
-                new Person{ Age = 32, FirstName = "Bob"},
-                new Person{ Age = 23, FirstName = "Alice"}
-            }.GroupBy(x => x.FirstName).ToArray();
+            new Person{ Age = 32, FirstName = "Bob"},
+            new Person{ Age = 23, FirstName = "Alice"}
+        }.GroupBy(x => x.FirstName).ToArray();
 
-            var dumper = new CSharpDumper();
+        var dumper = new CSharpDumper();
 
-            var result = dumper.Dump(grouping);
+        var result = dumper.Dump(grouping);
 
-            Assert.Equal(
-@"var arrayOfGroupingOfPerson = new []
+        Assert.Equal(
+            @"var arrayOfGroupingOfPerson = new []
 {
     new 
     {
@@ -76,21 +76,21 @@ namespace UnitTests
     }
 }.GroupBy(grp => grp.Key, grp => grp.Element).ToArray();
 ", result);
-        }
+    }
 
-        [Fact]
-        public void DumpSingleGroupingValueCSharp()
-        {
-            var grouping = new[] { new Person { Age = 32, FirstName = "Bob" } }
+    [Fact]
+    public void DumpSingleGroupingValueCSharp()
+    {
+        var grouping = new[] { new Person { Age = 32, FirstName = "Bob" } }
             .GroupBy(x => x.FirstName)
             .Single();
 
-            var dumper = new CSharpDumper();
+        var dumper = new CSharpDumper();
 
-            var result = dumper.Dump(grouping);
+        var result = dumper.Dump(grouping);
 
-            Assert.Equal(
-@"var groupingOfPerson = new []
+        Assert.Equal(
+            @"var groupingOfPerson = new []
 {
     new 
     {
@@ -103,6 +103,5 @@ namespace UnitTests
     }
 }.GroupBy(grp => grp.Key, grp => grp.Element).Single();
 ", result);
-        }
     }
 }

@@ -4,33 +4,32 @@
 
 using System;
 
-namespace VarDump.CodeDom.Common
+namespace VarDump.CodeDom.Common;
+
+internal class CodeTypeReferenceExpression : CodeExpression
 {
-    internal class CodeTypeReferenceExpression : CodeExpression
+    private CodeTypeReference _type;
+
+    public CodeTypeReferenceExpression() { }
+
+    public CodeTypeReferenceExpression(CodeTypeReference type)
     {
-        private CodeTypeReference _type;
+        Type = type;
+    }
 
-        public CodeTypeReferenceExpression() { }
+    public CodeTypeReferenceExpression(string type)
+    {
+        Type = new CodeTypeReference(type);
+    }
 
-        public CodeTypeReferenceExpression(CodeTypeReference type)
-        {
-            Type = type;
-        }
+    public CodeTypeReferenceExpression(Type type)
+    {
+        Type = new CodeTypeReference(type);
+    }
 
-        public CodeTypeReferenceExpression(string type)
-        {
-            Type = new CodeTypeReference(type);
-        }
-
-        public CodeTypeReferenceExpression(Type type)
-        {
-            Type = new CodeTypeReference(type);
-        }
-
-        public CodeTypeReference Type
-        {
-            get { return _type ?? (_type = new CodeTypeReference("")); }
-            set { _type = value; }
-        }
+    public CodeTypeReference Type
+    {
+        get { return _type ?? (_type = new CodeTypeReference("")); }
+        set { _type = value; }
     }
 }

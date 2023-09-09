@@ -2,26 +2,25 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-namespace VarDump.CodeDom.Common
+namespace VarDump.CodeDom.Common;
+
+internal class CodeFieldReferenceExpression : CodeExpression
 {
-    internal class CodeFieldReferenceExpression : CodeExpression
+    private string _fieldName;
+
+    public CodeFieldReferenceExpression() { }
+
+    public CodeFieldReferenceExpression(CodeExpression targetObject, string fieldName)
     {
-        private string _fieldName;
+        TargetObject = targetObject;
+        FieldName = fieldName;
+    }
 
-        public CodeFieldReferenceExpression() { }
+    public CodeExpression TargetObject { get; set; }
 
-        public CodeFieldReferenceExpression(CodeExpression targetObject, string fieldName)
-        {
-            TargetObject = targetObject;
-            FieldName = fieldName;
-        }
-
-        public CodeExpression TargetObject { get; set; }
-
-        public string FieldName
-        {
-            get { return _fieldName ?? string.Empty; }
-            set { _fieldName = value; }
-        }
+    public string FieldName
+    {
+        get { return _fieldName ?? string.Empty; }
+        set { _fieldName = value; }
     }
 }

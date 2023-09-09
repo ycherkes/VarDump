@@ -77,12 +77,8 @@ internal sealed class ObjectVisitor : IObjectVisitor
            new DictionaryVisitor(options, this),
            new CollectionVisitor(options, this)
        }.ToOrderedDictionary(v => v.Id);
-    }
 
-    public ObjectVisitor(DumpOptions options, Action<IOrderedDictionary<string, IKnownObjectVisitor>> configure)
-        : this(options)
-    {
-        configure?.Invoke(_knownTypes);
+        //options.ConfigureKnownTypes?.Invoke(_knownTypes);
     }
 
     public CodeExpression Visit(object @object)

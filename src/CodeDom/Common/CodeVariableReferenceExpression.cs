@@ -2,23 +2,22 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-namespace VarDump.CodeDom.Common
+namespace VarDump.CodeDom.Common;
+
+internal class CodeVariableReferenceExpression : CodeExpression
 {
-    internal class CodeVariableReferenceExpression : CodeExpression
+    private string _variableName;
+
+    public CodeVariableReferenceExpression() { }
+
+    public CodeVariableReferenceExpression(string variableName)
     {
-        private string _variableName;
+        _variableName = variableName;
+    }
 
-        public CodeVariableReferenceExpression() { }
-
-        public CodeVariableReferenceExpression(string variableName)
-        {
-            _variableName = variableName;
-        }
-
-        public string VariableName
-        {
-            get { return _variableName ?? string.Empty; }
-            set { _variableName = value; }
-        }
+    public string VariableName
+    {
+        get { return _variableName ?? string.Empty; }
+        set { _variableName = value; }
     }
 }

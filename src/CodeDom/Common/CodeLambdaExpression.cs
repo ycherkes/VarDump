@@ -4,21 +4,20 @@
 
 using System.Linq;
 
-namespace VarDump.CodeDom.Common
+namespace VarDump.CodeDom.Common;
+
+internal class CodeLambdaExpression : CodeExpression
 {
-    internal class CodeLambdaExpression : CodeExpression
-    {
-        public CodeExpressionCollection Parameters { get; set; } = new CodeExpressionCollection();
+    public CodeExpressionCollection Parameters { get; set; } = new CodeExpressionCollection();
 
-        public CodeLambdaExpression() { }
+    public CodeLambdaExpression() { }
 
-        public CodeLambdaExpression(CodeExpression lambdaExpression, params CodeExpression[] parameters)
+    public CodeLambdaExpression(CodeExpression lambdaExpression, params CodeExpression[] parameters)
             
-        {
-            LambdaExpression = lambdaExpression;
-            Parameters = new CodeExpressionCollection(parameters.ToArray());
-        }
-
-        public CodeExpression LambdaExpression { get; set; }
+    {
+        LambdaExpression = lambdaExpression;
+        Parameters = new CodeExpressionCollection(parameters.ToArray());
     }
+
+    public CodeExpression LambdaExpression { get; set; }
 }

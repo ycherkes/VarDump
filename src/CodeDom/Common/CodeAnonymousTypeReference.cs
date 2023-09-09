@@ -1,6 +1,5 @@
-﻿namespace VarDump.CodeDom.Common
+﻿namespace VarDump.CodeDom.Common;
+
+internal class CodeAnonymousTypeReference : CodeEmptyTypeReference
 {
-    internal class CodeAnonymousTypeReference : CodeEmptyTypeReference
-    {
-    }
 }

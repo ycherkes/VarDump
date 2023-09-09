@@ -2,17 +2,16 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-namespace VarDump.CodeDom.Common
+namespace VarDump.CodeDom.Common;
+
+internal class CodeStatementExpression : CodeExpression
 {
-    internal class CodeStatementExpression : CodeExpression
+    public CodeStatementExpression() { }
+
+    public CodeStatementExpression(CodeStatement statement)
     {
-        public CodeStatementExpression() { }
-
-        public CodeStatementExpression(CodeStatement statement)
-        {
-            Statement = statement;
-        }
-
-        public CodeStatement Statement { get; set; }
+        Statement = statement;
     }
+
+    public CodeStatement Statement { get; set; }
 }

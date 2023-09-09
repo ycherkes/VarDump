@@ -12,9 +12,9 @@
 	<Title>VarDumpExtended</Title>
 	<Version>0.2.6</Version>
 	<Description>VarDumpExtended is a utility for serialization runtime objects to C# and Visual Basic string.</Description>
-	<PackageProjectUrl>https://github.com/ycherkes/VarDump</PackageProjectUrl>
+	<PackageProjectUrl>https://github.com/ycherkes/VarDump/tree/feature/vardump-extended-configurable-known-types</PackageProjectUrl>
 	<PackageReadmeFile>README.md</PackageReadmeFile>
-	<RepositoryUrl>https://github.com/ycherkes/VarDump.git</RepositoryUrl>
+	<RepositoryUrl>https://github.com/ycherkes/VarDump/tree/feature/vardump-extended-configurable-known-types</RepositoryUrl>
 	<RepositoryType>git</RepositoryType>
 	<PackageTags>dump;dumpobject;c#;visulabasic;debug</PackageTags>
 	<NeutralLanguage>en</NeutralLanguage>

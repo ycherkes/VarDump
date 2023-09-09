@@ -70,11 +70,6 @@ internal sealed class OrderedDictionary<TKey, TValue> : IOrderedDictionary<TKey,
     }
 
     /// <summary>
-    /// Gets the equality comparer used to compare keys.
-    /// </summary>
-    public IEqualityComparer<TKey> Comparer => _dictionary.Comparer;
-
-    /// <summary>
     /// Adds the given key/value pair to the dictionary.
     /// </summary>
     /// <param name="key">The key to add to the dictionary.</param>
@@ -124,32 +119,9 @@ internal sealed class OrderedDictionary<TKey, TValue> : IOrderedDictionary<TKey,
     public bool ContainsKey(TKey key) => _dictionary.ContainsKey(key);
 
     /// <summary>
-    /// Gets the key at the given index.
-    /// </summary>
-    /// <param name="index">The index of the key to get.</param>
-    /// <returns>The key at the given index.</returns>
-    /// <exception cref="System.ArgumentOutOfRangeException">The index is negative -or- larger than the number of keys.</exception>
-    public TKey GetKey(int index) => _keys[index];
-
-    /// <summary>
-    /// Gets the index of the given key.
-    /// </summary>
-    /// <param name="key">The key to get the index of.</param>
-    /// <returns>The index of the key in the dictionary -or- -1 if the key is not found.</returns>
-    /// <remarks>The operation runs in O(n).</remarks>
-    public int IndexOf(TKey key)
-    {
-        if (_dictionary.TryGetValue(key, out int index))
-        {
-            return index;
-        }
-        return -1;
-    }
-
-    /// <summary>
     /// Gets the keys in the dictionary in the order they were added.
     /// </summary>
-    public KeyCollection Keys => new KeyCollection(this._dictionary);
+    public KeyCollection Keys => new(_dictionary);
 
     /// <summary>
     /// Removes the key/value pair with the given key from the dictionary.
@@ -201,14 +173,14 @@ internal sealed class OrderedDictionary<TKey, TValue> : IOrderedDictionary<TKey,
             value = _values[index];
             return true;
         }
-        value = default(TValue);
+        value = default;
         return false;
     }
 
     /// <summary>
     /// Gets the values in the dictionary.
     /// </summary>
-    public ValueCollection Values => new ValueCollection(_values);
+    public ValueCollection Values => new(_values);
 
     /// <summary>
     /// Gets or sets the value at the given index.
@@ -231,10 +203,7 @@ internal sealed class OrderedDictionary<TKey, TValue> : IOrderedDictionary<TKey,
     /// <exception cref="System.Collections.Generic.KeyNotFoundException">The key is not in the dictionary.</exception>
     public TValue this[TKey key]
     {
-        get
-        {
-            return _values[_dictionary[key]];
-        }
+        get => _values[_dictionary[key]];
         set
         {
             if (_dictionary.TryGetValue(key, out int index))
@@ -386,7 +355,7 @@ internal sealed class OrderedDictionary<TKey, TValue> : IOrderedDictionary<TKey,
         /// <exception cref="System.ArgumentNullException">The dictionary is null.</exception>
         internal KeyCollection(Dictionary<TKey, int> dictionary)
         {
-            this._dictionary = dictionary;
+            _dictionary = dictionary;
         }
 
         /// <summary>
@@ -445,7 +414,7 @@ internal sealed class OrderedDictionary<TKey, TValue> : IOrderedDictionary<TKey,
         /// <exception cref="System.ArgumentNullException">The dictionary is null.</exception>
         internal ValueCollection(List<TValue> values)
         {
-            this._values = values;
+            _values = values;
         }
 
         /// <summary>

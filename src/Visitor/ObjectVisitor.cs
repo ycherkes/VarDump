@@ -54,31 +54,29 @@ internal sealed class ObjectVisitor : IObjectVisitor
 
         _knownTypes = new[]
         {
-           (IKnownObjectVisitor)new PrimitiveVisitor(options),
-           new TimeSpanVisitor(options),
-           new DateTimeVisitor(options),
-           new DateTimeOffsetVisitor(options, this),
-           new EnumVisitor(options),
-           new GuidVisitor(options),
-           new CultureInfoVisitor(options),
-           new TypeVisitor(options),
-           new IPAddressVisitor(options),
-           new IPEndpointVisitor(options, this),
-           new DnsEndPointVisitor(options, this),
-           new VersionVisitor(options),
-           new DateOnlyVisitor(options),
-           new TimeOnlyVisitor(options),
-           new RecordVisitor(options, this),
-           new AnonymousTypeVisitor(this, anonymousObjectDescriptor),
-           new KeyValuePairVisitor(options, this),
-           new TupleVisitor(options, this),
-           new ValueTupleVisitor(this),
-           new GroupingVisitor(this),
-           new DictionaryVisitor(options, this),
-           new CollectionVisitor(options, this)
-       }.ToOrderedDictionary(v => v.Id);
-
-        //options.ConfigureKnownTypes?.Invoke(_knownTypes);
+            (IKnownObjectVisitor)new PrimitiveVisitor(options),
+            new TimeSpanVisitor(options),
+            new DateTimeVisitor(options),
+            new DateTimeOffsetVisitor(options, this),
+            new EnumVisitor(options),
+            new GuidVisitor(options),
+            new CultureInfoVisitor(options),
+            new TypeVisitor(options),
+            new IPAddressVisitor(options),
+            new IPEndpointVisitor(options, this),
+            new DnsEndPointVisitor(options, this),
+            new VersionVisitor(options),
+            new DateOnlyVisitor(options),
+            new TimeOnlyVisitor(options),
+            new RecordVisitor(options, this),
+            new AnonymousTypeVisitor(this, anonymousObjectDescriptor),
+            new KeyValuePairVisitor(options, this),
+            new TupleVisitor(options, this),
+            new ValueTupleVisitor(this),
+            new GroupingVisitor(this),
+            new DictionaryVisitor(options, this),
+            new CollectionVisitor(options, this)
+        }.ToOrderedDictionary(v => v.Id);
     }
 
     public CodeExpression Visit(object @object)

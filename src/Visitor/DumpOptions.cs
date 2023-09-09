@@ -1,17 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using System.Reflection;
-using VarDump.Collections;
 using VarDump.Visitor.Descriptors;
-using VarDump.Visitor.KnownTypes;
 
-#if Extended
-namespace VarDumpExtended.Visitor;
-#else
 namespace VarDump.Visitor;
-#endif
 
 public class DumpOptions
 {
@@ -29,10 +22,7 @@ public class DumpOptions
     public bool UseNamedArgumentsForReferenceRecordTypes { get; set; }
     public bool UseTypeFullName { get; set; }
     public bool WritablePropertiesOnly { get; set; } = true;
-
     public static DumpOptions Default { get; } = new();
-
-    //public Action<IOrderedDictionary<string, IKnownObjectVisitor>> ConfigureKnownTypes { get; set; }
 
     public DumpOptions Clone()
     {
@@ -51,8 +41,7 @@ public class DumpOptions
             SortDirection = SortDirection,
             UseNamedArgumentsForReferenceRecordTypes = UseNamedArgumentsForReferenceRecordTypes,
             UseTypeFullName = UseTypeFullName,
-            WritablePropertiesOnly = WritablePropertiesOnly,
-            //ConfigureKnownTypes = ConfigureKnownTypes
+            WritablePropertiesOnly = WritablePropertiesOnly
         };
     }
 }

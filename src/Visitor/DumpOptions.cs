@@ -25,7 +25,7 @@ public class DumpOptions
     public bool UseNamedArgumentsForReferenceRecordTypes { get; set; }
     public bool UseTypeFullName { get; set; }
     public bool WritablePropertiesOnly { get; set; } = true;
-    public Action<IOrderedDictionary<string, IKnownObjectVisitor>> ConfigureKnownTypes { get; set; }
+    public Action<IOrderedDictionary<string, IKnownObjectVisitor>, IObjectVisitor> ConfigureKnownTypes { get; set; }
 
     public static DumpOptions Default { get; } = new();
 

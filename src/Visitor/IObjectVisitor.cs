@@ -2,7 +2,7 @@
 
 namespace VarDumpExtended.Visitor;
 
-internal interface IObjectVisitor
+public interface IObjectVisitor
 {
     CodeExpression Visit(object @object);
     void PushVisited(object value);

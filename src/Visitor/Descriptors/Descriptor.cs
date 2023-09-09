@@ -1,8 +1,8 @@
 ﻿using System.Collections.Generic;
 using System.Reflection;
-using VarDump.Visitor.Descriptors.Implementation;
+using VarDumpExtended.Visitor.Descriptors.Implementation;
 
-namespace VarDump.Visitor.Descriptors;
+namespace VarDumpExtended.Visitor.Descriptors;
 
 public static class Descriptor
 {

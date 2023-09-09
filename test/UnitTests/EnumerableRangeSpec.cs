@@ -1,5 +1,5 @@
 using System.Linq;
-using VarDump;
+using VarDumpExtended;
 using Xunit;
 
 namespace UnitTests;

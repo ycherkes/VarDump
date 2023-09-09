@@ -4,9 +4,9 @@
 
 using System;
 
-namespace VarDump.CodeDom.Common;
+namespace VarDumpExtended.CodeDom.Common;
 
-internal class CodeArrayCreateExpression : CodeExpression
+public class CodeArrayCreateExpression : CodeExpression
 {
     private readonly CodeExpressionCollection _initializers = new CodeExpressionCollection();
     private CodeTypeReference _createType;

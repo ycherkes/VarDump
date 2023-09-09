@@ -5,7 +5,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace VarDump.Extensions;
+namespace VarDumpExtended.Extensions;
 
 internal static class EnumerableExtensions
 {

@@ -7,11 +7,11 @@ using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
 using System.Text;
-using VarDump.CodeDom.Collections.Specialized;
-using VarDump.CodeDom.Common;
-using VarDump.CodeDom.Compiler;
+using VarDumpExtended.CodeDom.Collections.Specialized;
+using VarDumpExtended.CodeDom.Common;
+using VarDumpExtended.CodeDom.Compiler;
 
-namespace VarDump.CodeDom.VisualBasic
+namespace VarDumpExtended.CodeDom.VisualBasic
 {
     internal sealed class VBCodeGenerator : CodeGenerator
     {

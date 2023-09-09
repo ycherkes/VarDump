@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace VarDump.Visitor.Descriptors;
+namespace VarDumpExtended.Visitor.Descriptors;
 
 public class ReflectionDescriptor : IReflectionDescriptor
 {

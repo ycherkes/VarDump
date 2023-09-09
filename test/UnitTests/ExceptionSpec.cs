@@ -1,6 +1,6 @@
 ﻿using System;
-using VarDump;
-using VarDump.Visitor;
+using VarDumpExtended;
+using VarDumpExtended.Visitor;
 using Xunit;
 
 namespace UnitTests;

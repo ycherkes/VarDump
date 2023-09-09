@@ -2,10 +2,10 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using VarDump.Extensions;
-using VarDump.Utils;
+using VarDumpExtended.Extensions;
+using VarDumpExtended.Utils;
 
-namespace VarDump.Visitor.Descriptors.Implementation;
+namespace VarDumpExtended.Visitor.Descriptors.Implementation;
 
 internal class ObjectPropertiesDescriptor : IObjectDescriptor
 {

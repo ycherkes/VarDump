@@ -7,7 +7,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
 
-namespace VarDump.CodeDom.Common;
+namespace VarDumpExtended.CodeDom.Common;
 
 public enum CodeTypeReferenceOptions
 {
@@ -17,7 +17,7 @@ public enum CodeTypeReferenceOptions
     ShortTypeName = 0x00000004
 }
 
-internal class CodeTypeReference : CodeObject
+public class CodeTypeReference : CodeObject
 {
     private string _baseType;
     private readonly bool _isInterface;

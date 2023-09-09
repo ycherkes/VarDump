@@ -1,5 +1,5 @@
 #if NET60
-using VarDump;
+using VarDumpExtended;
 using Xunit;
 
 namespace UnitTests

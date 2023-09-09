@@ -3,11 +3,11 @@ using System.Collections;
 using System.Collections.Generic;
 using System.ComponentModel;
 
-namespace VarDump.Collections;
+namespace VarDumpExtended.Collections;
 
 // original version see https://github.com/jehugaleahsa/truncon.collections.OrderedDictionary
 
-internal interface IOrderedDictionary<TKey, TValue> : IDictionary<TKey, TValue>, IList<KeyValuePair<TKey, TValue>>
+public interface IOrderedDictionary<TKey, TValue> : IDictionary<TKey, TValue>, IList<KeyValuePair<TKey, TValue>>
 {
 }
 

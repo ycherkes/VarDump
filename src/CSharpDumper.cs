@@ -1,13 +1,13 @@
 ﻿using System;
 using System.IO;
-using VarDump.CodeDom.Common;
-using VarDump.CodeDom.Compiler;
-using VarDump.CodeDom.CSharp;
-using VarDump.Extensions;
-using VarDump.Utils;
-using VarDump.Visitor;
+using VarDumpExtended.CodeDom.Common;
+using VarDumpExtended.CodeDom.Compiler;
+using VarDumpExtended.CodeDom.CSharp;
+using VarDumpExtended.Extensions;
+using VarDumpExtended.Utils;
+using VarDumpExtended.Visitor;
 
-namespace VarDump;
+namespace VarDumpExtended;
 
 public class CSharpDumper : IDumper
 {

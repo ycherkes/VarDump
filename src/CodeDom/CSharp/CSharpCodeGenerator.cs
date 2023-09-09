@@ -7,11 +7,11 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Text;
-using VarDump.CodeDom.Common;
-using VarDump.CodeDom.Compiler;
-using VarDump.CodeDom.Resources;
+using VarDumpExtended.CodeDom.Common;
+using VarDumpExtended.CodeDom.Compiler;
+using VarDumpExtended.CodeDom.Resources;
 
-namespace VarDump.CodeDom.CSharp
+namespace VarDumpExtended.CodeDom.CSharp
 {
     internal sealed class CSharpCodeGenerator : ICodeGenerator
     {

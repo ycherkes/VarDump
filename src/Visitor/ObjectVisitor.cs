@@ -2,14 +2,14 @@
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
-using VarDump.CodeDom.Common;
-using VarDump.Collections;
-using VarDump.Utils;
-using VarDump.Visitor.Descriptors;
-using VarDump.Visitor.Descriptors.Implementation;
-using VarDump.Visitor.KnownTypes;
+using VarDumpExtended.CodeDom.Common;
+using VarDumpExtended.Collections;
+using VarDumpExtended.Utils;
+using VarDumpExtended.Visitor.Descriptors;
+using VarDumpExtended.Visitor.Descriptors.Implementation;
+using VarDumpExtended.Visitor.KnownTypes;
 
-namespace VarDump.Visitor;
+namespace VarDumpExtended.Visitor;
 
 internal sealed class ObjectVisitor : IObjectVisitor
 {
@@ -54,29 +54,31 @@ internal sealed class ObjectVisitor : IObjectVisitor
 
         _knownTypes = new[]
         {
-            (IKnownObjectVisitor)new PrimitiveVisitor(options),
-            new TimeSpanVisitor(options),
-            new DateTimeVisitor(options),
-            new DateTimeOffsetVisitor(options, this),
-            new EnumVisitor(options),
-            new GuidVisitor(options),
-            new CultureInfoVisitor(options),
-            new TypeVisitor(options),
-            new IPAddressVisitor(options),
-            new IPEndpointVisitor(options, this),
-            new DnsEndPointVisitor(options, this),
-            new VersionVisitor(options),
-            new DateOnlyVisitor(options),
-            new TimeOnlyVisitor(options),
-            new RecordVisitor(options, this),
-            new AnonymousTypeVisitor(this, anonymousObjectDescriptor),
-            new KeyValuePairVisitor(options, this),
-            new TupleVisitor(options, this),
-            new ValueTupleVisitor(this),
-            new GroupingVisitor(this),
-            new DictionaryVisitor(options, this),
-            new CollectionVisitor(options, this)
-        }.ToOrderedDictionary(v => v.Id);
+           (IKnownObjectVisitor)new PrimitiveVisitor(options),
+           new TimeSpanVisitor(options),
+           new DateTimeVisitor(options),
+           new DateTimeOffsetVisitor(options, this),
+           new EnumVisitor(options),
+           new GuidVisitor(options),
+           new CultureInfoVisitor(options),
+           new TypeVisitor(options),
+           new IPAddressVisitor(options),
+           new IPEndpointVisitor(options, this),
+           new DnsEndPointVisitor(options, this),
+           new VersionVisitor(options),
+           new DateOnlyVisitor(options),
+           new TimeOnlyVisitor(options),
+           new RecordVisitor(options, this),
+           new AnonymousTypeVisitor(this, anonymousObjectDescriptor),
+           new KeyValuePairVisitor(options, this),
+           new TupleVisitor(options, this),
+           new ValueTupleVisitor(this),
+           new GroupingVisitor(this),
+           new DictionaryVisitor(options, this),
+           new CollectionVisitor(options, this)
+       }.ToOrderedDictionary(v => v.Id);
+
+        options.ConfigureKnownTypes?.Invoke(_knownTypes);
     }
 
     public CodeExpression Visit(object @object)

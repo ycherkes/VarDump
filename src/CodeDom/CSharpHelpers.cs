@@ -5,7 +5,7 @@
 using System.Collections.Generic;
 using System.Globalization;
 
-namespace VarDump.CodeDom
+namespace VarDumpExtended.CodeDom
 {
     /// <devdoc>
     ///    <para>Provides a base class for code generators.</para>

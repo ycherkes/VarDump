@@ -6,9 +6,9 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace VarDump.CodeDom.Common;
+namespace VarDumpExtended.CodeDom.Common;
 
-internal class CodeObjectCreateAndInitializeExpression : CodeObjectCreateExpression
+public class CodeObjectCreateAndInitializeExpression : CodeObjectCreateExpression
 {
     public CodeExpressionCollection InitializeExpressions { get; set; } = new CodeExpressionCollection();
 

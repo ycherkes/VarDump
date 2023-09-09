@@ -1,4 +1,4 @@
-﻿namespace VarDump.Visitor;
+﻿namespace VarDumpExtended.Visitor;
 
 public enum DateTimeInstantiation
 {

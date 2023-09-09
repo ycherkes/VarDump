@@ -1,6 +1,6 @@
-﻿using VarDump.CodeDom.Common;
+﻿using VarDumpExtended.CodeDom.Common;
 
-namespace VarDump.Visitor;
+namespace VarDumpExtended.Visitor;
 
 internal interface IObjectVisitor
 {

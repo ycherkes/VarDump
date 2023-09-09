@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace VarDump.Visitor.Descriptors;
+namespace VarDumpExtended.Visitor.Descriptors;
 
 public interface IObjectDescriptor
 {

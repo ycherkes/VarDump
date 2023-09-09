@@ -1,7 +1,7 @@
 using System.Linq;
-using VarDump;
-using VarDump.Utils;
-using VarDump.Visitor;
+using VarDumpExtended;
+using VarDumpExtended.Utils;
+using VarDumpExtended.Visitor;
 using Xunit;
 
 namespace UnitTests;

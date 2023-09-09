@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Net;
-using VarDump.CodeDom.Common;
+using VarDumpExtended.CodeDom.Common;
 
-namespace VarDump.Visitor.KnownTypes;
+namespace VarDumpExtended.Visitor.KnownTypes;
 
 internal sealed class IPAddressVisitor : IKnownObjectVisitor
 {

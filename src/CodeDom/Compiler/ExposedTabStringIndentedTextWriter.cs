@@ -5,7 +5,7 @@
 using System.CodeDom.Compiler;
 using System.IO;
 
-namespace VarDump.CodeDom.Compiler
+namespace VarDumpExtended.CodeDom.Compiler
 {
     internal sealed class ExposedTabStringIndentedTextWriter : IndentedTextWriter
     {

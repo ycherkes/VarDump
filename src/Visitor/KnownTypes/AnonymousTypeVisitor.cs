@@ -1,10 +1,10 @@
 ﻿using System;
 using System.Linq;
-using VarDump.CodeDom.Common;
-using VarDump.Utils;
-using VarDump.Visitor.Descriptors;
+using VarDumpExtended.CodeDom.Common;
+using VarDumpExtended.Utils;
+using VarDumpExtended.Visitor.Descriptors;
 
-namespace VarDump.Visitor.KnownTypes;
+namespace VarDumpExtended.Visitor.KnownTypes;
 
 internal sealed class AnonymousTypeVisitor : IKnownObjectVisitor
 {

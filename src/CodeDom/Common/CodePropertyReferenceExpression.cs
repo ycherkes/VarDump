@@ -2,9 +2,9 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-namespace VarDump.CodeDom.Common;
+namespace VarDumpExtended.CodeDom.Common;
 
-internal class CodePropertyReferenceExpression : CodeExpression
+public class CodePropertyReferenceExpression : CodeExpression
 {
     private string _propertyName;
 

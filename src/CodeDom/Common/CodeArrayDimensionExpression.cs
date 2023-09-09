@@ -1,6 +1,6 @@
-﻿namespace VarDump.CodeDom.Common;
+﻿namespace VarDumpExtended.CodeDom.Common;
 
-internal class CodeArrayDimensionExpression : CodeExpression
+public class CodeArrayDimensionExpression : CodeExpression
 {
     public CodeExpressionCollection Initializers { get; } = new();
 

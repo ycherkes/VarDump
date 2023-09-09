@@ -2,9 +2,9 @@
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
-using VarDump.CodeDom.Common;
+using VarDumpExtended.CodeDom.Common;
 
-namespace VarDump.Visitor.KnownTypes;
+namespace VarDumpExtended.Visitor.KnownTypes;
 
 internal sealed class TimeSpanVisitor : IKnownObjectVisitor
 {

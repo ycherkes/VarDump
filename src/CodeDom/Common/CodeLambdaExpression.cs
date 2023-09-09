@@ -4,9 +4,9 @@
 
 using System.Linq;
 
-namespace VarDump.CodeDom.Common;
+namespace VarDumpExtended.CodeDom.Common;
 
-internal class CodeLambdaExpression : CodeExpression
+public class CodeLambdaExpression : CodeExpression
 {
     public CodeExpressionCollection Parameters { get; set; } = new CodeExpressionCollection();
 

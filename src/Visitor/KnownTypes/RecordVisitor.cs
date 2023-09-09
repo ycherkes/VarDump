@@ -1,10 +1,10 @@
 ﻿using System;
 using System.Linq;
 using System.Reflection;
-using VarDump.CodeDom.Common;
-using VarDump.Utils;
+using VarDumpExtended.CodeDom.Common;
+using VarDumpExtended.Utils;
 
-namespace VarDump.Visitor.KnownTypes;
+namespace VarDumpExtended.Visitor.KnownTypes;
 
 internal sealed class RecordVisitor : IKnownObjectVisitor
 {

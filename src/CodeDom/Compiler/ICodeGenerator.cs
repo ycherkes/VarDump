@@ -3,9 +3,9 @@
 // See the LICENSE file in the project root for more information.
 
 using System.IO;
-using VarDump.CodeDom.Common;
+using VarDumpExtended.CodeDom.Common;
 
-namespace VarDump.CodeDom.Compiler
+namespace VarDumpExtended.CodeDom.Compiler
 {
     internal interface ICodeGenerator
     {

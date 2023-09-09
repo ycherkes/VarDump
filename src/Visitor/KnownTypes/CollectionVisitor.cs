@@ -3,11 +3,11 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using VarDump.CodeDom.Common;
-using VarDump.Extensions;
-using VarDump.Utils;
+using VarDumpExtended.CodeDom.Common;
+using VarDumpExtended.Extensions;
+using VarDumpExtended.Utils;
 
-namespace VarDump.Visitor.KnownTypes;
+namespace VarDumpExtended.Visitor.KnownTypes;
 
 internal sealed class CollectionVisitor : IKnownObjectVisitor
 {

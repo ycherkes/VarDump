@@ -4,9 +4,9 @@
 
 using System;
 
-namespace VarDump.CodeDom.Common;
+namespace VarDumpExtended.CodeDom.Common;
 
-internal class CodeVariableDeclarationStatement : CodeStatement
+public class CodeVariableDeclarationStatement : CodeStatement
 {
     private CodeTypeReference _type;
     private string _name;

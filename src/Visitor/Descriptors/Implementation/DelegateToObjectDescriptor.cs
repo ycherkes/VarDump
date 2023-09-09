@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace VarDump.Visitor.Descriptors.Implementation;
+namespace VarDumpExtended.Visitor.Descriptors.Implementation;
 
 internal class DelegateToObjectDescriptor : IObjectDescriptor
 {

@@ -5,9 +5,9 @@
 using System.Collections;
 using System.Collections.Specialized;
 
-namespace VarDump.CodeDom.Common;
+namespace VarDumpExtended.CodeDom.Common;
 
-internal class CodeObject
+public class CodeObject
 {
     private IDictionary _userData;
 

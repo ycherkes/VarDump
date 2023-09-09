@@ -1,6 +1,6 @@
-﻿using VarDump.CodeDom.Common;
+﻿using VarDumpExtended.CodeDom.Common;
 
-namespace VarDump.Utils;
+namespace VarDumpExtended.Utils;
 
 internal static class CodeDomUtils
 {

@@ -5,11 +5,11 @@ using System.Linq;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Text;
-using VarDump.CodeDom;
-using VarDump.CodeDom.VisualBasic;
-using VarDump.Extensions;
+using VarDumpExtended.CodeDom;
+using VarDumpExtended.CodeDom.VisualBasic;
+using VarDumpExtended.Extensions;
 
-namespace VarDump.Utils;
+namespace VarDumpExtended.Utils;
 
 internal static class ReflectionUtils
 {

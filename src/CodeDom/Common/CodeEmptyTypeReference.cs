@@ -1,5 +1,5 @@
-﻿namespace VarDump.CodeDom.Common;
+﻿namespace VarDumpExtended.CodeDom.Common;
 
-internal class CodeEmptyTypeReference : CodeTypeReference
+public class CodeEmptyTypeReference : CodeTypeReference
 {
 }

@@ -4,7 +4,7 @@
 
 using System.Globalization;
 
-namespace VarDump.CodeDom.Collections.Specialized
+namespace VarDumpExtended.CodeDom.Collections.Specialized
 {
     // This class provides a very efficient way to lookup an entry in a list of strings,
     // providing that they are declared in a particular way.

@@ -1,4 +1,4 @@
-﻿namespace VarDump.Extensions;
+﻿namespace VarDumpExtended.Extensions;
 
 internal static class CaseExtensions
 {

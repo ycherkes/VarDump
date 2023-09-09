@@ -1,4 +1,4 @@
-﻿namespace VarDump;
+﻿namespace VarDumpExtended;
 
 public interface IDumper
 {

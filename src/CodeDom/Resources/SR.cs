@@ -4,7 +4,7 @@
 
 using System.Runtime.CompilerServices;
 
-namespace VarDump.CodeDom.Resources
+namespace VarDumpExtended.CodeDom.Resources
 {
     internal partial class SR
     {

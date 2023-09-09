@@ -4,9 +4,9 @@
 
 using System;
 
-namespace VarDump.CodeDom.Common;
+namespace VarDumpExtended.CodeDom.Common;
 
-internal class CodeCastExpression : CodeExpression
+public class CodeCastExpression : CodeExpression
 {
     private CodeTypeReference _targetType;
 

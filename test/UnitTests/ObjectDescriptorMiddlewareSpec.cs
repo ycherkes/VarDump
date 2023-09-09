@@ -4,9 +4,9 @@ using System.ComponentModel;
 using System.IO;
 using System.Linq;
 using System.Reflection;
-using VarDump;
-using VarDump.Visitor;
-using VarDump.Visitor.Descriptors;
+using VarDumpExtended;
+using VarDumpExtended.Visitor;
+using VarDumpExtended.Visitor.Descriptors;
 using Xunit;
 
 namespace UnitTests;

@@ -4,9 +4,9 @@
 
 using System;
 
-namespace VarDump.CodeDom.Common;
+namespace VarDumpExtended.CodeDom.Common;
 
-internal class CodeCollectionTypeReference : CodeTypeReference
+public class CodeCollectionTypeReference : CodeTypeReference
 {
     public CodeCollectionTypeReference(Type type, CodeTypeReferenceOptions codeTypeReferenceOption) : base(type, codeTypeReferenceOption)
     {

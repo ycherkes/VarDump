@@ -5,7 +5,7 @@
 using System.Collections;
 using System.Collections.Specialized;
 
-namespace VarDump.CodeDom.Compiler
+namespace VarDumpExtended.CodeDom.Compiler
 {
     internal class CodeGeneratorOptions
     {

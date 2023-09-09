@@ -5,10 +5,10 @@
 using System;
 using System.Globalization;
 using System.IO;
-using VarDump.CodeDom.Common;
-using VarDump.CodeDom.Resources;
+using VarDumpExtended.CodeDom.Common;
+using VarDumpExtended.CodeDom.Resources;
 
-namespace VarDump.CodeDom.Compiler;
+namespace VarDumpExtended.CodeDom.Compiler;
 
 internal abstract class CodeGenerator : ICodeGenerator
 {

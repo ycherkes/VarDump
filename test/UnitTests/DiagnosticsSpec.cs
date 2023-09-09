@@ -6,8 +6,8 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
-using VarDump;
-using VarDump.Visitor;
+using VarDumpExtended;
+using VarDumpExtended.Visitor;
 using Xunit;
 
 namespace UnitTests;

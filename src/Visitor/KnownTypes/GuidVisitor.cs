@@ -1,7 +1,7 @@
 ﻿using System;
-using VarDump.CodeDom.Common;
+using VarDumpExtended.CodeDom.Common;
 
-namespace VarDump.Visitor.KnownTypes;
+namespace VarDumpExtended.Visitor.KnownTypes;
 
 internal sealed class GuidVisitor : IKnownObjectVisitor
 {

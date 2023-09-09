@@ -5,9 +5,9 @@
 using System;
 using System.Collections;
 
-namespace VarDump.CodeDom.Common;
+namespace VarDumpExtended.CodeDom.Common;
 
-internal class CodeTypeReferenceCollection : CollectionBase
+public class CodeTypeReferenceCollection : CollectionBase
 {
     public CodeTypeReferenceCollection() { }
 

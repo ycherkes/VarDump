@@ -4,8 +4,8 @@ using System.Globalization;
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.CSharp.Scripting;
 using Microsoft.CodeAnalysis.Scripting;
-using VarDump;
-using VarDump.Visitor;
+using VarDumpExtended;
+using VarDumpExtended.Visitor;
 using Xunit;
 
 namespace UnitTests;

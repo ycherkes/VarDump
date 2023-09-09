@@ -52,9 +52,9 @@ internal sealed class ObjectVisitor : IObjectVisitor
 
         _visitedObjects = new Stack<object>();
 
-       _knownTypes = new[]
-       {
-           (IKnownObjectVisitor)new PrimitiveVisitor(options), 
+        _knownTypes = new[]
+        {
+           (IKnownObjectVisitor)new PrimitiveVisitor(options),
            new TimeSpanVisitor(options),
            new DateTimeVisitor(options),
            new DateTimeOffsetVisitor(options, this),
@@ -77,6 +77,12 @@ internal sealed class ObjectVisitor : IObjectVisitor
            new DictionaryVisitor(options, this),
            new CollectionVisitor(options, this)
        }.ToOrderedDictionary(v => v.Id);
+    }
+
+    public ObjectVisitor(DumpOptions options, Action<IOrderedDictionary<string, IKnownObjectVisitor>> configure)
+        : this(options)
+    {
+        configure?.Invoke(_knownTypes);
     }
 
     public CodeExpression Visit(object @object)

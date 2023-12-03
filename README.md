@@ -5,7 +5,7 @@ VarDumpExteded is a utility for serialization runtime objects to C# or Visual Ba
 
 Developed as a free alternative of [ObjectDumper.NET](https://github.com/thomasgalliker/ObjectDumper), which is not free for commercial use.
 
-[![nuget version](https://img.shields.io/badge/Nuget-v0.2.6-blue)](https://www.nuget.org/packages/VarDumpExtended)
+[![nuget version](https://img.shields.io/badge/Nuget-v0.2.7-blue)](https://www.nuget.org/packages/VarDumpExtended)
 [![nuget downloads](https://img.shields.io/nuget/dt/VarDumpExtended?label=Downloads)](https://www.nuget.org/packages/VarDumpExtended)
 
 # Powered By

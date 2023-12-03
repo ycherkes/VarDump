@@ -25,16 +25,32 @@ public class CSharpDumper : IDumper
 
     public string Dump(object obj)
     {
+        using var sourceWriter = new StringWriter();
+
+        DumpImpl(obj, sourceWriter);
+
+        var csCodeString = sourceWriter.ToString();
+
+        return csCodeString;
+    }
+
+    public void Dump(object obj, TextWriter textWriter)
+    {
+        DumpImpl(obj, textWriter);
+    }
+
+    private void DumpImpl(object obj, TextWriter textWriter)
+    {
         var objectVisitor = new ObjectVisitor(_options);
 
         var expression = objectVisitor.Visit(obj);
 
-        CodeObject codeObject = _options.GenerateVariableInitializer 
+        CodeObject codeObject = _options.GenerateVariableInitializer
             ? new CodeVariableDeclarationStatement(new CodeImplicitlyTypedTypeReference(),
                 obj != null ? ReflectionUtils.ComposeCsharpVariableName(obj.GetType()) : "nullValue")
             {
                 InitExpression = expression
-            } 
+            }
             : expression;
 
         var codeGeneratorOptions = new CodeGeneratorOptions
@@ -43,12 +59,7 @@ public class CSharpDumper : IDumper
         };
 
         ICodeGenerator generator = new CSharpCodeGenerator();
-        using var sourceWriter = new StringWriter();
 
-        generator.GenerateCode(codeObject, sourceWriter, codeGeneratorOptions);
-
-        var csCodeString = sourceWriter.ToString();
-
-        return csCodeString;
+        generator.GenerateCode(codeObject, textWriter, codeGeneratorOptions);
     }
 }

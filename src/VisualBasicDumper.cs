@@ -25,6 +25,22 @@ public class VisualBasicDumper : IDumper
 
     public string Dump(object obj)
     {
+        using var sourceWriter = new StringWriter();
+
+        DumpImpl(obj, sourceWriter);
+
+        var vbCodeString = sourceWriter.ToString();
+
+        return vbCodeString;
+    }
+
+    public void Dump(object obj, TextWriter textWriter)
+    {
+        DumpImpl(obj, textWriter);
+    }
+
+    private void DumpImpl(object obj, TextWriter textWriter)
+    {
         var objectVisitor = new ObjectVisitor(_options);
 
         var expression = objectVisitor.Visit(obj);
@@ -38,12 +54,7 @@ public class VisualBasicDumper : IDumper
             : expression;
 
         ICodeGenerator generator = new VBCodeGenerator();
-        using var sourceWriter = new StringWriter();
 
-        generator.GenerateCode(codeObject, sourceWriter, new CodeGeneratorOptions());
-
-        var vbCodeString = sourceWriter.ToString();
-
-        return vbCodeString;
+        generator.GenerateCode(codeObject, textWriter, new CodeGeneratorOptions());
     }
 }

@@ -170,7 +170,7 @@ internal sealed class CollectionVisitor : IKnownObjectVisitor
             items.ToArray());
 
         if (isImmutableOrFrozen || enumerable is IList && !type.IsArray)
-            expr = new CodeMethodInvokeExpression(expr, $"To{ReflectionUtils.GetImmutableOrFrozenTypeName(type)}");
+            expr = new CodeMethodInvokeExpression(expr, $"To{type.GetImmutableOrFrozenTypeName()}");
 
         return expr;
     }

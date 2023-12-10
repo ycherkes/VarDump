@@ -97,7 +97,7 @@ internal sealed class DictionaryVisitor : IKnownObjectVisitor
         var isImmutableOrFrozen = type.IsPublicImmutableOrFrozenCollection();
 
         expr = isImmutableOrFrozen
-            ? new CodeMethodInvokeExpression(expr, $"To{ReflectionUtils.GetImmutableOrFrozenTypeName(type)}", keyLambdaExpression, valueLambdaExpression)
+            ? new CodeMethodInvokeExpression(expr, $"To{type.GetImmutableOrFrozenTypeName()}", keyLambdaExpression, valueLambdaExpression)
             : new CodeMethodInvokeExpression(expr, "ToDictionary", keyLambdaExpression, valueLambdaExpression);
 
         return expr;

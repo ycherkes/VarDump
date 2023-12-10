@@ -70,7 +70,7 @@ internal sealed class DictionaryVisitor : IKnownObjectVisitor
 
             CodeExpression dictionaryCreateExpression = new CodeObjectCreateAndInitializeExpression(new CodeCollectionTypeReference(dictionaryType, _typeReferenceOptions), items);
 
-            dictionaryCreateExpression = new CodeMethodInvokeExpression(dictionaryCreateExpression, $"To{ReflectionUtils.GetImmutableOrFrozenTypeName(type)}");
+            dictionaryCreateExpression = new CodeMethodInvokeExpression(dictionaryCreateExpression, $"To{type.GetImmutableOrFrozenTypeName()}");
 
             return dictionaryCreateExpression;
         }
@@ -97,7 +97,7 @@ internal sealed class DictionaryVisitor : IKnownObjectVisitor
         var isImmutableOrFrozen = type.IsPublicImmutableOrFrozenCollection();
 
         expr = isImmutableOrFrozen
-            ? new CodeMethodInvokeExpression(expr, $"To{ReflectionUtils.GetImmutableOrFrozenTypeName(type)}", keyLambdaExpression, valueLambdaExpression)
+            ? new CodeMethodInvokeExpression(expr, $"To{type.GetImmutableOrFrozenTypeName()}", keyLambdaExpression, valueLambdaExpression)
             : new CodeMethodInvokeExpression(expr, "ToDictionary", keyLambdaExpression, valueLambdaExpression);
 
         return expr;

@@ -106,7 +106,7 @@ internal sealed class CollectionVisitor : IKnownObjectVisitor
                 new CodeTypeReference(isImmutableOrFrozen || !type.IsPublic ? elementType.MakeArrayType() : type, _typeReferenceOptions),
                 items.ToArray());
 
-            if (isImmutableOrFrozen) expr = new CodeMethodInvokeExpression(expr, $"To{ReflectionUtils.GetImmutableOrFrozenTypeName(type)}");
+            if (isImmutableOrFrozen) expr = new CodeMethodInvokeExpression(expr, $"To{type.GetImmutableOrFrozenTypeName()}");
 
             return expr;
         }
@@ -170,7 +170,7 @@ internal sealed class CollectionVisitor : IKnownObjectVisitor
             items.ToArray());
 
         if (isImmutableOrFrozen || enumerable is IList && !type.IsArray)
-            expr = new CodeMethodInvokeExpression(expr, $"To{ReflectionUtils.GetImmutableOrFrozenTypeName(type)}");
+            expr = new CodeMethodInvokeExpression(expr, $"To{type.GetImmutableOrFrozenTypeName()}");
 
         return expr;
     }

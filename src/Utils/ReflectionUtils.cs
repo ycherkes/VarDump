@@ -229,11 +229,27 @@ internal static class ReflectionUtils
         return hasICollection;
     }
 
-    public static bool IsPublicImmutableCollection(this Type type)
+    public static bool IsPublicImmutableOrFrozenCollection(this Type type)
     {
         var typeFullName = type.FullName ?? "";
 
-        return type.IsPublic && typeFullName.StartsWith("System.Collections.Immutable");
+        return type.IsPublic && typeFullName.StartsWith("System.Collections.Immutable") || IsFrozenCollection(typeFullName);
+    }
+
+    private static bool IsFrozenCollection(string typeFullName)
+    {
+        return typeFullName.StartsWith("System.Collections.Frozen");
+    }
+
+    public static string GetImmutableOrFrozenTypeName(this Type type)
+    {
+        var typeFullName = type.FullName;
+        var typeName = type.Name;
+        if (IsFrozenCollection(typeFullName))
+        {
+            typeName = typeName.Substring(typeName.IndexOf("Frozen", StringComparison.Ordinal));
+        }
+        return typeName.Split('`')[0];
     }
 
     public static bool IsReadonlyCollection(this Type type)

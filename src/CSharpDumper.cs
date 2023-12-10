@@ -36,6 +36,11 @@ public class CSharpDumper : IDumper
 
     public void Dump(object obj, TextWriter textWriter)
     {
+        if (textWriter == null)
+        {
+            throw new ArgumentNullException(nameof(textWriter));
+        }
+
         DumpImpl(obj, textWriter);
     }
 

@@ -93,9 +93,9 @@ internal sealed class CollectionVisitor : IKnownObjectVisitor
 
         var type = enumerable.GetType();
 
-        var isImmutable = type.IsPublicImmutableCollection();
+        var isImmutableOrFrozen = type.IsPublicImmutableOrFrozenCollection();
 
-        if (type.IsArray || isImmutable || !IsCollection(enumerable))
+        if (type.IsArray || isImmutableOrFrozen || !IsCollection(enumerable))
         {
             if (type.IsArray && ((Array)enumerable).Rank > 1)
             {
@@ -103,10 +103,10 @@ internal sealed class CollectionVisitor : IKnownObjectVisitor
             }
 
             CodeExpression expr = new CodeArrayCreateExpression(
-                new CodeTypeReference(isImmutable || !type.IsPublic ? elementType.MakeArrayType() : type, _typeReferenceOptions),
+                new CodeTypeReference(isImmutableOrFrozen || !type.IsPublic ? elementType.MakeArrayType() : type, _typeReferenceOptions),
                 items.ToArray());
 
-            if (isImmutable) expr = new CodeMethodInvokeExpression(expr, $"To{type.Name.Split('`')[0]}");
+            if (isImmutableOrFrozen) expr = new CodeMethodInvokeExpression(expr, $"To{type.GetImmutableOrFrozenTypeName()}");
 
             return expr;
         }
@@ -155,7 +155,7 @@ internal sealed class CollectionVisitor : IKnownObjectVisitor
         var items = enumerable.Cast<object>().Select(_rootObjectVisitor.Visit);
         var type = enumerable.GetType();
 
-        var isImmutable = type.IsPublicImmutableCollection();
+        var isImmutableOrFrozen = type.IsPublicImmutableOrFrozenCollection();
 
         var typeReference = new CodeAnonymousTypeReference { ArrayRank = 1 };
 
@@ -169,8 +169,8 @@ internal sealed class CollectionVisitor : IKnownObjectVisitor
             typeReference,
             items.ToArray());
 
-        if (isImmutable || enumerable is IList && !type.IsArray)
-            expr = new CodeMethodInvokeExpression(expr, $"To{type.Name.Split('`')[0]}");
+        if (isImmutableOrFrozen || enumerable is IList && !type.IsArray)
+            expr = new CodeMethodInvokeExpression(expr, $"To{type.GetImmutableOrFrozenTypeName()}");
 
         return expr;
     }

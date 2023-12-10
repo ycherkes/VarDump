@@ -59,9 +59,9 @@ internal sealed class DictionaryVisitor : IKnownObjectVisitor
         var items = dict.Cast<object>().Select(VisitKeyValuePairGenerateImplicitly);
 
         var type = dict.GetType();
-        var isImmutable = type.IsPublicImmutableCollection();
+        var isImmutableOrFrozen = type.IsPublicImmutableOrFrozenCollection();
 
-        if (isImmutable)
+        if (isImmutableOrFrozen)
         {
             var keyType = ReflectionUtils.GetInnerElementType(dict.Keys.GetType());
             var valueType = ReflectionUtils.GetInnerElementType(dict.Values.GetType());
@@ -70,7 +70,7 @@ internal sealed class DictionaryVisitor : IKnownObjectVisitor
 
             CodeExpression dictionaryCreateExpression = new CodeObjectCreateAndInitializeExpression(new CodeCollectionTypeReference(dictionaryType, _typeReferenceOptions), items);
 
-            dictionaryCreateExpression = new CodeMethodInvokeExpression(dictionaryCreateExpression, $"To{type.Name.Split('`')[0]}");
+            dictionaryCreateExpression = new CodeMethodInvokeExpression(dictionaryCreateExpression, $"To{type.GetImmutableOrFrozenTypeName()}");
 
             return dictionaryCreateExpression;
         }
@@ -94,10 +94,10 @@ internal sealed class DictionaryVisitor : IKnownObjectVisitor
         var keyLambdaExpression = new CodeLambdaExpression(new CodePropertyReferenceExpression(variableReferenceExpression, keyName), variableReferenceExpression);
         var valueLambdaExpression = new CodeLambdaExpression(new CodePropertyReferenceExpression(variableReferenceExpression, valueName), variableReferenceExpression);
 
-        var isImmutable = type.IsPublicImmutableCollection();
+        var isImmutableOrFrozen = type.IsPublicImmutableOrFrozenCollection();
 
-        expr = isImmutable
-            ? new CodeMethodInvokeExpression(expr, $"To{type.Name.Split('`')[0]}", keyLambdaExpression, valueLambdaExpression)
+        expr = isImmutableOrFrozen
+            ? new CodeMethodInvokeExpression(expr, $"To{ReflectionUtils.GetImmutableOrFrozenTypeName(type)}", keyLambdaExpression, valueLambdaExpression)
             : new CodeMethodInvokeExpression(expr, "ToDictionary", keyLambdaExpression, valueLambdaExpression);
 
         return expr;

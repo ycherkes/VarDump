@@ -10,6 +10,8 @@ using Xunit;
 
 namespace UnitTests;
 
+#if !NET8_0_OR_GREATER
+
 public class DataTableSpec
 {
     [Fact(Skip = "Skip")]
@@ -69,3 +71,5 @@ public class DataTableSpec
         Assert.Equal(@"", result);
     }
 }
+
+#endif

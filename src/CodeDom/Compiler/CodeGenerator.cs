@@ -10,7 +10,7 @@ using VarDump.CodeDom.Resources;
 
 namespace VarDump.CodeDom.Compiler;
 
-internal abstract class CodeGenerator : ICodeGenerator
+internal abstract partial class CodeGenerator : ICodeGenerator
 {
     private ExposedTabStringIndentedTextWriter _output;
     private CodeGeneratorOptions _options;

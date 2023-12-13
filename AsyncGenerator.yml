@@ -1,0 +1,31 @@
+projects:
+- filePath: src/VarDump.csproj
+  targetFramework: net45
+  concurrentRun: false
+  applyChanges: true
+  analyzation:
+    methodConversion:
+    - conversion: ToAsync
+      name: GenerateCodeFromExpression
+      containingTypeName: ICodeGenerator
+    - conversion: ToAsync
+      name: GenerateCodeFromStatement
+      containingTypeName: ICodeGenerator
+    callForwarding: true
+    cancellationTokens:
+      guards: true
+      methodParameter:
+      - parameter: Optional
+      requiresCancellationToken:
+      - name: BeforeSaveChanges
+      - name: AfterSaveChanges
+    scanMethodBody: true
+    searchAsyncCounterpartsInInheritedTypes: true
+    scanForMissingAsyncMembers:
+    - all: true
+  transformation:
+    configureAwaitArgument: false
+    localFunctions: true
+  registerPlugin:
+  - type: AsyncGenerator.Core.Plugins.EmptyRegionRemover
+    assemblyName: AsyncGenerator.Core

@@ -5,7 +5,7 @@ using VarDump.CodeDom.Compiler;
 
 namespace VarDump.Extensions;
 
-internal static class CodeGeneratorExtensions
+internal static partial class CodeGeneratorExtensions
 {
     public static void GenerateCode(this ICodeGenerator codeGenerator, CodeObject co, TextWriter w,
         CodeGeneratorOptions o)

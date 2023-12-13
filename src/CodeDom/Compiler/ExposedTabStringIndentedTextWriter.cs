@@ -7,7 +7,7 @@ using System.IO;
 
 namespace VarDump.CodeDom.Compiler
 {
-    internal sealed class ExposedTabStringIndentedTextWriter : IndentedTextWriter
+    internal sealed partial class ExposedTabStringIndentedTextWriter : IndentedTextWriter
     {
         public ExposedTabStringIndentedTextWriter(TextWriter writer, string tabString) : base(writer, tabString)
         {

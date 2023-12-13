@@ -1,4 +1,6 @@
+using System.IO;
 using System.Linq;
+using System.Threading.Tasks;
 using VarDump;
 using VarDump.Utils;
 using VarDump.Visitor;
@@ -38,6 +40,41 @@ public class AnonymousTypeSpec
     }
 };
 ", result);
+    }
+
+    [Fact]
+    public async Task DumpAnonymousTypeCsharpAsync()
+    {
+        var anonymous = new[]
+        {
+            new { Name = "Steeve", Age = (int?)int.MaxValue, Reference = "Test reference" },
+            new { Name = "Peter", Age = (int?)null, Reference = (string)null }
+        };
+
+        var dumper = new CSharpDumper();
+        using var sourceWriter = new StringWriter();
+        await dumper.DumpAsync(anonymous, sourceWriter);
+        var result = sourceWriter.ToString();
+
+        Assert.Equal(
+            """
+            var arrayOfAnonymousType = new []
+            {
+                new 
+                {
+                    Name = "Steeve",
+                    Age = (int?)int.MaxValue,
+                    Reference = "Test reference"
+                },
+                new 
+                {
+                    Name = "Peter",
+                    Age = (int?)null,
+                    Reference = (string)null
+                }
+            };
+
+            """, result);
     }
 
     [Fact]

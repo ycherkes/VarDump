@@ -2,7 +2,7 @@
 
 namespace VarDump;
 
-public interface IDumper
+public partial interface IDumper
 {
     string Dump(object obj);
 

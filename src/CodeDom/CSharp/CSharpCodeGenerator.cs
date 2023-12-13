@@ -13,7 +13,7 @@ using VarDump.CodeDom.Resources;
 
 namespace VarDump.CodeDom.CSharp
 {
-    internal sealed class CSharpCodeGenerator : ICodeGenerator
+    internal sealed partial class CSharpCodeGenerator : ICodeGenerator
     {
         private ExposedTabStringIndentedTextWriter _output;
         private CodeGeneratorOptions _options;

@@ -13,7 +13,7 @@ using VarDump.CodeDom.Compiler;
 
 namespace VarDump.CodeDom.VisualBasic
 {
-    internal sealed class VBCodeGenerator : CodeGenerator
+    internal sealed partial class VBCodeGenerator : CodeGenerator
     {
         private const int MaxLineLength = int.MaxValue;
         private int _statementDepth = 0;

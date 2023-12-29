@@ -5,10 +5,11 @@ namespace VarDump.Extensions;
 public static class VarDumpExtensions
 {
     public static Func<DumpOptions, IDumper> VarDumpFactory { get; set; } = VarDumpFactories.CSharp;
+    public static DumpOptions DefaultDumpOptions { get; set; } = DumpOptions.Default;
 
     public static string Dump(this object obj)
     {
-        return VarDumpFactory(DumpOptions.Default).Dump(obj);
+        return VarDumpFactory(DefaultDumpOptions).Dump(obj);
     }
 
     public static string Dump(this object obj, DumpOptions options)

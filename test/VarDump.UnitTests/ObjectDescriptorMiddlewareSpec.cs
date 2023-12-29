@@ -64,19 +64,43 @@ public class ObjectDescriptorMiddlewareSpec
 
         var result = dumper.Dump(delegateObject);
 
+#if NET8_0_OR_GREATER
+
         Assert.Equal(
-            @$"var eventHandler = new EventHandler
-{{
-    Method = new RuntimeMethodInfo
-    {{
-        Name = ""{delegateObject.Method.Name}"",
-        DeclaringType = typeof({nameof(ObjectDescriptorMiddlewareSpec)}),
-        ReflectedType = typeof({nameof(ObjectDescriptorMiddlewareSpec)}),
-        MemberType = MemberTypes.Method,
-        Attributes = MethodAttributes.PrivateScope | MethodAttributes.Assembly | MethodAttributes.Static | MethodAttributes.HideBySig
-    }}
-}};
-", result);
+            $$"""
+              var eventHandler = new EventHandler
+              {
+                  Method = new RuntimeMethodInfo
+                  {
+                      Name = "{{delegateObject.Method.Name}}",
+                      DeclaringType = typeof({{nameof(ObjectDescriptorMiddlewareSpec)}}),
+                      ReflectedType = typeof({{nameof(ObjectDescriptorMiddlewareSpec)}}),
+                      MemberType = MemberTypes.Method,
+                      Attributes = MethodAttributes.Assembly | MethodAttributes.Static | MethodAttributes.HideBySig
+                  }
+              };
+
+              """, result);
+
+#else
+
+        Assert.Equal(
+            $$"""
+              var eventHandler = new EventHandler
+              {
+                  Method = new RuntimeMethodInfo
+                  {
+                      Name = "{{delegateObject.Method.Name}}",
+                      DeclaringType = typeof({{nameof(ObjectDescriptorMiddlewareSpec)}}),
+                      ReflectedType = typeof({{nameof(ObjectDescriptorMiddlewareSpec)}}),
+                      MemberType = MemberTypes.Method,
+                      Attributes = MethodAttributes.PrivateScope | MethodAttributes.Assembly | MethodAttributes.Static | MethodAttributes.HideBySig
+                  }
+              };
+
+              """, result);
+
+#endif
     }
 
     [Fact]
@@ -97,20 +121,48 @@ public class ObjectDescriptorMiddlewareSpec
         var actualString = dumper.Dump(new DirectoryInfo(directoryName));
 
         var expectedFullName = Path.Combine(Directory.GetCurrentDirectory(), directoryName).Replace(@"\", @"\\");
-        var expectedString = @$"var directoryInfo = new DirectoryInfo
-{{
-    Attributes = FileAttributes.-1,
-    CreationTime = DateTime.ParseExact(""1601-01-01T00:00:00.0000000Z"", ""O"", CultureInfo.InvariantCulture, DateTimeStyles.RoundtripKind),
-    CreationTimeUtc = DateTime.ParseExact(""1601-01-01T00:00:00.0000000Z"", ""O"", CultureInfo.InvariantCulture, DateTimeStyles.RoundtripKind),
-    Extension = """",
-    FullName = ""{expectedFullName}"",
-    LastAccessTime = DateTime.ParseExact(""1601-01-01T00:00:00.0000000Z"", ""O"", CultureInfo.InvariantCulture, DateTimeStyles.RoundtripKind),
-    LastAccessTimeUtc = DateTime.ParseExact(""1601-01-01T00:00:00.0000000Z"", ""O"", CultureInfo.InvariantCulture, DateTimeStyles.RoundtripKind),
-    LastWriteTime = DateTime.ParseExact(""1601-01-01T00:00:00.0000000Z"", ""O"", CultureInfo.InvariantCulture, DateTimeStyles.RoundtripKind),
-    LastWriteTimeUtc = DateTime.ParseExact(""1601-01-01T00:00:00.0000000Z"", ""O"", CultureInfo.InvariantCulture, DateTimeStyles.RoundtripKind),
-    Name = ""{directoryName}""
-}};
-";
+
+#if NET8_0_OR_GREATER
+
+        var expectedString = $$"""
+                               var directoryInfo = new DirectoryInfo
+                               {
+                                   Attributes = FileAttributes.-1,
+                                   CreationTime = DateTime.ParseExact("1601-01-01T00:00:00.0000000Z", "O", CultureInfo.InvariantCulture, DateTimeStyles.RoundtripKind),
+                                   CreationTimeUtc = DateTime.ParseExact("1601-01-01T00:00:00.0000000Z", "O", CultureInfo.InvariantCulture, DateTimeStyles.RoundtripKind),
+                                   Extension = "",
+                                   FullName = "{{expectedFullName}}",
+                                   LastAccessTime = DateTime.ParseExact("1601-01-01T00:00:00.0000000Z", "O", CultureInfo.InvariantCulture, DateTimeStyles.RoundtripKind),
+                                   LastAccessTimeUtc = DateTime.ParseExact("1601-01-01T00:00:00.0000000Z", "O", CultureInfo.InvariantCulture, DateTimeStyles.RoundtripKind),
+                                   LastWriteTime = DateTime.ParseExact("1601-01-01T00:00:00.0000000Z", "O", CultureInfo.InvariantCulture, DateTimeStyles.RoundtripKind),
+                                   LastWriteTimeUtc = DateTime.ParseExact("1601-01-01T00:00:00.0000000Z", "O", CultureInfo.InvariantCulture, DateTimeStyles.RoundtripKind),
+                                   Name = "{{directoryName}}",
+                                   UnixFileMode = UnixFileMode.-1
+                               };
+
+                               """;
+
+#else
+
+        var expectedString = $$"""
+                               var directoryInfo = new DirectoryInfo
+                               {
+                                   Attributes = FileAttributes.-1,
+                                   CreationTime = DateTime.ParseExact("1601-01-01T00:00:00.0000000Z", "O", CultureInfo.InvariantCulture, DateTimeStyles.RoundtripKind),
+                                   CreationTimeUtc = DateTime.ParseExact("1601-01-01T00:00:00.0000000Z", "O", CultureInfo.InvariantCulture, DateTimeStyles.RoundtripKind),
+                                   Extension = "",
+                                   FullName = "{{expectedFullName}}",
+                                   LastAccessTime = DateTime.ParseExact("1601-01-01T00:00:00.0000000Z", "O", CultureInfo.InvariantCulture, DateTimeStyles.RoundtripKind),
+                                   LastAccessTimeUtc = DateTime.ParseExact("1601-01-01T00:00:00.0000000Z", "O", CultureInfo.InvariantCulture, DateTimeStyles.RoundtripKind),
+                                   LastWriteTime = DateTime.ParseExact("1601-01-01T00:00:00.0000000Z", "O", CultureInfo.InvariantCulture, DateTimeStyles.RoundtripKind),
+                                   LastWriteTimeUtc = DateTime.ParseExact("1601-01-01T00:00:00.0000000Z", "O", CultureInfo.InvariantCulture, DateTimeStyles.RoundtripKind),
+                                   Name = "{{directoryName}}"
+                               };
+
+                               """;
+
+#endif
+
         Assert.Equal(expectedString, actualString);
     }
 
@@ -173,17 +225,39 @@ public class ObjectDescriptorMiddlewareSpec
 
         var result = dumper.Dump(delegateObject);
 
+#if NET8_0_OR_GREATER
+
         Assert.Equal(
-            @$"Dim eventHandlerValue = New EventHandler With {{
-    .Method = New RuntimeMethodInfo With {{
-        .Name = ""{delegateObject.Method.Name}"",
-        .DeclaringType = GetType({nameof(ObjectDescriptorMiddlewareSpec)}),
-        .ReflectedType = GetType({nameof(ObjectDescriptorMiddlewareSpec)}),
-        .MemberType = MemberTypes.Method,
-        .Attributes = MethodAttributes.PrivateScope Or MethodAttributes.[Assembly] Or MethodAttributes.[Static] Or MethodAttributes.HideBySig
-    }}
-}}
-", result);
+            $$"""
+              Dim eventHandlerValue = New EventHandler With {
+                  .Method = New RuntimeMethodInfo With {
+                      .Name = "{{delegateObject.Method.Name}}",
+                      .DeclaringType = GetType({{nameof(ObjectDescriptorMiddlewareSpec)}}),
+                      .ReflectedType = GetType({{nameof(ObjectDescriptorMiddlewareSpec)}}),
+                      .MemberType = MemberTypes.Method,
+                      .Attributes = MethodAttributes.[Assembly] Or MethodAttributes.[Static] Or MethodAttributes.HideBySig
+                  }
+              }
+
+              """, result);
+
+#else
+
+        Assert.Equal(
+            $$"""
+              Dim eventHandlerValue = New EventHandler With {
+                  .Method = New RuntimeMethodInfo With {
+                      .Name = "{{delegateObject.Method.Name}}",
+                      .DeclaringType = GetType({{nameof(ObjectDescriptorMiddlewareSpec)}}),
+                      .ReflectedType = GetType({{nameof(ObjectDescriptorMiddlewareSpec)}}),
+                      .MemberType = MemberTypes.Method,
+                      .Attributes = MethodAttributes.PrivateScope Or MethodAttributes.[Assembly] Or MethodAttributes.[Static] Or MethodAttributes.HideBySig
+                  }
+              }
+
+              """, result);
+
+#endif
     }
 
     private class MemberInfoMiddleware : IObjectDescriptorMiddleware

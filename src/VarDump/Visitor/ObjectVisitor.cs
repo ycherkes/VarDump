@@ -69,7 +69,7 @@ internal sealed class ObjectVisitor : IObjectVisitor
             new DateOnlyVisitor(options),
             new TimeOnlyVisitor(options),
             new RecordVisitor(options, this),
-            new AnonymousTypeVisitor(this, anonymousObjectDescriptor),
+            new AnonymousTypeVisitor(options, this, anonymousObjectDescriptor),
             new KeyValuePairVisitor(options, this),
             new TupleVisitor(options, this),
             new ValueTupleVisitor(this),

@@ -18,6 +18,13 @@ internal class CodeCastExpression : CodeExpression
         Expression = expression;
     }
 
+    public CodeCastExpression(CodeTypeReference targetType, CodeExpression expression, bool useSimpleParentheses)
+    {
+        TargetType = targetType;
+        Expression = expression;
+        SimpleParentheses = useSimpleParentheses;
+    }
+
     public CodeCastExpression(string targetType, CodeExpression expression)
     {
         TargetType = new CodeTypeReference(targetType);

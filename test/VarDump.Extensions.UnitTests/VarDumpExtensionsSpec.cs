@@ -70,7 +70,7 @@ public class VarDumpExtensionsSpec
             """
             var arrayOfAnonymousType = new []
             {
-                new
+                new 
                 {
                     d = new System.Collections.Generic.Dictionary<string, string>
                     {
@@ -80,12 +80,12 @@ public class VarDumpExtensionsSpec
                         }
                     }
                 },
-                new
+                new 
                 {
                     d = (System.Collections.Generic.Dictionary<string, string>)null
                 }
             };
-
+            
             """, result);
     }
 

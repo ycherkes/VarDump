@@ -23,20 +23,20 @@ public class VarDumpExtensionsSpec
             """
             var arrayOfAnonymousType = new []
             {
-                new
+                new 
                 {
                     Name = "Steeve",
                     Age = (int?)int.MaxValue,
                     Reference = "Test reference"
                 },
-                new
+                new 
                 {
                     Name = "Peter",
                     Age = (int?)null,
                     Reference = (string)null
                 }
             };
-
+            
             """, result);
     }
 

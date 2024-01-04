@@ -8,6 +8,8 @@ Developed as a free alternative of [ObjectDumper.NET](https://github.com/thomasg
 [![nuget version](https://img.shields.io/badge/Nuget-v0.2.11-blue)](https://www.nuget.org/packages/VarDump)
 [![nuget downloads](https://img.shields.io/nuget/dt/VarDump?label=Downloads)](https://www.nuget.org/packages/VarDump)
 
+<p align="right"><a href="https://dotnetfiddle.net/ZJzIZy">Run .NET fiddle</a></p>
+
 ```csharp
 using System;
 using System.Collections.Generic;

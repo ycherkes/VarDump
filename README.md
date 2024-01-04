@@ -8,37 +8,48 @@ Developed as a free alternative of [ObjectDumper.NET](https://github.com/thomasg
 [![nuget version](https://img.shields.io/badge/Nuget-v0.2.11-blue)](https://www.nuget.org/packages/VarDump)
 [![nuget downloads](https://img.shields.io/nuget/dt/VarDump?label=Downloads)](https://www.nuget.org/packages/VarDump)
 
-<p align="right"><a href="https://dotnetfiddle.net/ZJzIZy">Run .NET fiddle</a></p>
+# C# Dumper, Default Options:
+<p align="right"><a href="https://dotnetfiddle.net/4ZA1wG">Run .NET fiddle</a></p>
 
 ```csharp
 using System;
-using System.Collections.Generic;
+using VarDump;
+
+var anonymousObject = new
+{
+    Name = "Name",
+    Surname = "Surname"
+};
+
+var dumper = new CSharpDumper();
+Console.WriteLine(dumper.Dump(anonymousObject));
+```
+
+
+# Extension methods example:
+<p align="right"><a href="https://dotnetfiddle.net/BRKwPK">Run .NET fiddle</a></p>
+
+```csharp
+using System;
+using System.Linq;
 using VarDump.Extensions;
 using VarDump.Visitor;
 
-var dictionary = new Dictionary<string, Person>
+var dictionary = new[]
 {
+    new
     {
-        "1234",
-        null
+        Name = "Name1",
+        Surname = "Surname1"
     },
+    new
     {
-        "5678",
-        new Person
-        {
-            Name = "TestName",
-            Surname = "TestSurname"
-        }
+        Name = "Name2",
+        Surname = "Surname2"
     }
-};
+}.ToDictionary(x => x.Name, x => x);
 
 Console.WriteLine(dictionary.Dump(DumpOptions.Default));
-
-class Person
-{
-	public string Name {get; set;}
-	public string Surname {get; set;}
-}
 ```
 
 

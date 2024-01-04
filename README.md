@@ -40,7 +40,6 @@ class Person
 	public string Surname {get; set;}
 }
 ```
-[![Static Badge](https://img.shields.io/badge/Try%20Fiddle-blue)](https://dotnetfiddle.net/ZJzIZy)
 
 
 # Powered By

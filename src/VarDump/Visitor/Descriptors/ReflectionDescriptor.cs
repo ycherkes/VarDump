@@ -2,7 +2,7 @@
 
 namespace VarDump.Visitor.Descriptors;
 
-public class ReflectionDescriptor : IReflectionDescriptor
+public class ReflectionDescriptor : ValueDescriptor, IReflectionDescriptor
 {
     private readonly Func<object> _getValueFunc;
     private object _value;
@@ -20,12 +20,11 @@ public class ReflectionDescriptor : IReflectionDescriptor
         _isValueInitialized = false;
     }
 
+    public Type MemberType { get; set; }
     public ReflectionType ReflectionType { get; set; }
     public string Name { get; set; }
 
-    public Type Type { get; set; }
-
-    public object Value
+    public override object Value
     {
         get
         {
@@ -39,4 +38,6 @@ public class ReflectionDescriptor : IReflectionDescriptor
             return _value;
         }
     }
+
+    public override Type Type => Value?.GetType();
 }

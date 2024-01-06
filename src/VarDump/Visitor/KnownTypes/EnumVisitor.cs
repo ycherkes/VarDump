@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Linq;
 using VarDump.CodeDom.Common;
+using VarDump.Visitor.Descriptors;
 
 namespace VarDump.Visitor.KnownTypes;
 
@@ -16,23 +17,23 @@ internal sealed class EnumVisitor : IKnownObjectVisitor
     }
 
     public string Id => nameof(Enum);
-    public bool IsSuitableFor(object obj, Type objectType)
+    public bool IsSuitableFor(IValueDescriptor valueDescriptor)
     {
-        return obj is Enum;
+        return valueDescriptor.Value is Enum;
     }
 
-    public CodeExpression Visit(object obj, Type objectType)
+    public CodeExpression Visit(IValueDescriptor valueDescriptor)
     {
-        var values = obj.ToString().Split(new[] { "," }, StringSplitOptions.RemoveEmptyEntries);
+        var values = valueDescriptor.Value.ToString().Split(new[] { "," }, StringSplitOptions.RemoveEmptyEntries);
 
         if (values.Length == 1)
         {
             return new CodeFieldReferenceExpression(
-                new CodeTypeReferenceExpression(new CodeTypeReference(obj.GetType(), _typeReferenceOptions)), obj.ToString());
+                new CodeTypeReferenceExpression(new CodeTypeReference(valueDescriptor.Value.GetType(), _typeReferenceOptions)), valueDescriptor.Value.ToString());
         }
 
         var expressions = values.Select(v => (CodeExpression)new CodeFieldReferenceExpression(
-            new CodeTypeReferenceExpression(new CodeTypeReference(obj.GetType(), _typeReferenceOptions)), v.Trim())).ToArray();
+            new CodeTypeReferenceExpression(new CodeTypeReference(valueDescriptor.Type, _typeReferenceOptions)), v.Trim())).ToArray();
 
         var bitwiseOrExpression = new CodeFlagsBinaryOperatorExpression(CodeBinaryOperatorType.BitwiseOr, expressions);
 

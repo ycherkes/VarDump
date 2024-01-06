@@ -1296,6 +1296,11 @@ namespace VarDump.CodeDom.CSharp
                 typeRef = typeRef.ArrayElementType;
             }
 
+            if (typeRef?.IsNullable == true)
+            {
+                s += '?';
+            }
+            
             return s;
         }
 

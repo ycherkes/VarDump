@@ -1148,6 +1148,12 @@ namespace VarDump.CodeDom.VisualBasic
             }
 
             sb.Append(GetBaseTypeOutput(typeRef));
+
+            if (typeRef.IsNullable)
+            {
+                sb.Append('?');
+            }
+
             return sb.ToString();
         }
 

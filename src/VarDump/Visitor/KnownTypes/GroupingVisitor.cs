@@ -1,10 +1,10 @@
-﻿using System;
-using System.Collections;
+﻿using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using VarDump.CodeDom.Common;
 using VarDump.Utils;
+using VarDump.Visitor.Descriptors;
 
 namespace VarDump.Visitor.KnownTypes;
 
@@ -18,14 +18,14 @@ internal sealed class GroupingVisitor : IKnownObjectVisitor
     }
 
     public string Id => "Grouping";
-    public bool IsSuitableFor(object obj, Type objectType)
+    public bool IsSuitableFor(IValueDescriptor valueDescriptor)
     {
-        return objectType.IsGrouping();
+        return valueDescriptor.Type.IsGrouping();
     }
 
-    public CodeExpression Visit(object o, Type objectType)
+    public CodeExpression Visit(IValueDescriptor valueDescriptor)
     {
-        CodeExpression expr = VisitGroupings(new[] { o });
+        CodeExpression expr = VisitGroupings(new[] { valueDescriptor.Value });
 
         var variableReferenceExpression = new CodeVariableReferenceExpression("grp");
         var keyLambdaExpression = new CodeLambdaExpression(new CodePropertyReferenceExpression(variableReferenceExpression, "Key"), variableReferenceExpression);
@@ -54,6 +54,6 @@ internal sealed class GroupingVisitor : IKnownObjectVisitor
             .SelectMany(g => g.Value.Cast<object>().Select(e => new { g.Key, Element = e }))
             .ToArray();
 
-        return _rootObjectVisitor.Visit(groupingValues);
+        return _rootObjectVisitor.Visit(new ValueDescriptor{ Value = groupingValues, Type = groupingValues.GetType() });
     }
 }

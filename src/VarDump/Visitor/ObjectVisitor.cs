@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using VarDump.CodeDom.Common;
@@ -81,27 +80,24 @@ internal sealed class ObjectVisitor : IObjectVisitor
         options.ConfigureKnownTypes?.Invoke(_knownTypes, this, options);
     }
 
-    public CodeExpression Visit(object @object)
+    public CodeExpression Visit(IValueDescriptor descriptor)
     {
         if (IsMaxDepth())
         {
-            return CodeDomUtils.GetMaxDepthExpression(@object, _typeReferenceOptions);
+            return CodeDomUtils.GetMaxDepthExpression(descriptor.Value, _typeReferenceOptions);
         }
-
         try
         {
             _depth++;
 
-            var objectType = @object?.GetType();
-
-            var knownObjectVisitor = _knownTypes.Values.FirstOrDefault(v => v.IsSuitableFor(@object, objectType));
+            var knownObjectVisitor = _knownTypes.Values.FirstOrDefault(v => v.IsSuitableFor(descriptor));
             
             if (knownObjectVisitor != null)
             {
-                return knownObjectVisitor.Visit(@object, objectType);
+                return knownObjectVisitor.Visit(descriptor);
             }
 
-            return VisitObject(@object, objectType);
+            return VisitObject(descriptor);
         }
         finally
         {
@@ -109,18 +105,18 @@ internal sealed class ObjectVisitor : IObjectVisitor
         }
     }
 
-    private CodeExpression VisitObject(object o, Type objectType)
+    private CodeExpression VisitObject(IValueDescriptor valueDescriptor)
     {
-        if (IsVisited(o))
+        if (IsVisited(valueDescriptor.Value))
         {
             return CodeDomUtils.GetCircularReferenceDetectedExpression();
         }
 
-        PushVisited(o);
+        PushVisited(valueDescriptor.Value);
 
         try
         {
-            var membersAndConstructorParams = _objectDescriptor.Describe(o, objectType).ToArray();
+            var membersAndConstructorParams = _objectDescriptor.Describe(valueDescriptor.Value, valueDescriptor.Type).ToArray();
 
             var members = membersAndConstructorParams.Where(m => m.ReflectionType != ReflectionType.ConstructorParameter);
 
@@ -133,18 +129,18 @@ internal sealed class ObjectVisitor : IObjectVisitor
 
             var constructorParams = membersAndConstructorParams
                 .Where(mc => mc.ReflectionType == ReflectionType.ConstructorParameter)
-                .Select(cp => Visit(cp.Value))
+                .Select(Visit)
                 .ToArray();
 
             var initializeExpressions = members
-                    .Where(pv => !_excludeTypes.Contains(pv.Type.FullName) &&
+                    .Where(pv => !_excludeTypes.Contains(pv.MemberType.FullName) &&
                                  (!_ignoreNullValues || _ignoreNullValues && pv.Value != null) &&
-                                 (!_ignoreDefaultValues || !pv.Type.IsValueType || _ignoreDefaultValues &&
-                                     ReflectionUtils.GetDefaultValue(pv.Type)?.Equals(pv.Value) != true))
-                    .Select(pv => (CodeExpression)new CodeAssignExpression(new CodePropertyReferenceExpression(null, pv.Name), Visit(pv.Value)))
+                                 (!_ignoreDefaultValues || !pv.MemberType.IsValueType || _ignoreDefaultValues &&
+                                     ReflectionUtils.GetDefaultValue(pv.MemberType)?.Equals(pv.Value) != true))
+                    .Select(pv => (CodeExpression)new CodeAssignExpression(new CodePropertyReferenceExpression(null, pv.Name), Visit(pv)))
                     .ToArray();
 
-            var result = new CodeObjectCreateAndInitializeExpression(new CodeTypeReference(objectType, _typeReferenceOptions), initializeExpressions, constructorParams);
+            var result = new CodeObjectCreateAndInitializeExpression(new CodeTypeReference(valueDescriptor.Type, _typeReferenceOptions), initializeExpressions, constructorParams);
 
             return result;
         }

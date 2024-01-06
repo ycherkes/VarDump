@@ -1,6 +1,6 @@
-﻿using System;
-using System.Net;
+﻿using System.Net;
 using VarDump.CodeDom.Common;
+using VarDump.Visitor.Descriptors;
 
 namespace VarDump.Visitor.KnownTypes;
 
@@ -16,14 +16,14 @@ internal sealed class IPAddressVisitor : IKnownObjectVisitor
     }
 
     public string Id => nameof(IPAddress);
-    public bool IsSuitableFor(object obj, Type objectType)
+    public bool IsSuitableFor(IValueDescriptor valueDescriptor)
     {
-        return obj is IPAddress;
+        return valueDescriptor.Value is IPAddress;
     }
 
-    public CodeExpression Visit(object obj, Type objectType)
+    public CodeExpression Visit(IValueDescriptor valueDescriptor)
     {
-        var ipAddress = (IPAddress)obj;
+        var ipAddress = (IPAddress)valueDescriptor.Value;
         return new CodeMethodInvokeExpression(
             new CodeMethodReferenceExpression(
                 new CodeTypeReferenceExpression(

@@ -1,5 +1,6 @@
 ﻿using System;
 using VarDump.CodeDom.Common;
+using VarDump.Visitor.Descriptors;
 
 namespace VarDump.Visitor.KnownTypes;
 
@@ -15,14 +16,14 @@ internal sealed class GuidVisitor : IKnownObjectVisitor
     }
 
     public string Id => nameof(Guid);
-    public bool IsSuitableFor(object obj, Type objectType)
+    public bool IsSuitableFor(IValueDescriptor valueDescriptor)
     {
-        return obj is Guid;
+        return valueDescriptor.Value is Guid;
     }
 
-    public CodeExpression Visit(object obj, Type objectType)
+    public CodeExpression Visit(IValueDescriptor valueDescriptor)
     {
-        var guid = (Guid)obj;
+        var guid = (Guid)valueDescriptor.Value;
         return new CodeObjectCreateExpression(new CodeTypeReference(typeof(Guid), _typeReferenceOptions),
             new CodePrimitiveExpression(guid.ToString("D")));
     }

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Globalization;
 using VarDump.CodeDom.Common;
+using VarDump.Visitor.Descriptors;
 
 namespace VarDump.Visitor.KnownTypes;
 
@@ -21,14 +22,14 @@ internal sealed class DateTimeOffsetVisitor : IKnownObjectVisitor
     }
 
     public string Id => nameof(DateTimeOffset);
-    public bool IsSuitableFor(object obj, Type objectType)
+    public bool IsSuitableFor(IValueDescriptor valueDescriptor)
     {
-        return obj is DateTimeOffset;
+        return valueDescriptor.Value is DateTimeOffset;
     }
 
-    public CodeExpression Visit(object obj, Type objectType)
+    public CodeExpression Visit(IValueDescriptor valueDescriptor)
     {
-        var dateTimeOffset = (DateTimeOffset)obj;
+        var dateTimeOffset = (DateTimeOffset)valueDescriptor.Value;
         var dateTimeOffsetCodeTypeReference = new CodeTypeReference(typeof(DateTimeOffset), _typeReferenceOptions);
 
         if (dateTimeOffset == DateTimeOffset.MaxValue)
@@ -65,7 +66,7 @@ internal sealed class DateTimeOffsetVisitor : IKnownObjectVisitor
             );
         }
 
-        var offsetExpression = _rootObjectVisitor.Visit(dateTimeOffset.Offset);
+        var offsetExpression = _rootObjectVisitor.Visit(new ValueDescriptor{ Value = dateTimeOffset.Offset, Type = typeof(TimeSpan) });
 
         var year = new CodePrimitiveExpression(dateTimeOffset.Year);
         var month = new CodePrimitiveExpression(dateTimeOffset.Month);

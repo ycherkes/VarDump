@@ -1,6 +1,7 @@
 ﻿using System;
 using VarDump.CodeDom.Common;
 using VarDump.Utils;
+using VarDump.Visitor.Descriptors;
 
 namespace VarDump.Visitor.KnownTypes;
 
@@ -18,15 +19,15 @@ internal sealed class TimeOnlyVisitor : IKnownObjectVisitor
     }
 
     public string Id => "TimeOnly";
-    public bool IsSuitableFor(object obj, Type objectType)
+    public bool IsSuitableFor(IValueDescriptor valueDescriptor)
     {
-        return objectType.IsTimeOnly();
+        return valueDescriptor.Type.IsTimeOnly();
     }
 
-    public CodeExpression Visit(object timeOnly, Type objectType)
+    public CodeExpression Visit(IValueDescriptor valueDescriptor)
     {
-        var timeOnlyCodeTypeReference = new CodeTypeReference(objectType, _typeReferenceOptions);
-        var ticks = (long?)objectType.GetProperty("Ticks")?.GetValue(timeOnly);
+        var timeOnlyCodeTypeReference = new CodeTypeReference(valueDescriptor.Type, _typeReferenceOptions);
+        var ticks = (long?)valueDescriptor.Type.GetProperty("Ticks")?.GetValue(valueDescriptor.Value);
 
         if (ticks == null)
         {

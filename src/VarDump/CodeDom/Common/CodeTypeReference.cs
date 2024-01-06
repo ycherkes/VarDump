@@ -6,6 +6,8 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
+using System.Reflection;
+using VarDump.Visitor.Descriptors;
 
 namespace VarDump.CodeDom.Common;
 
@@ -30,6 +32,37 @@ internal class CodeTypeReference : CodeObject
         ArrayRank = 0;
         ArrayElementType = null;
     }
+
+    public CodeTypeReference(ITypeDescriptor typeDescriptor, CodeTypeReferenceOptions codeTypeReferenceOption)
+    {
+        Options = codeTypeReferenceOption;
+        if (typeDescriptor?.Type == null)
+        {
+            throw new ArgumentNullException(nameof(typeDescriptor.Type));
+        }
+
+        if (typeDescriptor.Type.IsArray)
+        {
+            ArrayRank = typeDescriptor.Type.GetArrayRank();
+            ArrayElementType = new CodeTypeReference(typeDescriptor.Type.GetElementType(), codeTypeReferenceOption);
+            _baseType = null;
+        }
+        else
+        {
+            InitializeFromTypeDescriptor(typeDescriptor);
+            ArrayRank = 0;
+            ArrayElementType = null;
+        }
+
+        _isInterface = typeDescriptor.Type.IsInterface;
+    }
+
+    public CodeTypeReference(NullabilityInfo nullabilityInfo, CodeTypeReferenceOptions codeTypeReferenceOption) : this(nullabilityInfo.Type, codeTypeReferenceOption)
+    {
+        IsNullable = nullabilityInfo.ReadState == NullabilityState.Nullable || nullabilityInfo.WriteState == NullabilityState.Nullable;
+    }
+
+    public bool IsNullable { get; set; }
 
     public CodeTypeReference(Type type, CodeTypeReferenceOptions codeTypeReferenceOption)
     {
@@ -67,6 +100,44 @@ internal class CodeTypeReference : CodeObject
     public CodeTypeReference(string typeName)
     {
         Initialize(typeName);
+    }
+
+    private void InitializeFromTypeDescriptor(ITypeDescriptor typeDescriptor)
+    {
+        _baseType = typeDescriptor.Type.Name;
+        if (!typeDescriptor.Type.IsGenericParameter)
+        {
+            Type currentType = typeDescriptor.Type;
+            while (currentType.IsNested)
+            {
+                currentType = currentType.DeclaringType;
+                _baseType = currentType.Name + "+" + _baseType;
+            }
+
+            if (!string.IsNullOrEmpty(typeDescriptor.Type.Namespace))
+            {
+                _baseType = typeDescriptor.Type.Namespace + "." + _baseType;
+            }
+        }
+
+        // pick up the type arguments from an instantiated generic type but not an open one    
+        if (typeDescriptor.Type.IsGenericType && !typeDescriptor.Type.ContainsGenericParameters)
+        {
+            var genericArgs = typeDescriptor.GenericTypeArguments;
+            for (int i = 0; i < genericArgs.Length; i++)
+            {
+                TypeArguments.Add(new CodeTypeReference(genericArgs[i], Options));
+            }
+        }
+        else if (!typeDescriptor.Type.IsGenericTypeDefinition)
+        {
+            // if the user handed us a non-generic type, but later
+            // appends generic type arguments, we'll pretend
+            // it's a generic type for their sake - this is good for
+            // them if they pass in System.Nullable class when they
+            // meant the System.Nullable<T> value type.
+            _needsFixup = true;
+        }
     }
 
     private void InitializeFromType(Type type)

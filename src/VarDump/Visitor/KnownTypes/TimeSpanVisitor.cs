@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using VarDump.CodeDom.Common;
+using VarDump.Visitor.Descriptors;
 
 namespace VarDump.Visitor.KnownTypes;
 
@@ -21,14 +22,14 @@ internal sealed class TimeSpanVisitor : IKnownObjectVisitor
     }
 
     public string Id => nameof(TimeSpan);
-    public bool IsSuitableFor(object obj, Type objectType)
+    public bool IsSuitableFor(IValueDescriptor valueDescriptor)
     {
-        return obj is TimeSpan;
+        return valueDescriptor.Value is TimeSpan;
     }
 
-    public CodeExpression Visit(object obj, Type objectType)
+    public CodeExpression Visit(IValueDescriptor valueDescriptor)
     {
-        var timeSpan = (TimeSpan)obj;
+        var timeSpan = (TimeSpan)valueDescriptor.Value;
 
         var specialValuesDictionary = new Dictionary<TimeSpan, string>
         {

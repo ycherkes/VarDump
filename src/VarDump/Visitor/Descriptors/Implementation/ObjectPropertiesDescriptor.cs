@@ -11,7 +11,6 @@ internal class ObjectPropertiesDescriptor : IObjectDescriptor
 {
     private readonly BindingFlags _getPropertiesBindingFlags;
     private readonly bool _writablePropertiesOnly;
-    private readonly NullabilityInfoContext _nullabilityContext = new();
 
     public ObjectPropertiesDescriptor(BindingFlags getPropertiesBindingFlags, bool writablePropertiesOnly)
     {
@@ -35,7 +34,7 @@ internal class ObjectPropertiesDescriptor : IObjectDescriptor
                 Name = p.Name,
                 MemberType = p.PropertyType,
                 ReflectionType = ReflectionType.Property,
-                GenericTypeArguments = _nullabilityContext.Create(p).GenericTypeArguments
+                GenericTypeArguments = p.GetNullabilityInfo().GenericTypeArguments
             });
 
         return properties;

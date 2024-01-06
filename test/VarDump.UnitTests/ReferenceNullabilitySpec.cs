@@ -67,7 +67,7 @@ public class ReferenceNullabilitySpec
                      """, result);
     }
 
-    [Fact(Skip = "Doesnt work")]
+    [Fact(Skip = "Doesn't work")]
     public void DumpCsharp1()
     {
         var obj = new{ foo = new Foo1<string?>{ Value = null }};

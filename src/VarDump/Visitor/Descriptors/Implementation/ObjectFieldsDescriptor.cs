@@ -10,7 +10,6 @@ namespace VarDump.Visitor.Descriptors.Implementation;
 internal class ObjectFieldsDescriptor : IObjectDescriptor
 {
     private readonly BindingFlags _getFieldsBindingFlags;
-    private readonly NullabilityInfoContext _nullabilityContext = new();
 
     public ObjectFieldsDescriptor() : this(BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public)
     {
@@ -30,7 +29,7 @@ internal class ObjectFieldsDescriptor : IObjectDescriptor
                 Name = f.Name,
                 MemberType = f.FieldType,
                 ReflectionType = ReflectionType.Field,
-                GenericTypeArguments = _nullabilityContext.Create(f).GenericTypeArguments
+                GenericTypeArguments = f.GetNullabilityInfo().GenericTypeArguments
             });
 
         return fields;

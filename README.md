@@ -8,7 +8,7 @@ Developed as a free alternative of [ObjectDumper.NET](https://github.com/thomasg
 [![nuget version](https://img.shields.io/badge/Nuget-v0.2.12-blue)](https://www.nuget.org/packages/VarDump)
 [![nuget downloads](https://img.shields.io/nuget/dt/VarDump?label=Downloads)](https://www.nuget.org/packages/VarDump)
 
-# C# Dumper:
+## C# Dumper:
 <p align="right"><a href="https://dotnetfiddle.net/4ARhwR">Run .NET fiddle</a></p>
 
 ```csharp
@@ -21,7 +21,7 @@ Console.WriteLine(cs);
 var vb = new VisualBasicDumper().Dump(anonymousObject);
 Console.WriteLine(vb);
 ```
-# C# & VB Dumper, how to use DumpOptions:
+## C# & VB Dumper, how to use DumpOptions:
 <p align="right"><a href="https://dotnetfiddle.net/CxsDtN">Run .NET fiddle</a></p>
 
 ```csharp
@@ -51,7 +51,7 @@ class Person
 }
 ```
 
-# Object Extension methods:
+## Object Extension methods:
 <p align="right"><a href="https://dotnetfiddle.net/Lz9duL">Run .NET fiddle</a></p>
 
 ```csharp
@@ -72,7 +72,7 @@ var dictionary = new[]
 Console.WriteLine(dictionary.Dump(DumpOptions.Default));
 ```
 
-# Object Extension methods, how to switch default dumper to VB:
+## Object Extension methods, how to switch default dumper to VB:
 <p align="right"><a href="https://dotnetfiddle.net/sM1lML">Run .NET fiddle</a></p>
 
 ```csharp

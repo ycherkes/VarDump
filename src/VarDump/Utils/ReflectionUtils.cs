@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.CompilerServices;
@@ -254,9 +255,7 @@ internal static class ReflectionUtils
 
     public static bool IsReadonlyCollection(this Type type)
     {
-        var typeFullName = type.FullName ?? "";
-
-        return type.IsValueType() && typeFullName.StartsWith("System.Collections.ObjectModel.ReadOnlyCollection");
+        return type.IsGenericType && type.GetGenericTypeDefinition() == typeof(ReadOnlyCollection<>);
     }
 
     public static bool IsTuple(this Type type)

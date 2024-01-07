@@ -113,13 +113,13 @@ internal sealed class CollectionVisitor : IKnownObjectVisitor
 
         if (type.IsReadonlyCollection())
         {
-            var expression = new CodeObjectCreateExpression(
-                new CodeTypeReference(type, _typeReferenceOptions),
-                new CodeArrayCreateExpression(
-                    new CodeTypeReference(elementType, _typeReferenceOptions),
-                    items.ToArray()));
+            var  typeReference = new CodeCollectionTypeReference(typeof(List<>).MakeGenericType(elementType), _typeReferenceOptions);
 
-            return expression;
+            var expression = new CodeObjectCreateAndInitializeExpression(
+                typeReference,
+                items.ToArray());
+
+            return new CodeMethodInvokeExpression(expression, "AsReadOnly");
         }
 
         var initializeExpression = new CodeObjectCreateAndInitializeExpression(

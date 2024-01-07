@@ -8,7 +8,7 @@ Developed as a free alternative of [ObjectDumper.NET](https://github.com/thomasg
 [![nuget version](https://img.shields.io/badge/Nuget-v0.2.12-blue)](https://www.nuget.org/packages/VarDump)
 [![nuget downloads](https://img.shields.io/nuget/dt/VarDump?label=Downloads)](https://www.nuget.org/packages/VarDump)
 
-## C# Dumper:
+## C# & VB Dumper:
 <p align="right"><a href="https://dotnetfiddle.net/4ARhwR">Run .NET fiddle</a></p>
 
 ```csharp

@@ -4,65 +4,47 @@
 
 using System;
 using System.Collections;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace VarDump.CodeDom.Common;
 
-internal class CodeExpressionCollection : CollectionBase
+internal class CodeExpressionCollection : IEnumerable<CodeExpression>
 {
-    public CodeExpressionCollection() { }
+    private IEnumerable<CodeExpression> _expressions;
+
+    public CodeExpressionCollection()
+    {
+        _expressions = Enumerable.Empty<CodeExpression>();
+    }
 
     public CodeExpressionCollection(CodeExpressionCollection value)
     {
-        AddRange(value);
+        _expressions = value._expressions;
     }
 
-    public CodeExpressionCollection(CodeExpression[] value)
+    public CodeExpressionCollection(IEnumerable<CodeExpression> value)
     {
-        AddRange(value);
+        _expressions = value;
     }
 
-    public CodeExpression this[int index]
-    {
-        get { return (CodeExpression)List[index]; }
-        set { List[index] = value; }
-    }
-
-    public int Add(CodeExpression value) => List.Add(value);
-
-    public void AddRange(CodeExpression[] value)
+    public void AddRange(IEnumerable<CodeExpression> value)
     {
         if (value == null)
         {
             throw new ArgumentNullException(nameof(value));
         }
 
-        for (int i = 0; i < value.Length; i++)
-        {
-            Add(value[i]);
-        }
+        _expressions = _expressions.Concat(value);
     }
 
-    public void AddRange(CodeExpressionCollection value)
+    public IEnumerator<CodeExpression> GetEnumerator()
     {
-        if (value == null)
-        {
-            throw new ArgumentNullException(nameof(value));
-        }
-
-        int currentCount = value.Count;
-        for (int i = 0; i < currentCount; i++)
-        {
-            Add(value[i]);
-        }
+        return _expressions.GetEnumerator();
     }
 
-    public bool Contains(CodeExpression value) => List.Contains(value);
-
-    public void CopyTo(CodeExpression[] array, int index) => List.CopyTo(array, index);
-
-    public int IndexOf(CodeExpression value) => List.IndexOf(value);
-
-    public void Insert(int index, CodeExpression value) => List.Insert(index, value);
-
-    public void Remove(CodeExpression value) => List.Remove(value);
+    IEnumerator IEnumerable.GetEnumerator()
+    {
+        return GetEnumerator();
+    }
 }

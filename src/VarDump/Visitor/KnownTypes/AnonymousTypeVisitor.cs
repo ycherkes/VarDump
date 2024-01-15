@@ -36,7 +36,7 @@ internal sealed class AnonymousTypeVisitor : IKnownObjectVisitor
                 .Select(pv => (CodeExpression)new CodeAssignExpression(
                     new CodePropertyReferenceExpression(null, pv.Name),
                     pv.Type.IsNullableType() || pv.Value == null ? new CodeCastExpression(new CodeTypeReference(pv.Type, _typeReferenceOptions), _rootObjectVisitor.Visit(pv.Value), true) : _rootObjectVisitor.Visit(pv.Value)))
-                .ToArray())
+                )
         };
 
         return result;

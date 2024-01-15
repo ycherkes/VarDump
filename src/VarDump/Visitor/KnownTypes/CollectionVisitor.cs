@@ -104,7 +104,7 @@ internal sealed class CollectionVisitor : IKnownObjectVisitor
 
             CodeExpression expr = new CodeArrayCreateExpression(
                 new CodeTypeReference(isImmutableOrFrozen || !type.IsPublic ? elementType.MakeArrayType() : type, _typeReferenceOptions),
-                items.ToArray());
+                items);
 
             if (isImmutableOrFrozen) expr = new CodeMethodInvokeExpression(expr, $"To{type.GetImmutableOrFrozenTypeName()}");
 
@@ -117,15 +117,14 @@ internal sealed class CollectionVisitor : IKnownObjectVisitor
 
             var expression = new CodeObjectCreateAndInitializeExpression(
                 typeReference,
-                items.ToArray());
+                items);
 
             return new CodeMethodInvokeExpression(expression, "AsReadOnly");
         }
 
         var initializeExpression = new CodeObjectCreateAndInitializeExpression(
             new CodeCollectionTypeReference(type, _typeReferenceOptions),
-            items.ToArray()
-        );
+            items);
 
         return initializeExpression;
     }
@@ -165,9 +164,7 @@ internal sealed class CollectionVisitor : IKnownObjectVisitor
             items = ChunkMultiDimensionalArrayExpression((Array)enumerable, items);
         }
 
-        CodeExpression expr = new CodeArrayCreateExpression(
-            typeReference,
-            items.ToArray());
+        CodeExpression expr = new CodeArrayCreateExpression(typeReference, items);
 
         if (isImmutableOrFrozen || enumerable is IList && !type.IsArray)
             expr = new CodeMethodInvokeExpression(expr, $"To{type.GetImmutableOrFrozenTypeName()}");
@@ -194,8 +191,7 @@ internal sealed class CollectionVisitor : IKnownObjectVisitor
     private CodeExpression VisitGroupings(IEnumerable<object> objects)
     {
         var groupingValues = objects.Select(GetIGroupingValue)
-            .SelectMany(g => g.Value.Cast<object>().Select(e => new { g.Key, Element = e }))
-            .ToArray();
+            .SelectMany(g => g.Value.Cast<object>().Select(e => new { g.Key, Element = e }));
 
         return _rootObjectVisitor.Visit(groupingValues);
     }

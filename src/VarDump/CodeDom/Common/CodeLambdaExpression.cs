@@ -16,7 +16,7 @@ internal class CodeLambdaExpression : CodeExpression
             
     {
         LambdaExpression = lambdaExpression;
-        Parameters = new CodeExpressionCollection(parameters.ToArray());
+        Parameters = new CodeExpressionCollection(parameters);
     }
 
     public CodeExpression LambdaExpression { get; set; }

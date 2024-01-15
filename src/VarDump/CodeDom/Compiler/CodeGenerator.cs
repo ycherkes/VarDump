@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using VarDump.CodeDom.Common;
@@ -282,6 +283,36 @@ internal abstract class CodeGenerator : ICodeGenerator
         Indent--;
     }
 
+    protected virtual void OutputExpressionList(IEnumerator<CodeExpression> expressions)
+    {
+        OutputExpressionList(expressions, false /*newlineBetweenItems*/);
+    }
+
+    protected virtual void OutputExpressionList(IEnumerator<CodeExpression> expressions, bool newlineBetweenItems,
+    bool newLineContinuation = true)
+    {
+        bool first = true;
+        Indent++;
+        do
+        {
+            if (first)
+            {
+                first = false;
+            }
+            else
+            {
+                if (newlineBetweenItems)
+                    ContinueOnNewLine(",", newLineContinuation);
+                else
+                    Output.Write(", ");
+            }
+
+            ((ICodeGenerator)this).GenerateCodeFromExpression(expressions.Current, _output.InnerWriter, _options);
+
+        } while (expressions.MoveNext());
+        Indent--;
+    }
+
     protected virtual void OutputOperator(CodeBinaryOperatorType op)
     {
         switch (op)
@@ -346,15 +377,13 @@ internal abstract class CodeGenerator : ICodeGenerator
 
     protected void GenerateFlagsBinaryOperatorExpression(CodeFlagsBinaryOperatorExpression e)
     {
-        if (e.Expressions.Count == 0) return;
-
         bool isFirst = true;
 
         foreach (CodeExpression expression in e.Expressions)
         {
             if (isFirst)
             {
-                GenerateExpression(e.Expressions[0]);
+                GenerateExpression(expression);
                 isFirst = false;
             }
             else

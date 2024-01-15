@@ -14,7 +14,7 @@ internal class CodeObjectCreateAndInitializeExpression : CodeObjectCreateExpress
 
     public CodeObjectCreateAndInitializeExpression() { }
 
-    public CodeObjectCreateAndInitializeExpression(CodeTypeReference createType, IEnumerable<CodeExpression> initializeExpressions = null, params CodeExpression[] parameters)
+    public CodeObjectCreateAndInitializeExpression(CodeTypeReference createType, IEnumerable<CodeExpression> initializeExpressions = null, IEnumerable<CodeExpression> parameters = null)
         : base(createType, parameters)
     {
         if (initializeExpressions != null)

@@ -133,16 +133,14 @@ internal sealed class ObjectVisitor : IObjectVisitor
 
             var constructorParams = membersAndConstructorParams
                 .Where(mc => mc.ReflectionType == ReflectionType.ConstructorParameter)
-                .Select(cp => Visit(cp.Value))
-                .ToArray();
+                .Select(cp => Visit(cp.Value));
 
             var initializeExpressions = members
                     .Where(pv => !_excludeTypes.Contains(pv.Type.FullName) &&
                                  (!_ignoreNullValues || _ignoreNullValues && pv.Value != null) &&
                                  (!_ignoreDefaultValues || !pv.Type.IsValueType || _ignoreDefaultValues &&
                                      ReflectionUtils.GetDefaultValue(pv.Type)?.Equals(pv.Value) != true))
-                    .Select(pv => (CodeExpression)new CodeAssignExpression(new CodePropertyReferenceExpression(null, pv.Name), Visit(pv.Value)))
-                    .ToArray();
+                    .Select(pv => (CodeExpression)new CodeAssignExpression(new CodePropertyReferenceExpression(null, pv.Name), Visit(pv.Value)));
 
             var result = new CodeObjectCreateAndInitializeExpression(new CodeTypeReference(objectType, _typeReferenceOptions), initializeExpressions, constructorParams);
 

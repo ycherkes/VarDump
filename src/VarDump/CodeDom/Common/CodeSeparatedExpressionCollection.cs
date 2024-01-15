@@ -9,12 +9,6 @@ internal class CodeSeparatedExpressionCollection : CodeExpression
     public string Separator { get; }
     public CodeExpressionCollection ExpressionCollection { get; }
 
-    public CodeSeparatedExpressionCollection(CodeExpressionCollection value, string separator)
-    {
-        Separator = separator;
-        ExpressionCollection = new CodeExpressionCollection(value);
-    }
-
     public CodeSeparatedExpressionCollection(CodeExpression[] value, string separator)
     {
         ExpressionCollection = new CodeExpressionCollection(value);

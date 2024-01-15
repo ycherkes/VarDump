@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Collections.Generic;
 
 namespace VarDump.CodeDom.Common;
 
@@ -15,22 +16,22 @@ internal class CodeArrayCreateExpression : CodeExpression
     {
     }
 
-    public CodeArrayCreateExpression(CodeTypeReference createType, params CodeExpression[] initializers)
+    public CodeArrayCreateExpression(CodeTypeReference createType, IEnumerable<CodeExpression> initializers)
     {
         _createType = createType;
-        _initializers.AddRange(initializers);
+        _initializers = new CodeExpressionCollection(initializers);
     }
 
     public CodeArrayCreateExpression(string createType, params CodeExpression[] initializers)
     {
         _createType = new CodeTypeReference(createType);
-        _initializers.AddRange(initializers);
+        _initializers = new CodeExpressionCollection(initializers);
     }
 
     public CodeArrayCreateExpression(Type createType, params CodeExpression[] initializers)
     {
         _createType = new CodeTypeReference(createType);
-        _initializers.AddRange(initializers);
+        _initializers = new CodeExpressionCollection(initializers);
     }
 
     public CodeArrayCreateExpression(CodeTypeReference createType, int size)

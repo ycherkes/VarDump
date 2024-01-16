@@ -740,7 +740,7 @@ namespace VarDump.CodeDom.VisualBasic
         protected override void GenerateCodeImplicitKeyValuePairCreateExpression(CodeImplicitKeyValuePairCreateExpression e)
         {
             Output.WriteLine('{');
-            OutputExpressionList(new CodeExpressionCollection(new[] { e.Key, e.Value }), true, false);
+            OutputExpressionList(new CodeExpressionContainer(new[] { e.Key, e.Value }), true, false);
             Output.WriteLine();
             Output.Write('}');
         }

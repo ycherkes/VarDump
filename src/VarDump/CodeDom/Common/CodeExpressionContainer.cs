@@ -9,21 +9,21 @@ using System.Linq;
 
 namespace VarDump.CodeDom.Common;
 
-internal class CodeExpressionCollection : IEnumerable<CodeExpression>
+internal class CodeExpressionContainer : IEnumerable<CodeExpression>
 {
     private IEnumerable<CodeExpression> _expressions;
 
-    public CodeExpressionCollection()
+    public CodeExpressionContainer()
     {
         _expressions = Enumerable.Empty<CodeExpression>();
     }
 
-    public CodeExpressionCollection(CodeExpressionCollection value)
+    public CodeExpressionContainer(CodeExpressionContainer value)
     {
         _expressions = value._expressions;
     }
 
-    public CodeExpressionCollection(IEnumerable<CodeExpression> value)
+    public CodeExpressionContainer(IEnumerable<CodeExpression> value)
     {
         _expressions = value;
     }

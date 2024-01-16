@@ -15,5 +15,5 @@ internal class CodeValueTupleCreateExpression : CodeExpression
         Parameters.AddRange(parameters);
     }
 
-    public CodeExpressionCollection Parameters { get; } = new CodeExpressionCollection();
+    public CodeExpressionContainer Parameters { get; } = new CodeExpressionContainer();
 }

@@ -255,12 +255,12 @@ internal abstract class CodeGenerator : ICodeGenerator
         Output.Write(ident);
     }
 
-    protected virtual void OutputExpressionList(CodeExpressionCollection expressions)
+    protected virtual void OutputExpressionList(CodeExpressionContainer expressions)
     {
         OutputExpressionList(expressions, newlineBetweenItems: false);
     }
 
-    protected virtual void OutputExpressionList(CodeExpressionCollection expressions, bool newlineBetweenItems,
+    protected virtual void OutputExpressionList(CodeExpressionContainer expressions, bool newlineBetweenItems,
         bool newLineContinuation = true)
     {
         bool first = true;

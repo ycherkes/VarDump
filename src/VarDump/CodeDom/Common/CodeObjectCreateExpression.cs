@@ -45,5 +45,5 @@ internal class CodeObjectCreateExpression : CodeExpression
         set => _createType = value;
     }
 
-    public CodeExpressionCollection Parameters { get; } = new CodeExpressionCollection();
+    public CodeExpressionContainer Parameters { get; } = new CodeExpressionContainer();
 }

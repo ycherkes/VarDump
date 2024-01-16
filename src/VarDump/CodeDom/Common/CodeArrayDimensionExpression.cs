@@ -4,10 +4,10 @@ namespace VarDump.CodeDom.Common;
 
 internal class CodeArrayDimensionExpression : CodeExpression
 {
-    public CodeExpressionCollection Initializers { get; }
+    public CodeExpressionContainer Initializers { get; }
 
     public CodeArrayDimensionExpression(IEnumerable<CodeExpression> initializers)
     {
-        Initializers = new CodeExpressionCollection(initializers);
+        Initializers = new CodeExpressionContainer(initializers);
     }
 }

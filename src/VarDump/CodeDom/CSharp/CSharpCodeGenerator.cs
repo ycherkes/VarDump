@@ -832,7 +832,7 @@ namespace VarDump.CodeDom.CSharp
         private void GenerateCodeImplicitKeyValuePairCreateExpression(CodeImplicitKeyValuePairCreateExpression e)
         {
             Output.WriteLine('{');
-            OutputExpressionList(new CodeExpressionCollection(new[] { e.Key, e.Value }), true);
+            OutputExpressionList(new CodeExpressionContainer(new[] { e.Key, e.Value }), true);
             Output.WriteLine();
             Output.Write('}');
         }
@@ -993,12 +993,12 @@ namespace VarDump.CodeDom.CSharp
             Output.Write(')');
         }
 
-        private void OutputExpressionList(CodeExpressionCollection expressions)
+        private void OutputExpressionList(CodeExpressionContainer expressions)
         {
            OutputExpressionList(expressions, false /*newlineBetweenItems*/);
         }
 
-        private void OutputExpressionList(CodeExpressionCollection expressions, bool newlineBetweenItems)
+        private void OutputExpressionList(CodeExpressionContainer expressions, bool newlineBetweenItems)
         {
             bool first = true;
             Indent++;

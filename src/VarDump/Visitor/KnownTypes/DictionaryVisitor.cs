@@ -116,7 +116,7 @@ internal sealed class DictionaryVisitor : IKnownObjectVisitor
         var propertyValues = objectType.GetProperties().Select(p => ReflectionUtils.GetValue(p, o)).Select(_rootObjectVisitor.Visit).ToArray();
         var result = new CodeObjectCreateAndInitializeExpression(new CodeAnonymousTypeReference())
         {
-            InitializeExpressions = new CodeExpressionCollection(new[]
+            InitializeExpressions = new CodeExpressionContainer(new[]
             {
                 (CodeExpression)new CodeAssignExpression(new CodePropertyReferenceExpression(null, keyName), propertyValues[0]),
                 new CodeAssignExpression(new CodePropertyReferenceExpression(null, valueName), propertyValues[1])

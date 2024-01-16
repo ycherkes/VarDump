@@ -13,10 +13,10 @@ internal class CodeFlagsBinaryOperatorExpression : CodeExpression
     public CodeFlagsBinaryOperatorExpression(CodeBinaryOperatorType op, IEnumerable<CodeExpression> expressions)
     {
         Operator = op;
-        Expressions = new CodeExpressionCollection(expressions);
+        Expressions = new CodeExpressionContainer(expressions);
     }
 
-    public CodeExpressionCollection Expressions { get; set; }
+    public CodeExpressionContainer Expressions { get; set; }
 
     public CodeBinaryOperatorType Operator { get; set; }
 }

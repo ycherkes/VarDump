@@ -8,7 +8,7 @@ namespace VarDump.CodeDom.Common;
 
 internal class CodeLambdaExpression : CodeExpression
 {
-    public CodeExpressionCollection Parameters { get; set; } = new CodeExpressionCollection();
+    public CodeExpressionContainer Parameters { get; set; } = new CodeExpressionContainer();
 
     public CodeLambdaExpression() { }
 
@@ -16,7 +16,7 @@ internal class CodeLambdaExpression : CodeExpression
             
     {
         LambdaExpression = lambdaExpression;
-        Parameters = new CodeExpressionCollection(parameters);
+        Parameters = new CodeExpressionContainer(parameters);
     }
 
     public CodeExpression LambdaExpression { get; set; }

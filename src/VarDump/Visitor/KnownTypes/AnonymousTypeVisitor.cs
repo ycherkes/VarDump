@@ -32,7 +32,7 @@ internal sealed class AnonymousTypeVisitor : IKnownObjectVisitor
     {
         var result = new CodeObjectCreateAndInitializeExpression(new CodeAnonymousTypeReference())
         {
-            InitializeExpressions = new CodeExpressionCollection(_anonymousObjectDescriptor.Describe(obj, objectType)
+            InitializeExpressions = new CodeExpressionContainer(_anonymousObjectDescriptor.Describe(obj, objectType)
                 .Select(pv => (CodeExpression)new CodeAssignExpression(
                     new CodePropertyReferenceExpression(null, pv.Name),
                     pv.Type.IsNullableType() || pv.Value == null ? new CodeCastExpression(new CodeTypeReference(pv.Type, _typeReferenceOptions), _rootObjectVisitor.Visit(pv.Value), true) : _rootObjectVisitor.Visit(pv.Value)))

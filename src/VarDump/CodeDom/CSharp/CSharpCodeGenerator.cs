@@ -1000,24 +1000,11 @@ namespace VarDump.CodeDom.CSharp
 
         private void OutputExpressionList(CodeExpressionContainer expressions, bool newlineBetweenItems)
         {
-            bool first = true;
-            Indent++;
-            foreach (CodeExpression current in expressions)
+            using var expressionsEnumerator = expressions.GetEnumerator();
+            if (expressionsEnumerator.MoveNext())
             {
-                if (first)
-                {
-                    first = false;
-                }
-                else
-                {
-                    if (newlineBetweenItems)
-                        ContinueOnNewLine(",");
-                    else
-                        Output.Write(", ");
-                }
-                ((ICodeGenerator)this).GenerateCodeFromExpression(current, _output.InnerWriter, _options);
+                OutputExpressionList(expressionsEnumerator, newlineBetweenItems);
             }
-            Indent--;
         }
 
         private void OutputExpressionList(IEnumerator<CodeExpression> expressions)

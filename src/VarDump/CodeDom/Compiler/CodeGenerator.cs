@@ -263,24 +263,11 @@ internal abstract class CodeGenerator : ICodeGenerator
     protected virtual void OutputExpressionList(CodeExpressionContainer expressions, bool newlineBetweenItems,
         bool newLineContinuation = true)
     {
-        bool first = true;
-        Indent++;
-        foreach (CodeExpression current in expressions)
+        using var expressionsEnumerator = expressions.GetEnumerator();
+        if (expressionsEnumerator.MoveNext())
         {
-            if (first)
-            {
-                first = false;
-            }
-            else
-            {
-                if (newlineBetweenItems)
-                    ContinueOnNewLine(",", newLineContinuation);
-                else
-                    Output.Write(", ");
-            }
-            ((ICodeGenerator)this).GenerateCodeFromExpression(current, _output.InnerWriter, _options);
+            OutputExpressionList(expressionsEnumerator, newlineBetweenItems, newLineContinuation);
         }
-        Indent--;
     }
 
     protected virtual void OutputExpressionList(IEnumerator<CodeExpression> expressions)

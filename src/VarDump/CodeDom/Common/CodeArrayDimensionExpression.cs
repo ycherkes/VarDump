@@ -1,11 +1,13 @@
-﻿namespace VarDump.CodeDom.Common;
+﻿using System.Collections.Generic;
+
+namespace VarDump.CodeDom.Common;
 
 internal class CodeArrayDimensionExpression : CodeExpression
 {
-    public CodeExpressionCollection Initializers { get; } = new();
+    public CodeExpressionContainer Initializers { get; }
 
-    public CodeArrayDimensionExpression(CodeExpression[] initializers)
+    public CodeArrayDimensionExpression(IEnumerable<CodeExpression> initializers)
     {
-        Initializers.AddRange(initializers);
+        Initializers = new CodeExpressionContainer(initializers);
     }
 }

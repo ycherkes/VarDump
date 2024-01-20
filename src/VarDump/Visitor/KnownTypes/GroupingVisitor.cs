@@ -51,8 +51,7 @@ internal sealed class GroupingVisitor : IKnownObjectVisitor
     private CodeExpression VisitGroupings(IEnumerable<object> objects)
     {
         var groupingValues = objects.Select(GetIGroupingValue)
-            .SelectMany(g => g.Value.Cast<object>().Select(e => new { g.Key, Element = e }))
-            .ToArray();
+            .SelectMany(g => g.Value.Cast<object>().Select(e => new { g.Key, Element = e }));
 
         return _rootObjectVisitor.Visit(groupingValues);
     }

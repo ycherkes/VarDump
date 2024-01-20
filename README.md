@@ -5,7 +5,7 @@ VarDump is a utility for serialization of runtime objects to C# or Visual Basic 
 
 Developed as a free alternative of [ObjectDumper.NET](https://github.com/thomasgalliker/ObjectDumper), which is not free for commercial use.
 
-[![nuget version](https://img.shields.io/badge/Nuget-v0.2.12-blue)](https://www.nuget.org/packages/VarDump)
+[![nuget version](https://img.shields.io/badge/Nuget-v0.2.13-blue)](https://www.nuget.org/packages/VarDump)
 [![nuget downloads](https://img.shields.io/nuget/dt/VarDump?label=Downloads)](https://www.nuget.org/packages/VarDump)
 
 ## C# & VB Dumper:
@@ -93,6 +93,56 @@ var dictionary = new[]
 }.ToDictionary(x => x.Name, x => x);
 
 Console.WriteLine(dictionary.Dump(DumpOptions.Default));
+```
+
+## Extensibility:
+<p align="right"><a href="https://dotnetfiddle.net/hfrbo6">Run .NET fiddle</a></p>
+
+```csharp
+using System;
+using System.Collections.Generic;
+using VarDump;
+using VarDump.Visitor;
+using VarDump.Visitor.Descriptors;
+
+// For more examples see https://github.com/ycherkes/VarDump/blob/main/test/VarDump.UnitTests/ObjectDescriptorMiddlewareSpec.cs
+
+const string name = "World";
+FormattableString formattableString = $"Hello, {name}";
+
+var dumpOptions = new DumpOptions
+{
+    Descriptors = { new FormattableStringMiddleware() }
+};
+
+var csDumper = new CSharpDumper(dumpOptions);
+var cs = csDumper.Dump(formattableString);
+
+var vbDumper = new VisualBasicDumper(dumpOptions);
+var vb = vbDumper.Dump(formattableString);
+
+// C# string
+Console.WriteLine(cs);
+
+// VB string
+Console.WriteLine(vb);
+
+class FormattableStringMiddleware : IObjectDescriptorMiddleware
+{
+    public IEnumerable<IReflectionDescriptor> Describe(object @object, Type objectType, Func<IEnumerable<IReflectionDescriptor>> prev)
+    {
+        if (@object is FormattableString fs)
+        {
+            return Descriptor.FromObject(new
+            {
+                fs.Format,
+                Arguments = fs.GetArguments()
+            });
+        }
+
+        return prev();
+    }
+}
 ```
 
 For more examples see [Unit Tests](https://github.com/ycherkes/VarDump/tree/main/test)

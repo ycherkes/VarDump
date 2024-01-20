@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
@@ -17,7 +18,7 @@ namespace VarDump.CodeDom.CSharp
     {
         private ExposedTabStringIndentedTextWriter _output;
         private CodeGeneratorOptions _options;
-        private bool _inNestedBinary = false;
+        private bool _inNestedBinary;
 
         private const int MaxLineLength = int.MaxValue;
         private int Indent
@@ -143,13 +144,14 @@ namespace VarDump.CodeDom.CSharp
         {
             Output.Write("new ");
 
-            CodeExpressionCollection init = e.Initializers;
-            if (init.Count > 0)
+            using var initializersEnumerator = e.Initializers.GetEnumerator();
+
+            if (initializersEnumerator.MoveNext())
             {
                 OutputType(e.CreateType);
                 Output.WriteLine("");
                 Output.WriteLine("{");
-                OutputExpressionList(init, newlineBetweenItems: true);
+                OutputExpressionList(initializersEnumerator, newlineBetweenItems: true);
                 Output.WriteLine();
                 Output.Write("}");
             }
@@ -361,21 +363,33 @@ namespace VarDump.CodeDom.CSharp
         {
             Output.Write("new ");
             OutputType(e.CreateType);
-            if (e.Parameters.Count > 0 || e.InitializeExpressions.Count == 0)
+            
+            using var parametersEnumerator = e.Parameters.GetEnumerator();
+            using var initializeExpressionsEnumerator = e.InitializeExpressions.GetEnumerator();
+
+            var anyInitializeExpressions = initializeExpressionsEnumerator.MoveNext();
+            var anyParameters = parametersEnumerator.MoveNext();
+            
+            if (anyParameters || !anyInitializeExpressions)
             {
                 Output.Write('(');
-                OutputExpressionList(e.Parameters);
+                if (anyParameters)
+                {
+                    OutputExpressionList(parametersEnumerator);
+                }
                 Output.Write(')');
             }
 
-            if (e.InitializeExpressions.Count > 0)
+            if (!anyInitializeExpressions)
             {
-                Output.WriteLine();
-                Output.WriteLine('{');
-                OutputExpressionList(e.InitializeExpressions, newlineBetweenItems: true);
-                Output.WriteLine();
-                Output.Write("}");
+                return;
             }
+
+            Output.WriteLine();
+            Output.WriteLine('{');
+            OutputExpressionList(e.InitializeExpressions, newlineBetweenItems: true);
+            Output.WriteLine();
+            Output.Write("}");
         }
 
         private void GenerateValueTupleCreateExpression(CodeValueTupleCreateExpression e)
@@ -596,46 +610,6 @@ namespace VarDump.CodeDom.CSharp
             }
         }
 
-        private void GenerateCommentNoNewLine(CodeComment e)
-        {
-            string commentLineStart = e.DocComment ? "///" : "//";
-            Output.Write(commentLineStart);
-            Output.Write(' ');
-
-            string value = e.Text;
-            for (int i = 0; i < value.Length; i++)
-            {
-                if (value[i] == '\u0000')
-                {
-                    continue;
-                }
-
-                Output.Write(value[i]);
-
-                if (value[i] == '\r')
-                {
-                    if (i < value.Length - 1 && value[i + 1] == '\n')
-                    {
-                        // if next char is '\n', skip it
-                        Output.Write('\n');
-                        i++;
-                    }
-
-                    _output.InternalOutputTabs();
-                    Output.Write(commentLineStart);
-                }
-                else if (value[i] == '\n')
-                {
-                    _output.InternalOutputTabs();
-                    Output.Write(commentLineStart);
-                }
-                else if (value[i] == '\u2028' || value[i] == '\u2029' || value[i] == '\u0085')
-                {
-                    Output.Write(commentLineStart);
-                }
-            }
-        }
-
         private void GenerateCommentStatement(CodeCommentStatement e)
         {
             if (e.Comment == null)
@@ -644,14 +618,7 @@ namespace VarDump.CodeDom.CSharp
             }
             GenerateComment(e.Comment);
         }
-        private void GenerateCommentStatements(CodeCommentStatementCollection e)
-        {
-            foreach (CodeCommentStatement comment in e)
-            {
-                GenerateCommentStatement(comment);
-            }
-        }
-
+        
         private void GenerateConditionStatement(CodeConditionStatement e)
         {
             Output.Write("if (");
@@ -825,15 +792,13 @@ namespace VarDump.CodeDom.CSharp
 
         private void GenerateFlagsBinaryOperatorExpression(CodeFlagsBinaryOperatorExpression e)
         {
-            if (e.Expressions.Count == 0) return;
-
-            bool isFirst = true;
+           bool isFirst = true;
 
             foreach (CodeExpression expression in e.Expressions)
             {
                 if (isFirst)
                 {
-                    GenerateExpression(e.Expressions[0]);
+                    GenerateExpression(expression);
                     isFirst = false;
                 }
                 else
@@ -848,36 +813,39 @@ namespace VarDump.CodeDom.CSharp
 
         private void GenerateSeparatedExpressionCollection(CodeSeparatedExpressionCollection e)
         {
-            var collectionLength = e.ExpressionCollection.Count;
-            int current = 0;
+            bool isFirst = true;
 
             foreach (CodeExpression codeExpression in e.ExpressionCollection)
             {
-                current++;
-                GenerateExpression(codeExpression);
-                if (current < collectionLength)
+                if (isFirst)
+                {
+                    isFirst = false;
+                }
+                else
                 {
                     Output.Write(e.Separator);
                 }
+                GenerateExpression(codeExpression);
             }
         }
 
         private void GenerateCodeImplicitKeyValuePairCreateExpression(CodeImplicitKeyValuePairCreateExpression e)
         {
             Output.WriteLine('{');
-            OutputExpressionList(new CodeExpressionCollection(new[] { e.Key, e.Value }), true);
+            OutputExpressionList(new CodeExpressionContainer(new[] { e.Key, e.Value }), true);
             Output.WriteLine();
             Output.Write('}');
         }
 
         private void GenerateLambdaExpression(CodeLambdaExpression codeLambdaExpression)
         {
-            if (codeLambdaExpression.Parameters.Count != 1)
+            var parameters = codeLambdaExpression.Parameters.ToArray();
+            if (parameters.Length != 1)
             {
                 Output.Write('(');
             }
             bool first = true;
-            foreach (CodeExpression current in codeLambdaExpression.Parameters)
+            foreach (CodeExpression current in parameters)
             {
                 if (first)
                 {
@@ -890,7 +858,7 @@ namespace VarDump.CodeDom.CSharp
                 GenerateExpression(current);
             }
 
-            if (codeLambdaExpression.Parameters.Count != 1)
+            if (parameters.Length != 1)
             {
                 Output.Write(')');
             }
@@ -1025,16 +993,30 @@ namespace VarDump.CodeDom.CSharp
             Output.Write(')');
         }
 
-        private void OutputExpressionList(CodeExpressionCollection expressions)
+        private void OutputExpressionList(CodeExpressionContainer expressions)
+        {
+           OutputExpressionList(expressions, false /*newlineBetweenItems*/);
+        }
+
+        private void OutputExpressionList(CodeExpressionContainer expressions, bool newlineBetweenItems)
+        {
+            using var expressionsEnumerator = expressions.GetEnumerator();
+            if (expressionsEnumerator.MoveNext())
+            {
+                OutputExpressionList(expressionsEnumerator, newlineBetweenItems);
+            }
+        }
+
+        private void OutputExpressionList(IEnumerator<CodeExpression> expressions)
         {
             OutputExpressionList(expressions, false /*newlineBetweenItems*/);
         }
 
-        private void OutputExpressionList(CodeExpressionCollection expressions, bool newlineBetweenItems)
+        private void OutputExpressionList(IEnumerator<CodeExpression> expressions, bool newlineBetweenItems)
         {
             bool first = true;
             Indent++;
-            foreach (CodeExpression current in expressions)
+            while (true)
             {
                 if (first)
                 {
@@ -1047,7 +1029,12 @@ namespace VarDump.CodeDom.CSharp
                     else
                         Output.Write(", ");
                 }
-                ((ICodeGenerator)this).GenerateCodeFromExpression(current, _output.InnerWriter, _options);
+                ((ICodeGenerator)this).GenerateCodeFromExpression(expressions.Current, _output.InnerWriter, _options);
+
+                if (!expressions.MoveNext())
+                {
+                    break;
+                }
             }
             Indent--;
         }

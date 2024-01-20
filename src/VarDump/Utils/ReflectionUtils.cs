@@ -113,7 +113,7 @@ internal static class ReflectionUtils
             : type.IsAnonymousType()
                 ? "AnonymousType"
                 : typeName.StartsWith("<")
-                    ? typeName.Substring(1).Split('>')[0]
+                    ? typeName.Split(new []{'<'}, StringSplitOptions.RemoveEmptyEntries)[0].Split('>')[0]
                     : typeName.Split('`')[0];
 
         if (type.IsInterface() && result.StartsWith("I", StringComparison.OrdinalIgnoreCase))

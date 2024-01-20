@@ -23,6 +23,6 @@ internal sealed class ValueTupleVisitor : IKnownObjectVisitor
     {
         var propertyValues = objectType.GetFields().Select(p => ReflectionUtils.GetValue(p, obj)).Select(_rootObjectVisitor.Visit);
 
-        return new CodeValueTupleCreateExpression(propertyValues.ToArray());
+        return new CodeValueTupleCreateExpression(propertyValues);
     }
 }

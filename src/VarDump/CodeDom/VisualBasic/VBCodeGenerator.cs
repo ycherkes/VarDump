@@ -515,8 +515,8 @@ namespace VarDump.CodeDom.VisualBasic
                 Output.Write("New ");
             }
 
-            CodeExpressionCollection init = e.Initializers;
-            if (init.Count > 0)
+            using var initializersEnumerator = e.Initializers.GetEnumerator();
+            if (initializersEnumerator.MoveNext())
             {
                 if (!(e.CreateType is CodeEmptyTypeReference))
                 {
@@ -526,7 +526,7 @@ namespace VarDump.CodeDom.VisualBasic
 
                 Output.Write("{");
                 Output.WriteLine("");
-                OutputExpressionList(init, newlineBetweenItems: true, newLineContinuation: false);
+                OutputExpressionList(initializersEnumerator, newlineBetweenItems: true, newLineContinuation: false);
                 Output.WriteLine("");
                 Output.Write('}');
             }
@@ -662,11 +662,11 @@ namespace VarDump.CodeDom.VisualBasic
         protected override void GenerateMethodInvokeExpression(CodeMethodInvokeExpression e)
         {
             GenerateMethodReferenceExpression(e.Method);
-            CodeExpressionCollection parameters = e.Parameters;
-            if (parameters.Count > 0)
+            using var parametersEnumerator = e.Parameters.GetEnumerator();
+            if (parametersEnumerator.MoveNext())
             {
                 Output.Write('(');
-                OutputExpressionList(e.Parameters);
+                OutputExpressionList(parametersEnumerator);
                 Output.Write(')');
             }
             else
@@ -698,15 +698,25 @@ namespace VarDump.CodeDom.VisualBasic
         {
             Output.Write("New ");
             OutputType(e.CreateType);
-            if (e.Parameters.Count > 0 || e.InitializeExpressions.Count == 0)
+
+            using var parametersEnumerator = e.Parameters.GetEnumerator();
+            using var initializeExpressionsEnumerator = e.InitializeExpressions.GetEnumerator();
+
+            var anyInitializeExpressions = initializeExpressionsEnumerator.MoveNext();
+            var anyParameters = parametersEnumerator.MoveNext();
+
+            if (anyParameters || !anyInitializeExpressions)
             {
                 // always write out the () to disambiguate cases like "New System.Random().Next(x,y)"
                 Output.Write('(');
-                OutputExpressionList(e.Parameters);
+                if (anyParameters)
+                {
+                    OutputExpressionList(parametersEnumerator);
+                }
                 Output.Write(')');
             }
 
-            if (e.InitializeExpressions.Count <= 0) return;
+            if (!anyInitializeExpressions) return;
 
             Output.Write(e.CreateType switch
             {
@@ -715,7 +725,7 @@ namespace VarDump.CodeDom.VisualBasic
                 _ => " With "
             });
             Output.WriteLine('{');
-            OutputExpressionList(e.InitializeExpressions, newlineBetweenItems: true, newLineContinuation: false);
+            OutputExpressionList(initializeExpressionsEnumerator, newlineBetweenItems: true, newLineContinuation: false);
             Output.WriteLine();
             Output.Write("}");
         }
@@ -730,7 +740,7 @@ namespace VarDump.CodeDom.VisualBasic
         protected override void GenerateCodeImplicitKeyValuePairCreateExpression(CodeImplicitKeyValuePairCreateExpression e)
         {
             Output.WriteLine('{');
-            OutputExpressionList(new CodeExpressionCollection(new[] { e.Key, e.Value }), true, false);
+            OutputExpressionList(new CodeExpressionContainer(new[] { e.Key, e.Value }), true, false);
             Output.WriteLine();
             Output.Write('}');
         }
@@ -742,17 +752,19 @@ namespace VarDump.CodeDom.VisualBasic
 
         protected override void GenerateSeparatedExpressionCollection(CodeSeparatedExpressionCollection e)
         {
-            var collectionLength = e.ExpressionCollection.Count;
-            int current = 0;
+            bool isFirst = true;
 
             foreach (CodeExpression codeExpression in e.ExpressionCollection)
             {
-                current++;
-                GenerateExpression(codeExpression);
-                if (current < collectionLength)
+                if (isFirst)
+                {
+                    isFirst = false;
+                }
+                else
                 {
                     Output.Write(e.Separator);
                 }
+                GenerateExpression(codeExpression);
             }
         }
 
@@ -902,7 +914,7 @@ namespace VarDump.CodeDom.VisualBasic
             if (typeRef.ArrayRank == 1 && e.InitExpression != null)
             {
                 CodeArrayCreateExpression eAsArrayCreate = e.InitExpression as CodeArrayCreateExpression;
-                if (eAsArrayCreate != null && eAsArrayCreate.Initializers.Count == 0)
+                if (eAsArrayCreate != null && !eAsArrayCreate.Initializers.Any())
                 {
                     doInit = false;
                     OutputIdentifier(e.Name);
@@ -1198,12 +1210,6 @@ namespace VarDump.CodeDom.VisualBasic
         {
             Output.Write(st);
             Output.WriteLine(newLineContinuation ? " _" : "");
-        }
-
-        private bool IsGeneratingStatements()
-        {
-            Debug.Assert(_statementDepth >= 0, "statementDepth >= 0");
-            return (_statementDepth > 0);
         }
 
         private void GenerateVBStatements(CodeStatementCollection stms)

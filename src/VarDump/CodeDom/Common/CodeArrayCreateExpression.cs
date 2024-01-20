@@ -3,34 +3,35 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Collections.Generic;
 
 namespace VarDump.CodeDom.Common;
 
 internal class CodeArrayCreateExpression : CodeExpression
 {
-    private readonly CodeExpressionCollection _initializers = new CodeExpressionCollection();
+    private readonly CodeExpressionContainer _initializers = new CodeExpressionContainer();
     private CodeTypeReference _createType;
 
     public CodeArrayCreateExpression()
     {
     }
 
-    public CodeArrayCreateExpression(CodeTypeReference createType, params CodeExpression[] initializers)
+    public CodeArrayCreateExpression(CodeTypeReference createType, IEnumerable<CodeExpression> initializers)
     {
         _createType = createType;
-        _initializers.AddRange(initializers);
+        _initializers = new CodeExpressionContainer(initializers);
     }
 
     public CodeArrayCreateExpression(string createType, params CodeExpression[] initializers)
     {
         _createType = new CodeTypeReference(createType);
-        _initializers.AddRange(initializers);
+        _initializers = new CodeExpressionContainer(initializers);
     }
 
     public CodeArrayCreateExpression(Type createType, params CodeExpression[] initializers)
     {
         _createType = new CodeTypeReference(createType);
-        _initializers.AddRange(initializers);
+        _initializers = new CodeExpressionContainer(initializers);
     }
 
     public CodeArrayCreateExpression(CodeTypeReference createType, int size)
@@ -75,7 +76,7 @@ internal class CodeArrayCreateExpression : CodeExpression
         set => _createType = value;
     }
 
-    public CodeExpressionCollection Initializers => _initializers;
+    public CodeExpressionContainer Initializers => _initializers;
 
     public int Size { get; set; }
 

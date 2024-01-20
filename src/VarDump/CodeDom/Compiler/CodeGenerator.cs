@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using VarDump.CodeDom.Common;
@@ -254,17 +255,32 @@ internal abstract class CodeGenerator : ICodeGenerator
         Output.Write(ident);
     }
 
-    protected virtual void OutputExpressionList(CodeExpressionCollection expressions)
+    protected virtual void OutputExpressionList(CodeExpressionContainer expressions)
     {
         OutputExpressionList(expressions, newlineBetweenItems: false);
     }
 
-    protected virtual void OutputExpressionList(CodeExpressionCollection expressions, bool newlineBetweenItems,
+    protected virtual void OutputExpressionList(CodeExpressionContainer expressions, bool newlineBetweenItems,
         bool newLineContinuation = true)
+    {
+        using var expressionsEnumerator = expressions.GetEnumerator();
+        if (expressionsEnumerator.MoveNext())
+        {
+            OutputExpressionList(expressionsEnumerator, newlineBetweenItems, newLineContinuation);
+        }
+    }
+
+    protected virtual void OutputExpressionList(IEnumerator<CodeExpression> expressions)
+    {
+        OutputExpressionList(expressions, false /*newlineBetweenItems*/);
+    }
+
+    protected virtual void OutputExpressionList(IEnumerator<CodeExpression> expressions, bool newlineBetweenItems,
+    bool newLineContinuation = true)
     {
         bool first = true;
         Indent++;
-        foreach (CodeExpression current in expressions)
+        do
         {
             if (first)
             {
@@ -277,8 +293,10 @@ internal abstract class CodeGenerator : ICodeGenerator
                 else
                     Output.Write(", ");
             }
-            ((ICodeGenerator)this).GenerateCodeFromExpression(current, _output.InnerWriter, _options);
-        }
+
+            ((ICodeGenerator)this).GenerateCodeFromExpression(expressions.Current, _output.InnerWriter, _options);
+
+        } while (expressions.MoveNext());
         Indent--;
     }
 
@@ -346,15 +364,13 @@ internal abstract class CodeGenerator : ICodeGenerator
 
     protected void GenerateFlagsBinaryOperatorExpression(CodeFlagsBinaryOperatorExpression e)
     {
-        if (e.Expressions.Count == 0) return;
-
         bool isFirst = true;
 
         foreach (CodeExpression expression in e.Expressions)
         {
             if (isFirst)
             {
-                GenerateExpression(e.Expressions[0]);
+                GenerateExpression(expression);
                 isFirst = false;
             }
             else

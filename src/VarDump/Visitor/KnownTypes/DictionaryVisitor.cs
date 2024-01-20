@@ -69,7 +69,7 @@ internal sealed class DictionaryVisitor : IKnownObjectVisitor
 
         if (_maxCollectionSize < int.MaxValue)
         {
-            items = items.Replace(_maxCollectionSize, CodeDomUtils.GetTooManyItemsExpression(_maxCollectionSize));
+            items = items.Take(_maxCollectionSize + 1).Replace(_maxCollectionSize, CodeDomUtils.GetTooManyItemsExpression(_maxCollectionSize));
         }
 
         var type = dict.GetType();
@@ -103,7 +103,7 @@ internal sealed class DictionaryVisitor : IKnownObjectVisitor
 
         if (_maxCollectionSize < int.MaxValue)
         {
-            items = items.Replace(_maxCollectionSize, CodeDomUtils.GetTooManyItemsExpression(_maxCollectionSize));
+            items = items.Take(_maxCollectionSize + 1).Replace(_maxCollectionSize, CodeDomUtils.GetTooManyItemsExpression(_maxCollectionSize));
         }
         
         var type = dictionary.GetType();

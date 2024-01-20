@@ -262,14 +262,14 @@ public class ObjectDescriptorMiddlewareSpec
 
     private class MemberInfoMiddleware : IObjectDescriptorMiddleware
     {
-        private readonly HashSet<string> _includeProperties = new()
-        {
+        private readonly HashSet<string> _includeProperties =
+        [
             "Name",
             "DeclaringType",
             "ReflectedType",
             "MemberType",
             "Attributes"
-        };
+        ];
 
         public IEnumerable<IReflectionDescriptor> Describe(object @object, Type objectType, Func<IEnumerable<IReflectionDescriptor>> prev)
         {
@@ -286,12 +286,12 @@ public class ObjectDescriptorMiddlewareSpec
 
     private class FileSystemInfoMiddleware : IObjectDescriptorMiddleware
     {
-        private readonly HashSet<string> _excludeProperties = new()
-        {
+        private readonly HashSet<string> _excludeProperties =
+        [
             "Parent",
             "Directory",
             "Root"
-        };
+        ];
 
         public IEnumerable<IReflectionDescriptor> Describe(object @object, Type objectType, Func<IEnumerable<IReflectionDescriptor>> prev)
         {

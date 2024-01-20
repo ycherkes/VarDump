@@ -69,4 +69,15 @@ internal static class EnumerableExtensions
             yield return item;
         }
     }
+
+    // see https://stackoverflow.com/questions/41384035/replace-insert-delete-operations-on-ienumerable
+    public static IEnumerable<T> Replace<T>(this IEnumerable<T> enumerable, int index, T value)
+    {
+        int current = 0;
+        foreach (var item in enumerable)
+        {
+            yield return current == index ? value : item;
+            current++;
+        }
+    }
 }

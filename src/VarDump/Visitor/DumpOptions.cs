@@ -20,6 +20,7 @@ public class DumpOptions
     public BindingFlags? GetFieldsBindingFlags { get; set; }
     public bool IgnoreDefaultValues { get; set; } = true;
     public bool IgnoreNullValues { get; set; } = true;
+    public int MaxCollectionSize { get; set; } = int.MaxValue;
     public int MaxDepth { get; set; } = 25;
     public ListSortDirection? SortDirection { get; set; }
     public bool UseNamedArgumentsForReferenceRecordTypes { get; set; }
@@ -41,6 +42,7 @@ public class DumpOptions
             GetPropertiesBindingFlags = GetPropertiesBindingFlags,
             IgnoreDefaultValues = IgnoreDefaultValues,
             IgnoreNullValues = IgnoreNullValues,
+            MaxCollectionSize = MaxCollectionSize,
             MaxDepth = MaxDepth,
             SortDirection = SortDirection,
             UseNamedArgumentsForReferenceRecordTypes = UseNamedArgumentsForReferenceRecordTypes,

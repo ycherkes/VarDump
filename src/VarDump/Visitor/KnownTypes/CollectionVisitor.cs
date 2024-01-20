@@ -13,16 +13,26 @@ internal sealed class CollectionVisitor : IKnownObjectVisitor
 {
     private readonly CodeTypeReferenceOptions _typeReferenceOptions;
     private readonly IObjectVisitor _rootObjectVisitor;
+    private readonly int _maxCollectionSize;
 
     public CollectionVisitor(DumpOptions options, IObjectVisitor rootObjectVisitor)
     {
         _typeReferenceOptions = options.UseTypeFullName
             ? CodeTypeReferenceOptions.FullTypeName
             : CodeTypeReferenceOptions.ShortTypeName;
+
+        if (options.MaxCollectionSize <= 0)
+        {
+            throw new ArgumentOutOfRangeException(nameof(options.MaxCollectionSize));
+        }
+
+        _maxCollectionSize = options.MaxCollectionSize;
+
         _rootObjectVisitor = rootObjectVisitor;
     }
 
     public string Id => "Collection";
+
     public bool IsSuitableFor(object obj, Type objectType)
     {
         return obj is IEnumerable;
@@ -48,7 +58,7 @@ internal sealed class CollectionVisitor : IKnownObjectVisitor
             }
 
             var result = collectionType.ContainsAnonymousType()
-            ? VisitAnonymousCollection(collection)
+                ? VisitAnonymousCollection(collection)
                 : VisitSimpleCollection(collection, elementType);
 
             return result;
@@ -63,11 +73,22 @@ internal sealed class CollectionVisitor : IKnownObjectVisitor
     {
         var type = collection.GetType();
 
-        CodeExpression expr = VisitGroupings(collection.Cast<object>());
+        var items = VisitGroupings(collection.Cast<object>());
+
+        if (_maxCollectionSize < int.MaxValue)
+        {
+            items = items.Replace(_maxCollectionSize, CodeDomUtils.GetTooManyItemsExpression(_maxCollectionSize));
+        }
+
+        CodeExpression expr = new CodeArrayCreateExpression(new CodeAnonymousTypeReference { ArrayRank = 1 }, items);
 
         var variableReferenceExpression = new CodeVariableReferenceExpression("grp");
-        var keyLambdaExpression = new CodeLambdaExpression(new CodePropertyReferenceExpression(variableReferenceExpression, "Key"), variableReferenceExpression);
-        var valueLambdaExpression = new CodeLambdaExpression(new CodePropertyReferenceExpression(variableReferenceExpression, "Element"), variableReferenceExpression);
+        var keyLambdaExpression =
+            new CodeLambdaExpression(new CodePropertyReferenceExpression(variableReferenceExpression, "Key"),
+                variableReferenceExpression);
+        var valueLambdaExpression =
+            new CodeLambdaExpression(new CodePropertyReferenceExpression(variableReferenceExpression, "Element"),
+                variableReferenceExpression);
 
         var isLookup = type.IsLookup();
 
@@ -91,6 +112,11 @@ internal sealed class CollectionVisitor : IKnownObjectVisitor
     {
         var items = enumerable.Cast<object>().Select(_rootObjectVisitor.Visit);
 
+        if (_maxCollectionSize < int.MaxValue)
+        {
+            items = items.Replace(_maxCollectionSize, CodeDomUtils.GetTooManyItemsExpression(_maxCollectionSize));
+        }
+
         var type = enumerable.GetType();
 
         var isImmutableOrFrozen = type.IsPublicImmutableOrFrozenCollection();
@@ -103,17 +129,20 @@ internal sealed class CollectionVisitor : IKnownObjectVisitor
             }
 
             CodeExpression expr = new CodeArrayCreateExpression(
-                new CodeTypeReference(isImmutableOrFrozen || !type.IsPublic ? elementType.MakeArrayType() : type, _typeReferenceOptions),
+                new CodeTypeReference(isImmutableOrFrozen || !type.IsPublic ? elementType.MakeArrayType() : type,
+                    _typeReferenceOptions),
                 items);
 
-            if (isImmutableOrFrozen) expr = new CodeMethodInvokeExpression(expr, $"To{type.GetImmutableOrFrozenTypeName()}");
+            if (isImmutableOrFrozen)
+                expr = new CodeMethodInvokeExpression(expr, $"To{type.GetImmutableOrFrozenTypeName()}");
 
             return expr;
         }
 
         if (type.IsReadonlyCollection())
         {
-            var  typeReference = new CodeCollectionTypeReference(typeof(List<>).MakeGenericType(elementType), _typeReferenceOptions);
+            var typeReference =
+                new CodeCollectionTypeReference(typeof(List<>).MakeGenericType(elementType), _typeReferenceOptions);
 
             var expression = new CodeObjectCreateAndInitializeExpression(
                 typeReference,
@@ -129,7 +158,8 @@ internal sealed class CollectionVisitor : IKnownObjectVisitor
         return initializeExpression;
     }
 
-    private static IEnumerable<CodeExpression> ChunkMultiDimensionalArrayExpression(Array array, IEnumerable<CodeExpression> enumerable)
+    private static IEnumerable<CodeExpression> ChunkMultiDimensionalArrayExpression(Array array,
+        IEnumerable<CodeExpression> enumerable)
     {
         var dimensions = new int[array.Rank - 1];
 
@@ -152,6 +182,12 @@ internal sealed class CollectionVisitor : IKnownObjectVisitor
     private CodeExpression VisitAnonymousCollection(IEnumerable enumerable)
     {
         var items = enumerable.Cast<object>().Select(_rootObjectVisitor.Visit);
+
+        if (_maxCollectionSize < int.MaxValue)
+        {
+            items = items.Replace(_maxCollectionSize, CodeDomUtils.GetTooManyItemsExpression(_maxCollectionSize));
+        }
+
         var type = enumerable.GetType();
 
         var isImmutableOrFrozen = type.IsPublicImmutableOrFrozenCollection();
@@ -188,11 +224,11 @@ internal sealed class CollectionVisitor : IKnownObjectVisitor
         return new KeyValuePair<object, IEnumerable>(fieldValues[0], (IEnumerable)fieldValues[1]);
     }
 
-    private CodeExpression VisitGroupings(IEnumerable<object> objects)
+    private IEnumerable<CodeExpression> VisitGroupings(IEnumerable<object> objects)
     {
-        var groupingValues = objects.Select(GetIGroupingValue)
+        var items = objects.Select(GetIGroupingValue)
             .SelectMany(g => g.Value.Cast<object>().Select(e => new { g.Key, Element = e }));
 
-        return _rootObjectVisitor.Visit(groupingValues);
+        return items.Select(_rootObjectVisitor.Visit);
     }
 }

@@ -11,7 +11,7 @@ public class TooManyItemsCollectionSpec
     [Fact]
     public void DumpTooLongCollectionCSharp()
     {
-        var collection = new List<int> { 1, 2, 3 }.AsReadOnly();
+        var collection = new List<int> { 1, 2, 3, 4 }.AsReadOnly();
 
         var dumper = new CSharpDumper(new DumpOptions { MaxCollectionSize = 2 });
 
@@ -36,6 +36,7 @@ public class TooManyItemsCollectionSpec
             new Person{ Age = 32, FirstName = "Bob"},
             new Person{ Age = 23, FirstName = "Alice"},
             new Person{ Age = 13, FirstName = "Silvia"},
+            new Person{ Age = 44, FirstName = "Jon"}
         }.ToDictionary(x => x.FirstName);
 
         var dumper = new CSharpDumper(new DumpOptions { MaxCollectionSize = 2 });
@@ -75,6 +76,7 @@ public class TooManyItemsCollectionSpec
             new { Age = 32, FirstName = "Bob"},
             new { Age = 23, FirstName = "Alice"},
             new { Age = 13, FirstName = "Silvia"},
+            new { Age = 44, FirstName = "Jon"}
         }.ToDictionary(x => x.FirstName);
 
         var dumper = new CSharpDumper(new DumpOptions { MaxCollectionSize = 2 });
@@ -116,6 +118,7 @@ public class TooManyItemsCollectionSpec
             new Person{ Age = 32, FirstName = "Bob"},
             new Person{ Age = 23, FirstName = "Alice"},
             new Person{ Age = 13, FirstName = "Silvia"},
+            new Person{ Age = 44, FirstName = "Jon"}
         }.GroupBy(x => x.FirstName).ToArray();
 
         var dumper = new CSharpDumper(new DumpOptions { MaxCollectionSize = 2 });
@@ -153,7 +156,7 @@ public class TooManyItemsCollectionSpec
     [Fact]
     public void DumpTooLongCollectionVisualBasic()
     {
-        var collection = new List<int> { 1, 2, 3 }.AsReadOnly();
+        var collection = new List<int> { 1, 2, 3, 4 }.AsReadOnly();
 
         var dumper = new VisualBasicDumper(new DumpOptions { MaxCollectionSize = 2 });
 

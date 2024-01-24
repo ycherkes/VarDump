@@ -1,5 +1,6 @@
 ﻿using System;
 using VarDump.CodeDom.Common;
+using VarDump.Visitor.Descriptors;
 
 namespace VarDump.Visitor.KnownTypes;
 
@@ -16,14 +17,14 @@ internal sealed class VersionVisitor : IKnownObjectVisitor
 
     public string Id => nameof(Version);
 
-    public bool IsSuitableFor(object obj, Type objectType)
+    public bool IsSuitableFor(IValueDescriptor valueDescriptor)
     {
-        return obj is Version;
+        return valueDescriptor.Value is Version;
     }
 
-    public CodeExpression Visit(object obj, Type objectType)
+    public CodeExpression Visit(IValueDescriptor valueDescriptor)
     {
-        var version  = (Version)obj;
+        var version  = (Version)valueDescriptor.Value;
         return new CodeObjectCreateExpression(new CodeTypeReference(typeof(Version), _typeReferenceOptions),
             new CodePrimitiveExpression(version.ToString()));
     }

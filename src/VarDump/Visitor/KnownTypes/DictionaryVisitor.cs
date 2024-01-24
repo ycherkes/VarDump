@@ -5,6 +5,8 @@ using System.Linq;
 using VarDump.CodeDom.Common;
 using VarDump.Extensions;
 using VarDump.Utils;
+using VarDump.Visitor.Descriptors;
+using VarDump.Visitor.Descriptors.Implementation;
 
 namespace VarDump.Visitor.KnownTypes;
 
@@ -13,6 +15,7 @@ internal sealed class DictionaryVisitor : IKnownObjectVisitor
     private readonly IObjectVisitor _rootObjectVisitor;
     private readonly CodeTypeReferenceOptions _typeReferenceOptions;
     private readonly int _maxCollectionSize;
+    private readonly IObjectDescriptor _descriptor;
 
     public DictionaryVisitor(DumpOptions options, IObjectVisitor rootObjectVisitor)
     {
@@ -27,17 +30,18 @@ internal sealed class DictionaryVisitor : IKnownObjectVisitor
         
         _maxCollectionSize = options.MaxCollectionSize;
         _rootObjectVisitor = rootObjectVisitor;
+        _descriptor = new ObjectPropertiesDescriptor();
     }
 
     public string Id => "Dictionary";
-    public bool IsSuitableFor(object obj, Type objectType)
+    public bool IsSuitableFor(IValueDescriptor valueDescriptor)
     {
-        return obj is IDictionary;
+        return valueDescriptor.Value is IDictionary;
     }
 
-    public CodeExpression Visit(object obj, Type objectType)
+    public CodeExpression Visit(IValueDescriptor valueDescriptor)
     {
-        IDictionary dict = (IDictionary)obj;
+        IDictionary dict = (IDictionary)valueDescriptor.Value;
         if (_rootObjectVisitor.IsVisited(dict))
         {
             return CodeDomUtils.GetCircularReferenceDetectedExpression();
@@ -53,7 +57,7 @@ internal sealed class DictionaryVisitor : IKnownObjectVisitor
             var result = keysType.ContainsAnonymousType() ||
                          valuesType.ContainsAnonymousType()
                 ? VisitAnonymousDictionary(dict)
-                : VisitSimpleDictionary(dict);
+                : VisitSimpleDictionary(valueDescriptor, dict);
 
             return result;
         }
@@ -63,7 +67,7 @@ internal sealed class DictionaryVisitor : IKnownObjectVisitor
         }
     }
 
-    private CodeExpression VisitSimpleDictionary(IDictionary dict)
+    private CodeExpression VisitSimpleDictionary(ITypeDescriptor valueDescriptor, IDictionary dict)
     {
         var items = dict.Cast<object>().Select(VisitKeyValuePairGenerateImplicitly);
 
@@ -82,15 +86,38 @@ internal sealed class DictionaryVisitor : IKnownObjectVisitor
 
             var dictionaryType = typeof(Dictionary<,>).MakeGenericType(keyType, valueType);
 
-            CodeExpression dictionaryCreateExpression = new CodeObjectCreateAndInitializeExpression(new CodeCollectionTypeReference(dictionaryType, _typeReferenceOptions), items);
+            CodeExpression dictionaryCreateExpression;
 
-            dictionaryCreateExpression = new CodeMethodInvokeExpression(dictionaryCreateExpression, $"To{type.GetImmutableOrFrozenTypeName()}");
+            if (valueDescriptor.GenericTypeArguments.Length > 0)
+            {
+                var typeDescriptor = new TypeDescriptor
+                {
+                    Type = dictionaryType,
+                    GenericTypeArguments = valueDescriptor.GenericTypeArguments
+                };
+
+                dictionaryCreateExpression =
+                    new CodeObjectCreateAndInitializeExpression(
+                        new CodeCollectionTypeReference(typeDescriptor, _typeReferenceOptions), items);
+            }
+            else
+            {
+                dictionaryCreateExpression =
+                    new CodeObjectCreateAndInitializeExpression(
+                        new CodeCollectionTypeReference(dictionaryType, _typeReferenceOptions), items);
+            }
+
+            dictionaryCreateExpression = new CodeMethodInvokeExpression(dictionaryCreateExpression, $"To{valueDescriptor.Type.GetImmutableOrFrozenTypeName()}");
 
             return dictionaryCreateExpression;
         }
         else
         {
-            CodeExpression dictionaryCreateExpression = new CodeObjectCreateAndInitializeExpression(new CodeCollectionTypeReference(type, _typeReferenceOptions), items);
+            CodeTypeReference collectionType = valueDescriptor.GenericTypeArguments.Length > 0
+                ? new CodeCollectionTypeReference(valueDescriptor, _typeReferenceOptions)
+                : new CodeCollectionTypeReference(valueDescriptor.Type, _typeReferenceOptions);
+
+            CodeExpression dictionaryCreateExpression = new CodeObjectCreateAndInitializeExpression(collectionType, items);
             return dictionaryCreateExpression;
         }
     }
@@ -126,14 +153,14 @@ internal sealed class DictionaryVisitor : IKnownObjectVisitor
     private CodeExpression VisitKeyValuePairGenerateImplicitly(object o)
     {
         var objectType = o.GetType();
-        var propertyValues = objectType.GetProperties().Select(p => ReflectionUtils.GetValue(p, o)).Select(_rootObjectVisitor.Visit).Take(2).ToArray();
+        var propertyValues = _descriptor.Describe(o, objectType).Select(rd => _rootObjectVisitor.Visit(rd)).Take(2).ToArray();
         return new CodeImplicitKeyValuePairCreateExpression(propertyValues.First(), propertyValues.Last());
     }
 
     private CodeExpression VisitKeyValuePairGenerateAnonymousType(object o, string keyName, string valueName)
     {
         var objectType = o.GetType();
-        var propertyValues = objectType.GetProperties().Select(p => ReflectionUtils.GetValue(p, o)).Select(_rootObjectVisitor.Visit).ToArray();
+        var propertyValues = _descriptor.Describe(o, objectType).Select(rd => _rootObjectVisitor.Visit(rd)).ToArray();
         var result = new CodeObjectCreateAndInitializeExpression(new CodeAnonymousTypeReference())
         {
             InitializeExpressions = new CodeExpressionContainer(new[]

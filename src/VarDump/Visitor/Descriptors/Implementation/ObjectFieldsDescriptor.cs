@@ -11,6 +11,10 @@ internal class ObjectFieldsDescriptor : IObjectDescriptor
 {
     private readonly BindingFlags _getFieldsBindingFlags;
 
+    public ObjectFieldsDescriptor() : this(BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public)
+    {
+    }
+
     public ObjectFieldsDescriptor(BindingFlags getFieldsBindingFlags)
     {
         _getFieldsBindingFlags = getFieldsBindingFlags;
@@ -23,8 +27,9 @@ internal class ObjectFieldsDescriptor : IObjectDescriptor
             .Select(f => new ReflectionDescriptor(() => ReflectionUtils.GetValue(f, @object))
             {
                 Name = f.Name,
-                Type = f.FieldType,
-                ReflectionType = ReflectionType.Field
+                MemberType = f.FieldType,
+                ReflectionType = ReflectionType.Field,
+                GenericTypeArguments = f.GetNullabilityInfo().GenericTypeArguments
             });
 
         return fields;

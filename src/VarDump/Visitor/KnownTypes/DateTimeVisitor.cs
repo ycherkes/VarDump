@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Globalization;
 using VarDump.CodeDom.Common;
+using VarDump.Visitor.Descriptors;
 
 namespace VarDump.Visitor.KnownTypes;
 
@@ -21,14 +22,14 @@ internal sealed class DateTimeVisitor : IKnownObjectVisitor
     }
 
     public string Id => nameof(DateTime);
-    public bool IsSuitableFor(object obj, Type objectType)
+    public bool IsSuitableFor(IValueDescriptor valueDescriptor)
     {
-        return obj is DateTime;
+        return valueDescriptor.Value is DateTime;
     }
 
-    public CodeExpression Visit(object obj, Type objectType)
+    public CodeExpression Visit(IValueDescriptor valueDescriptor)
     {
-        var dateTime = (DateTime)obj;
+        var dateTime = (DateTime)valueDescriptor.Value;
         var dateTimeCodeTypeReference = new CodeTypeReference(typeof(DateTime), _typeReferenceOptions);
 
         if (dateTime == DateTime.MaxValue)

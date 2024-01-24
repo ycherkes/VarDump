@@ -1,6 +1,6 @@
-﻿using System;
-using System.Net;
+﻿using System.Net;
 using VarDump.CodeDom.Common;
+using VarDump.Visitor.Descriptors;
 
 namespace VarDump.Visitor.KnownTypes;
 
@@ -18,16 +18,16 @@ internal sealed class IPEndpointVisitor : IKnownObjectVisitor
     }
 
     public string Id => nameof(IPEndPoint);
-    public bool IsSuitableFor(object obj, Type objectType)
+    public bool IsSuitableFor(IValueDescriptor valueDescriptor)
     {
-        return obj is IPEndPoint;
+        return valueDescriptor.Value is IPEndPoint;
     }
 
-    public CodeExpression Visit(object obj, Type objectType)
+    public CodeExpression Visit(IValueDescriptor valueDescriptor)
     {
-        var ipEndPoint = (IPEndPoint)obj;
+        var ipEndPoint = (IPEndPoint)valueDescriptor.Value;
         return new CodeObjectCreateExpression(new CodeTypeReference(typeof(IPEndPoint), _typeReferenceOptions),
-            _rootObjectVisitor.Visit(ipEndPoint.Address),
+            _rootObjectVisitor.Visit(new ValueDescriptor { Value = ipEndPoint.Address, Type = typeof(IPAddress) }),
             new CodePrimitiveExpression(ipEndPoint.Port));
     }
 }

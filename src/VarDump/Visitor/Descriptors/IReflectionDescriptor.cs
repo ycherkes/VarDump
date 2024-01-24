@@ -2,10 +2,9 @@
 
 namespace VarDump.Visitor.Descriptors;
 
-public interface IReflectionDescriptor
+public interface IReflectionDescriptor : IValueDescriptor
 {
+    public Type MemberType { get; }
     ReflectionType ReflectionType { get; }
     string Name { get; }
-    Type Type { get; }
-    object Value { get; }
 }

@@ -1,5 +1,4 @@
-﻿using System;
-using System.Linq;
+﻿using System.Linq;
 using VarDump.CodeDom.Common;
 using VarDump.Utils;
 using VarDump.Visitor.Descriptors;
@@ -23,19 +22,19 @@ internal sealed class AnonymousTypeVisitor : IKnownObjectVisitor
     }
 
     public string Id => "Anonymous";
-    public bool IsSuitableFor(object obj, Type objectType)
+    public bool IsSuitableFor(IValueDescriptor valueDescriptor)
     {
-        return objectType.IsAnonymousType();
+        return valueDescriptor.Type.IsAnonymousType();
     }
 
-    public CodeExpression Visit(object obj, Type objectType)
+    public CodeExpression Visit(IValueDescriptor valueDescriptor)
     {
         var result = new CodeObjectCreateAndInitializeExpression(new CodeAnonymousTypeReference())
         {
-            InitializeExpressions = new CodeExpressionContainer(_anonymousObjectDescriptor.Describe(obj, objectType)
+            InitializeExpressions = new CodeExpressionContainer(_anonymousObjectDescriptor.Describe(valueDescriptor.Value, valueDescriptor.Type)
                 .Select(pv => (CodeExpression)new CodeAssignExpression(
                     new CodePropertyReferenceExpression(null, pv.Name),
-                    pv.Type.IsNullableType() || pv.Value == null ? new CodeCastExpression(new CodeTypeReference(pv.Type, _typeReferenceOptions), _rootObjectVisitor.Visit(pv.Value), true) : _rootObjectVisitor.Visit(pv.Value)))
+                    pv.MemberType.IsNullableType() || pv.Value == null ? new CodeCastExpression(new CodeTypeReference(pv.MemberType, _typeReferenceOptions), _rootObjectVisitor.Visit(pv), true) : _rootObjectVisitor.Visit(pv)))
                 )
         };
 

@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>net45;netstandard2.0</TargetFrameworks>
+    <TargetFrameworks>net45;netstandard2.0;netcoreapp6.0</TargetFrameworks>
 	<LangVersion>latest</LangVersion>
 	<AssemblyName>VarDump</AssemblyName>
 	<AssemblyVersion>0.2.15</AssemblyVersion>
@@ -19,6 +19,12 @@
 	<PackageTags>dump;dumpobject;c#;visulabasic;debug</PackageTags>
 	<NeutralLanguage>en</NeutralLanguage>
   </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Remove="Polyfill\Nullable\**" />
+    <EmbeddedResource Remove="Polyfill\Nullable\**" />
+    <None Remove="Polyfill\Nullable\**" />
+  </ItemGroup>
 
   <ItemGroup>
     <None Include="..\..\README.md">

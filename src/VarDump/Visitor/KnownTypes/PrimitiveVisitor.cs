@@ -3,6 +3,7 @@ using System.Linq;
 using System.Reflection;
 using VarDump.CodeDom.Common;
 using VarDump.Utils;
+using VarDump.Visitor.Descriptors;
 
 namespace VarDump.Visitor.KnownTypes;
 
@@ -19,16 +20,16 @@ internal sealed class PrimitiveVisitor : IKnownObjectVisitor
 
     public string Id => "Primitive";
 
-    public bool IsSuitableFor(object obj, Type objectType)
+    public bool IsSuitableFor(IValueDescriptor valueDescriptor)
     {
-        return ReflectionUtils.IsPrimitiveOrNull(obj);
+        return ReflectionUtils.IsPrimitiveOrNull(valueDescriptor.Value);
     }
 
-    public CodeExpression Visit(object obj, Type objectType)
+    public CodeExpression Visit(IValueDescriptor valueDescriptor)
     {
-        if (obj == null || ValueEquality(obj, 0) || obj is byte)
+        if (valueDescriptor.Value == null || ValueEquality(valueDescriptor.Value, 0) || valueDescriptor.Value is byte)
         {
-            return new CodePrimitiveExpression(obj);
+            return new CodePrimitiveExpression(valueDescriptor.Value);
         }
 
         var specialValueExpression = new[]
@@ -40,10 +41,10 @@ internal sealed class PrimitiveVisitor : IKnownObjectVisitor
                 nameof(float.Epsilon),
                 nameof(float.NaN)
             }
-            .Select(specialValue => GetSpecialValue(obj, objectType, specialValue))
+            .Select(specialValue => GetSpecialValue(valueDescriptor.Value, valueDescriptor.Type, specialValue))
             .FirstOrDefault(x => x != null);
 
-        return specialValueExpression ?? new CodePrimitiveExpression(obj);
+        return specialValueExpression ?? new CodePrimitiveExpression(valueDescriptor.Value);
     }
 
     private CodeExpression GetSpecialValue(object @object, Type objectType, string fieldName)

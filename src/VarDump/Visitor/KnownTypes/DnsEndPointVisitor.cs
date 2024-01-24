@@ -1,7 +1,7 @@
-﻿using System;
-using System.Net;
+﻿using System.Net;
 using System.Net.Sockets;
 using VarDump.CodeDom.Common;
+using VarDump.Visitor.Descriptors;
 
 namespace VarDump.Visitor.KnownTypes;
 
@@ -19,14 +19,14 @@ internal sealed class DnsEndPointVisitor : IKnownObjectVisitor
     }
 
     public string Id => nameof(DnsEndPoint);
-    public bool IsSuitableFor(object obj, Type objectType)
+    public bool IsSuitableFor(IValueDescriptor valueDescriptor)
     {
-        return obj is DnsEndPoint;
+        return valueDescriptor.Value is DnsEndPoint;
     }
 
-    public CodeExpression Visit(object obj, Type objectType)
+    public CodeExpression Visit(IValueDescriptor valueDescriptor)
     {
-        var dnsEndPoint = (DnsEndPoint)obj;
+        var dnsEndPoint = (DnsEndPoint)valueDescriptor.Value;
         return dnsEndPoint.AddressFamily == AddressFamily.Unspecified ?
             new CodeObjectCreateExpression(new CodeTypeReference(typeof(DnsEndPoint), _typeReferenceOptions),
                 new CodePrimitiveExpression(dnsEndPoint.Host),
@@ -34,6 +34,6 @@ internal sealed class DnsEndPointVisitor : IKnownObjectVisitor
             : new CodeObjectCreateExpression(new CodeTypeReference(typeof(DnsEndPoint), _typeReferenceOptions),
                 new CodePrimitiveExpression(dnsEndPoint.Host),
                 new CodePrimitiveExpression(dnsEndPoint.Port),
-                _rootObjectVisitor.Visit(dnsEndPoint.AddressFamily));
+                _rootObjectVisitor.Visit(new ValueDescriptor{Value = dnsEndPoint.AddressFamily, Type = typeof(AddressFamily)}));
     }
 }

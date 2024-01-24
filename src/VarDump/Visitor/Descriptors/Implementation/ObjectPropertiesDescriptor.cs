@@ -18,6 +18,10 @@ internal class ObjectPropertiesDescriptor : IObjectDescriptor
         _writablePropertiesOnly = writablePropertiesOnly;
     }
 
+    public ObjectPropertiesDescriptor() : this(BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public, false)
+    {
+    }
+
     public IEnumerable<IReflectionDescriptor> Describe(object @object, Type objectType)
     {
         var properties = EnumerableExtensions.AsEnumerable(() => objectType
@@ -28,8 +32,9 @@ internal class ObjectPropertiesDescriptor : IObjectDescriptor
             .Select(p => new ReflectionDescriptor(() => ReflectionUtils.GetValue(p, @object))
             {
                 Name = p.Name,
-                Type = p.PropertyType,
-                ReflectionType = ReflectionType.Property
+                MemberType = p.PropertyType,
+                ReflectionType = ReflectionType.Property,
+                GenericTypeArguments = p.GetNullabilityInfo().GenericTypeArguments
             });
 
         return properties;

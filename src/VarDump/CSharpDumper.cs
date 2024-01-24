@@ -6,6 +6,7 @@ using VarDump.CodeDom.CSharp;
 using VarDump.Extensions;
 using VarDump.Utils;
 using VarDump.Visitor;
+using VarDump.Visitor.Descriptors;
 
 namespace VarDump;
 
@@ -48,7 +49,7 @@ public class CSharpDumper : IDumper
     {
         var objectVisitor = new ObjectVisitor(_options);
 
-        var expression = objectVisitor.Visit(obj);
+        var expression = objectVisitor.Visit(new ValueDescriptor{ Value = obj, Type = obj?.GetType()});
 
         CodeObject codeObject = _options.GenerateVariableInitializer
             ? new CodeVariableDeclarationStatement(new CodeImplicitlyTypedTypeReference(),

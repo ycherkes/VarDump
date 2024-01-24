@@ -1,10 +1,10 @@
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
-using System;
 using System.Collections.Generic;
 using VarDump.CodeDom.Common;
 using VarDump.UnitTests.TestModel;
 using VarDump.Visitor;
+using VarDump.Visitor.Descriptors;
 using VarDump.Visitor.KnownTypes;
 using Xunit;
 
@@ -75,14 +75,14 @@ public class KnownTypesSpec
             : CodeTypeReferenceOptions.ShortTypeName;
 
         public string Id => "ServiceDescriptor";
-        public bool IsSuitableFor(object obj, Type objectType)
+        public bool IsSuitableFor(IValueDescriptor valueDescriptor)
         {
-            return obj is ServiceDescriptor;
+            return valueDescriptor.Value is ServiceDescriptor;
         }
 
-        public CodeExpression Visit(object obj, Type objectType)
+        public CodeExpression Visit(IValueDescriptor valueDescriptor)
         {
-            var serviceDescriptor = (ServiceDescriptor)obj;
+            var serviceDescriptor = (ServiceDescriptor)valueDescriptor.Value;
 
             var typeParameters = new List<CodeTypeReference>
             {
@@ -98,7 +98,7 @@ public class KnownTypesSpec
 
             if (serviceDescriptor.ImplementationInstance != null)
             {
-                parameters.Add(rootObjectVisitor.Visit(serviceDescriptor.ImplementationInstance));
+                parameters.Add(rootObjectVisitor.Visit(new ValueDescriptor{ Value = serviceDescriptor.ImplementationInstance}));
             }
 
             if (serviceDescriptor.ImplementationFactory != null)

@@ -39,7 +39,7 @@ internal sealed class TupleVisitor : IKnownObjectVisitor
         try
         {
             var propertyValues = _descriptor.Describe(valueDescriptor.Value, valueDescriptor.Type).Select(_rootObjectVisitor.Visit);
-            var result = new CodeObjectCreateExpression(new CodeTypeReference(valueDescriptor.Type, _typeReferenceOptions), propertyValues.ToArray());
+            var result = new CodeObjectCreateExpression(new CodeTypeReference(valueDescriptor.Type, _typeReferenceOptions), propertyValues);
             return result;
         }
         finally

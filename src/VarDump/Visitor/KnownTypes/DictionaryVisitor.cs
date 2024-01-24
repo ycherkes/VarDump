@@ -1,7 +1,9 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using VarDump.CodeDom.Common;
+using VarDump.Extensions;
 using VarDump.Utils;
 using VarDump.Visitor.Descriptors;
 using VarDump.Visitor.Descriptors.Implementation;
@@ -12,6 +14,7 @@ internal sealed class DictionaryVisitor : IKnownObjectVisitor
 {
     private readonly IObjectVisitor _rootObjectVisitor;
     private readonly CodeTypeReferenceOptions _typeReferenceOptions;
+    private readonly int _maxCollectionSize;
     private readonly IObjectDescriptor _descriptor;
 
     public DictionaryVisitor(DumpOptions options, IObjectVisitor rootObjectVisitor)
@@ -19,6 +22,13 @@ internal sealed class DictionaryVisitor : IKnownObjectVisitor
         _typeReferenceOptions = options.UseTypeFullName
             ? CodeTypeReferenceOptions.FullTypeName
             : CodeTypeReferenceOptions.ShortTypeName;
+
+        if (options.MaxCollectionSize <= 0)
+        {
+            throw new ArgumentOutOfRangeException(nameof(options.MaxCollectionSize));
+        }
+        
+        _maxCollectionSize = options.MaxCollectionSize;
         _rootObjectVisitor = rootObjectVisitor;
         _descriptor = new ObjectPropertiesDescriptor();
     }
@@ -61,7 +71,13 @@ internal sealed class DictionaryVisitor : IKnownObjectVisitor
     {
         var items = dict.Cast<object>().Select(VisitKeyValuePairGenerateImplicitly);
 
-        var isImmutableOrFrozen = valueDescriptor.Type.IsPublicImmutableOrFrozenCollection();
+        if (_maxCollectionSize < int.MaxValue)
+        {
+            items = items.Take(_maxCollectionSize + 1).Replace(_maxCollectionSize, CodeDomUtils.GetTooManyItemsExpression(_maxCollectionSize));
+        }
+
+        var type = dict.GetType();
+        var isImmutableOrFrozen = type.IsPublicImmutableOrFrozenCollection();
 
         if (isImmutableOrFrozen)
         {
@@ -111,9 +127,15 @@ internal sealed class DictionaryVisitor : IKnownObjectVisitor
         const string keyName = "Key";
         const string valueName = "Value";
         var items = dictionary.Cast<object>().Select(o => VisitKeyValuePairGenerateAnonymousType(o, keyName, valueName));
+
+        if (_maxCollectionSize < int.MaxValue)
+        {
+            items = items.Take(_maxCollectionSize + 1).Replace(_maxCollectionSize, CodeDomUtils.GetTooManyItemsExpression(_maxCollectionSize));
+        }
+        
         var type = dictionary.GetType();
 
-        CodeExpression expr = new CodeArrayCreateExpression(new CodeAnonymousTypeReference { ArrayRank = 1 }, items.ToArray());
+        CodeExpression expr = new CodeArrayCreateExpression(new CodeAnonymousTypeReference { ArrayRank = 1 }, items);
 
         var variableReferenceExpression = new CodeVariableReferenceExpression("kvp");
         var keyLambdaExpression = new CodeLambdaExpression(new CodePropertyReferenceExpression(variableReferenceExpression, keyName), variableReferenceExpression);
@@ -141,7 +163,7 @@ internal sealed class DictionaryVisitor : IKnownObjectVisitor
         var propertyValues = _descriptor.Describe(o, objectType).Select(rd => _rootObjectVisitor.Visit(rd)).ToArray();
         var result = new CodeObjectCreateAndInitializeExpression(new CodeAnonymousTypeReference())
         {
-            InitializeExpressions = new CodeExpressionCollection(new[]
+            InitializeExpressions = new CodeExpressionContainer(new[]
             {
                 (CodeExpression)new CodeAssignExpression(new CodePropertyReferenceExpression(null, keyName), propertyValues[0]),
                 new CodeAssignExpression(new CodePropertyReferenceExpression(null, valueName), propertyValues[1])

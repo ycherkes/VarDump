@@ -31,6 +31,6 @@ internal sealed class KeyValuePairVisitor : IKnownObjectVisitor
     {
         var propertyValues = _descriptor.Describe(valueDescriptor.Value, valueDescriptor.Type).Select(rd => _rootObjectVisitor.Visit(rd));
         return new CodeObjectCreateExpression(new CodeTypeReference(valueDescriptor.Type, _typeReferenceOptions),
-            propertyValues.ToArray());
+            propertyValues);
     }
 }

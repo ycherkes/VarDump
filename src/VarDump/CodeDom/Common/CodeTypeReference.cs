@@ -24,7 +24,7 @@ internal class CodeTypeReference : CodeObject
     private string _baseType;
     private readonly bool _isInterface;
     private CodeTypeReferenceCollection _typeArguments;
-    private bool _needsFixup = false;
+    private bool _needsFixup;
 
     public CodeTypeReference()
     {

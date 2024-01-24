@@ -31,11 +31,11 @@ internal sealed class AnonymousTypeVisitor : IKnownObjectVisitor
     {
         var result = new CodeObjectCreateAndInitializeExpression(new CodeAnonymousTypeReference())
         {
-            InitializeExpressions = new CodeExpressionCollection(_anonymousObjectDescriptor.Describe(valueDescriptor.Value, valueDescriptor.Type)
+            InitializeExpressions = new CodeExpressionContainer(_anonymousObjectDescriptor.Describe(valueDescriptor.Value, valueDescriptor.Type)
                 .Select(pv => (CodeExpression)new CodeAssignExpression(
                     new CodePropertyReferenceExpression(null, pv.Name),
                     pv.MemberType.IsNullableType() || pv.Value == null ? new CodeCastExpression(new CodeTypeReference(pv.MemberType, _typeReferenceOptions), _rootObjectVisitor.Visit(pv), true) : _rootObjectVisitor.Visit(pv)))
-                .ToArray())
+                )
         };
 
         return result;

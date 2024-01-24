@@ -39,6 +39,6 @@ internal sealed class RecordVisitor : IKnownObjectVisitor
 
         return new CodeObjectCreateExpression(
             new CodeTypeReference(valueDescriptor.Type, _typeReferenceOptions),
-            argumentValues.ToArray());
+            argumentValues);
     }
 }

@@ -133,13 +133,12 @@ internal sealed class ObjectVisitor : IObjectVisitor
                 .ToArray();
 
             var initializeExpressions = members
-                    .Where(pv => !_excludeTypes.Contains(pv.MemberType.FullName) &&
-                                 (!_ignoreNullValues || _ignoreNullValues && pv.Value != null) &&
-                                 (!_ignoreDefaultValues || !pv.MemberType.IsValueType || _ignoreDefaultValues &&
-                                     ReflectionUtils.GetDefaultValue(pv.MemberType)?.Equals(pv.Value) != true))
-                    .Select(pv => (CodeExpression)new CodeAssignExpression(new CodePropertyReferenceExpression(null, pv.Name), Visit(pv)))
-                    .ToArray();
-
+                .Where(pv => !_excludeTypes.Contains(pv.MemberType.FullName) &&
+                             (!_ignoreNullValues || _ignoreNullValues && pv.Value != null) &&
+                             (!_ignoreDefaultValues || !pv.MemberType.IsValueType || _ignoreDefaultValues &&
+                                 ReflectionUtils.GetDefaultValue(pv.MemberType)?.Equals(pv.Value) != true))
+                .Select(pv => (CodeExpression)new CodeAssignExpression(new CodePropertyReferenceExpression(null, pv.Name), Visit(pv)));
+            
             var result = new CodeObjectCreateAndInitializeExpression(new CodeTypeReference(valueDescriptor.Type, _typeReferenceOptions), initializeExpressions, constructorParams);
 
             return result;

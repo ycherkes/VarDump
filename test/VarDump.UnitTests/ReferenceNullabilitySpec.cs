@@ -14,7 +14,7 @@ public class ReferenceNullabilitySpec
     
     private class Foo
     {
-        //public Dictionary<int, object?> RefNullableDictionary { get; set; } = new() { { 1, null } };
+        public Dictionary<int, object?> RefNullableDictionary { get; set; } = new() { { 1, null } };
         //public List<object?> RefNullableList { get; set; } = [null];
         //public Dictionary<int, object> Dictionary { get; set; } = new() { { 1, 1 } };
         public IReadOnlyCollection<object?> List { get; set; } = new List<object?>
@@ -26,7 +26,13 @@ public class ReferenceNullabilitySpec
     [Fact]
     public void DumpCsharp()
     {
-        var obj = new Foo();
+        var obj = new 
+        { 
+            List = new List<object?>
+            {
+                1
+            }
+        };
 
         var dop = DumpOptions.Default.Clone();
         dop.WritablePropertiesOnly = false;

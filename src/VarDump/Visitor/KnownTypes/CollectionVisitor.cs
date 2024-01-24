@@ -4,7 +4,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using VarDump.CodeDom.Common;
-using VarDump.Collections;
 using VarDump.Extensions;
 using VarDump.Utils;
 using VarDump.Visitor.Descriptors;
@@ -15,12 +14,21 @@ internal sealed class CollectionVisitor : IKnownObjectVisitor
 {
     private readonly CodeTypeReferenceOptions _typeReferenceOptions;
     private readonly IObjectVisitor _rootObjectVisitor;
+    private readonly int _maxCollectionSize;
 
     public CollectionVisitor(DumpOptions options, IObjectVisitor rootObjectVisitor)
     {
         _typeReferenceOptions = options.UseTypeFullName
             ? CodeTypeReferenceOptions.FullTypeName
             : CodeTypeReferenceOptions.ShortTypeName;
+
+        if (options.MaxCollectionSize <= 0)
+        {
+            throw new ArgumentOutOfRangeException(nameof(options.MaxCollectionSize));
+        }
+
+        _maxCollectionSize = options.MaxCollectionSize;
+
         _rootObjectVisitor = rootObjectVisitor;
     }
 
@@ -62,11 +70,22 @@ internal sealed class CollectionVisitor : IKnownObjectVisitor
 
     private CodeExpression VisitGroupingCollection(IValueDescriptor valueDescriptor)
     {
-        CodeExpression expr = VisitGroupings(((IEnumerable)valueDescriptor.Value).Cast<object>());
+        var items = VisitGroupings(((IEnumerable)valueDescriptor.Value).Cast<object>());
+
+        if (_maxCollectionSize < int.MaxValue)
+        {
+            items = items.Take(_maxCollectionSize + 1).Replace(_maxCollectionSize, CodeDomUtils.GetTooManyItemsExpression(_maxCollectionSize));
+        }
+
+        CodeExpression expr = new CodeArrayCreateExpression(new CodeAnonymousTypeReference { ArrayRank = 1 }, items);
 
         var variableReferenceExpression = new CodeVariableReferenceExpression("grp");
-        var keyLambdaExpression = new CodeLambdaExpression(new CodePropertyReferenceExpression(variableReferenceExpression, "Key"), variableReferenceExpression);
-        var valueLambdaExpression = new CodeLambdaExpression(new CodePropertyReferenceExpression(variableReferenceExpression, "Element"), variableReferenceExpression);
+        var keyLambdaExpression =
+            new CodeLambdaExpression(new CodePropertyReferenceExpression(variableReferenceExpression, "Key"),
+                variableReferenceExpression);
+        var valueLambdaExpression =
+            new CodeLambdaExpression(new CodePropertyReferenceExpression(variableReferenceExpression, "Element"),
+                variableReferenceExpression);
 
         var isLookup = valueDescriptor.Type.IsLookup();
 
@@ -89,6 +108,11 @@ internal sealed class CollectionVisitor : IKnownObjectVisitor
     private CodeExpression VisitSimpleCollection(IValueDescriptor valueDescriptor, Type elementType)
     {
         var items = ((IEnumerable)valueDescriptor.Value).Cast<object>().Select(o => new ValueDescriptor{Value = o, Type = o?.GetType()}).Select(_rootObjectVisitor.Visit);
+
+        if (_maxCollectionSize < int.MaxValue)
+        {
+            items = items.Take(_maxCollectionSize + 1).Replace(_maxCollectionSize, CodeDomUtils.GetTooManyItemsExpression(_maxCollectionSize));
+        }
 
         var isImmutableOrFrozen = valueDescriptor.Type.IsPublicImmutableOrFrozenCollection();
 
@@ -122,16 +146,17 @@ internal sealed class CollectionVisitor : IKnownObjectVisitor
             
             CodeExpression expr = new CodeArrayCreateExpression(
                 typeReference,
-                items.ToArray());
+                items);
 
-            if (isImmutableOrFrozen) expr = new CodeMethodInvokeExpression(expr, $"To{valueDescriptor.Type.GetImmutableOrFrozenTypeName()}");
+            if (isImmutableOrFrozen)
+                expr = new CodeMethodInvokeExpression(expr, $"To{valueDescriptor.Type.GetImmutableOrFrozenTypeName()}");
 
             return expr;
         }
 
         if (valueDescriptor.Type.IsReadonlyCollection())
         {
-            CodeTypeReference typeReference2;
+            CodeTypeReference typeReference;
 
             if (valueDescriptor.GenericTypeArguments.Length > 0)
             {
@@ -140,16 +165,16 @@ internal sealed class CollectionVisitor : IKnownObjectVisitor
                     Type = typeof(List<>).MakeGenericType(elementType),
                     GenericTypeArguments = valueDescriptor.GenericTypeArguments
                 };
-                typeReference2= new CodeCollectionTypeReference(typeDescriptor, _typeReferenceOptions);
+                typeReference = new CodeCollectionTypeReference(typeDescriptor, _typeReferenceOptions);
             }
             else
             {
-                typeReference2 = new CodeCollectionTypeReference(typeof(List<>).MakeGenericType(elementType), _typeReferenceOptions);
+                typeReference = new CodeCollectionTypeReference(typeof(List<>).MakeGenericType(elementType), _typeReferenceOptions);
             }
 
             var expression = new CodeObjectCreateAndInitializeExpression(
-                    typeReference2,
-                    items.ToArray());
+                typeReference,
+                items);
 
             return new CodeMethodInvokeExpression(expression, "AsReadOnly");
         }
@@ -158,13 +183,13 @@ internal sealed class CollectionVisitor : IKnownObjectVisitor
 
         var initializeExpression = new CodeObjectCreateAndInitializeExpression(
             typeReference1,
-            items.ToArray()
-        );
+            items);
 
         return initializeExpression;
     }
 
-    private static IEnumerable<CodeExpression> ChunkMultiDimensionalArrayExpression(Array array, IEnumerable<CodeExpression> enumerable)
+    private static IEnumerable<CodeExpression> ChunkMultiDimensionalArrayExpression(Array array,
+        IEnumerable<CodeExpression> enumerable)
     {
         var dimensions = new int[array.Rank - 1];
 
@@ -187,8 +212,11 @@ internal sealed class CollectionVisitor : IKnownObjectVisitor
     private CodeExpression VisitAnonymousCollection(IValueDescriptor valueDescriptor)
     {
         var items = ((IEnumerable)valueDescriptor.Value).Cast<object>().Select(o => new ValueDescriptor { Value = o, Type = o?.GetType() }).Select(_rootObjectVisitor.Visit);
-        
-        var isImmutableOrFrozen = valueDescriptor.Type.IsPublicImmutableOrFrozenCollection();
+
+        if (_maxCollectionSize < int.MaxValue)
+        {
+            items = items.Take(_maxCollectionSize + 1).Replace(_maxCollectionSize, CodeDomUtils.GetTooManyItemsExpression(_maxCollectionSize));
+        }
 
         var typeReference = new CodeAnonymousTypeReference { ArrayRank = 1 };
 
@@ -198,9 +226,9 @@ internal sealed class CollectionVisitor : IKnownObjectVisitor
             items = ChunkMultiDimensionalArrayExpression((Array)valueDescriptor.Value, items);
         }
 
-        CodeExpression expr = new CodeArrayCreateExpression(
-            typeReference,
-            items.ToArray());
+        CodeExpression expr = new CodeArrayCreateExpression(typeReference, items);
+
+        var isImmutableOrFrozen = valueDescriptor.Type.IsPublicImmutableOrFrozenCollection();
 
         if (isImmutableOrFrozen || valueDescriptor.Value is IList && !valueDescriptor.Type.IsArray)
             expr = new CodeMethodInvokeExpression(expr, $"To{valueDescriptor.Type.GetImmutableOrFrozenTypeName()}");
@@ -224,12 +252,11 @@ internal sealed class CollectionVisitor : IKnownObjectVisitor
         return new KeyValuePair<object, IEnumerable>(fieldValues[0], (IEnumerable)fieldValues[1]);
     }
 
-    private CodeExpression VisitGroupings(IEnumerable<object> objects)
+    private IEnumerable<CodeExpression> VisitGroupings(IEnumerable<object> objects)
     {
-        var groupingValues = objects.Select(GetIGroupingValue)
-            .SelectMany(g => g.Value.Cast<object>().Select(e => new { g.Key, Element = e }))
-            .ToArray();
+        var items = objects.Select(GetIGroupingValue)
+            .SelectMany(g => g.Value.Cast<object>().Select(e => new { g.Key, Element = e }));
 
-        return _rootObjectVisitor.Visit(new ValueDescriptor{ Value = groupingValues, Type = groupingValues.GetType()});
+        return items.Select(i => _rootObjectVisitor.Visit(new ValueDescriptor { Value = i, Type = i.GetType() }));
     }
 }

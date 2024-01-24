@@ -7,17 +7,11 @@ namespace VarDump.CodeDom.Common;
 internal class CodeSeparatedExpressionCollection : CodeExpression
 {
     public string Separator { get; }
-    public CodeExpressionCollection ExpressionCollection { get; }
-
-    public CodeSeparatedExpressionCollection(CodeExpressionCollection value, string separator)
-    {
-        Separator = separator;
-        ExpressionCollection = new CodeExpressionCollection(value);
-    }
+    public CodeExpressionContainer ExpressionCollection { get; }
 
     public CodeSeparatedExpressionCollection(CodeExpression[] value, string separator)
     {
-        ExpressionCollection = new CodeExpressionCollection(value);
+        ExpressionCollection = new CodeExpressionContainer(value);
         Separator = separator;
     }
 }

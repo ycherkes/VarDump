@@ -26,6 +26,6 @@ internal sealed class ValueTupleVisitor : IKnownObjectVisitor
     {
         var propertyValues = _descriptor.Describe(valueDescriptor.Value, valueDescriptor.Type).Select(_rootObjectVisitor.Visit);
 
-        return new CodeValueTupleCreateExpression(propertyValues.ToArray());
+        return new CodeValueTupleCreateExpression(propertyValues);
     }
 }

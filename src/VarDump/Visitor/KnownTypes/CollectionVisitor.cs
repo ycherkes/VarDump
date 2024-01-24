@@ -120,8 +120,9 @@ internal sealed class CollectionVisitor : IKnownObjectVisitor
         var type = enumerable.GetType();
 
         var isImmutableOrFrozen = type.IsPublicImmutableOrFrozenCollection();
+        var isCollection = IsCollection(enumerable);
 
-        if (type.IsArray || isImmutableOrFrozen || !IsCollection(enumerable))
+        if (type.IsArray || isImmutableOrFrozen || !type.IsPublic || !isCollection)
         {
             if (type.IsArray && ((Array)enumerable).Rank > 1)
             {

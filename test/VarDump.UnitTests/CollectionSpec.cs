@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Linq;
 using Xunit;
 
 namespace VarDump.UnitTests;
@@ -20,6 +21,26 @@ public class CollectionSpec
                          1
                      }.AsReadOnly();
 
+                     """, result);
+    }
+
+    [Fact]
+    public void DumpEnumerableRangeCSharp()
+    {
+        var range = Enumerable.Range(0, 3);
+
+        var dumper = new CSharpDumper();
+
+        var result = dumper.Dump(range);
+
+        Assert.Equal("""
+                     var rangeIteratorOfInt = new int[]
+                     {
+                         0,
+                         1,
+                         2
+                     };
+                     
                      """, result);
     }
 

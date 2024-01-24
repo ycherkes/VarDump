@@ -115,8 +115,9 @@ internal sealed class CollectionVisitor : IKnownObjectVisitor
         }
 
         var isImmutableOrFrozen = valueDescriptor.Type.IsPublicImmutableOrFrozenCollection();
-
-        if (valueDescriptor.Type.IsArray || isImmutableOrFrozen || !IsCollection(valueDescriptor.Value))
+        var isCollection = IsCollection(valueDescriptor.Value);
+        
+        if (valueDescriptor.Type.IsArray || isImmutableOrFrozen || !valueDescriptor.Type.IsPublic || !isCollection)
         {
             if (valueDescriptor.Type.IsArray && ((Array)valueDescriptor.Value).Rank > 1)
             {

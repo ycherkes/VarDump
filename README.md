@@ -147,6 +147,8 @@ class FormattableStringMiddleware : IObjectDescriptorMiddleware
 
 For more examples see [Unit Tests](https://github.com/ycherkes/VarDump/tree/main/test)
 
+[Compare VarDump with ObjectDumper.NET - Run .NET fiddle](https://dotnetfiddle.net/vRX7vO)
+
 # Powered By
 
 | Repository  | License |

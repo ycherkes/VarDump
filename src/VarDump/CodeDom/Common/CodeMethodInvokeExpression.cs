@@ -28,5 +28,5 @@ internal class CodeMethodInvokeExpression : CodeExpression
         set => _method = value;
     }
 
-    public CodeExpressionContainer Parameters { get; } = new CodeExpressionContainer();
+    public CodeExpressionCollection Parameters { get; } = new CodeExpressionCollection();
 }

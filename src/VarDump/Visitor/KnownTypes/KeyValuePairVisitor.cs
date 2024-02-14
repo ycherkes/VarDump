@@ -28,6 +28,6 @@ internal sealed class KeyValuePairVisitor : IKnownObjectVisitor
     {
         var propertyValues = objectType.GetProperties().Select(p => ReflectionUtils.GetValue(p, obj)).Select(_rootObjectVisitor.Visit);
         return new CodeObjectCreateExpression(new CodeTypeReference(objectType, _typeReferenceOptions),
-            propertyValues);
+            propertyValues.ToArray());
     }
 }

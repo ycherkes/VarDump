@@ -3,7 +3,6 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
-using System.Collections.Generic;
 
 namespace VarDump.CodeDom.Common;
 
@@ -14,11 +13,6 @@ internal class CodeObjectCreateExpression : CodeExpression
     public CodeObjectCreateExpression() { }
 
     public CodeObjectCreateExpression(CodeTypeReference createType, params CodeExpression[] parameters)
-    :this(createType, (IEnumerable<CodeExpression>)parameters)
-    {
-    }
-
-    public CodeObjectCreateExpression(CodeTypeReference createType, IEnumerable<CodeExpression> parameters)
     {
         CreateType = createType;
         if (parameters != null)
@@ -45,5 +39,5 @@ internal class CodeObjectCreateExpression : CodeExpression
         set => _createType = value;
     }
 
-    public CodeExpressionContainer Parameters { get; } = new CodeExpressionContainer();
+    public CodeExpressionCollection Parameters { get; } = new CodeExpressionCollection();
 }

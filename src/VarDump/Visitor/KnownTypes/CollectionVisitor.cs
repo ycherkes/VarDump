@@ -80,7 +80,7 @@ internal sealed class CollectionVisitor : IKnownObjectVisitor
             items = items.Take(_maxCollectionSize + 1).Replace(_maxCollectionSize, CodeDomUtils.GetTooManyItemsExpression(_maxCollectionSize));
         }
 
-        CodeExpression expr = new CodeArrayCreateExpression(new CodeAnonymousTypeReference { ArrayRank = 1 }, items);
+        CodeExpression expr = new CodeArrayCreateExpression(new CodeAnonymousTypeReference { ArrayRank = 1 }, items.ToArray());
 
         var variableReferenceExpression = new CodeVariableReferenceExpression("grp");
         var keyLambdaExpression =
@@ -132,7 +132,7 @@ internal sealed class CollectionVisitor : IKnownObjectVisitor
             CodeExpression expr = new CodeArrayCreateExpression(
                 new CodeTypeReference(isImmutableOrFrozen || !type.IsPublic ? elementType.MakeArrayType() : type,
                     _typeReferenceOptions),
-                items);
+                items.ToArray());
 
             if (isImmutableOrFrozen)
                 expr = new CodeMethodInvokeExpression(expr, $"To{type.GetImmutableOrFrozenTypeName()}");
@@ -201,7 +201,7 @@ internal sealed class CollectionVisitor : IKnownObjectVisitor
             items = ChunkMultiDimensionalArrayExpression((Array)enumerable, items);
         }
 
-        CodeExpression expr = new CodeArrayCreateExpression(typeReference, items);
+        CodeExpression expr = new CodeArrayCreateExpression(typeReference, items.ToArray());
 
         if (isImmutableOrFrozen || enumerable is IList && !type.IsArray)
             expr = new CodeMethodInvokeExpression(expr, $"To{type.GetImmutableOrFrozenTypeName()}");

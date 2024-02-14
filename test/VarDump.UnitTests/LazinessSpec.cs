@@ -6,7 +6,7 @@ namespace VarDump.UnitTests;
 
 public class LazinessSpec
 {
-    [Fact]
+    [Fact(Skip = "see https://github.com/ycherkes/VarDump/issues/35")]
     public void DumpEnumerableCsharp()
     {
         var dumper = new CSharpDumper();

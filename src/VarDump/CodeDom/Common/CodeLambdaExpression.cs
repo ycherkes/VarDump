@@ -2,13 +2,11 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-using System.Linq;
-
 namespace VarDump.CodeDom.Common;
 
 internal class CodeLambdaExpression : CodeExpression
 {
-    public CodeExpressionContainer Parameters { get; set; } = new CodeExpressionContainer();
+    public CodeExpressionCollection Parameters { get; set; } = new CodeExpressionCollection();
 
     public CodeLambdaExpression() { }
 
@@ -16,7 +14,7 @@ internal class CodeLambdaExpression : CodeExpression
             
     {
         LambdaExpression = lambdaExpression;
-        Parameters = new CodeExpressionContainer(parameters);
+        Parameters = new CodeExpressionCollection(parameters);
     }
 
     public CodeExpression LambdaExpression { get; set; }

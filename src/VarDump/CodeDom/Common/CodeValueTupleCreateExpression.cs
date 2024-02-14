@@ -2,18 +2,14 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-using System.Collections.Generic;
-
 namespace VarDump.CodeDom.Common;
 
 internal class CodeValueTupleCreateExpression : CodeExpression
 {
-    public CodeValueTupleCreateExpression() { }
-
-    public CodeValueTupleCreateExpression(IEnumerable<CodeExpression> parameters)
+    public CodeValueTupleCreateExpression(params CodeExpression[] parameters)
     {
         Parameters.AddRange(parameters);
     }
 
-    public CodeExpressionContainer Parameters { get; } = new CodeExpressionContainer();
+    public CodeExpressionCollection Parameters { get; } = new CodeExpressionCollection();
 }

@@ -3,7 +3,6 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
-using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
 using System.Text;
@@ -515,8 +514,7 @@ namespace VarDump.CodeDom.VisualBasic
                 Output.Write("New ");
             }
 
-            using var initializersEnumerator = e.Initializers.GetEnumerator();
-            if (initializersEnumerator.MoveNext())
+            if (e.Initializers.Count > 0)
             {
                 if (!(e.CreateType is CodeEmptyTypeReference))
                 {
@@ -526,7 +524,7 @@ namespace VarDump.CodeDom.VisualBasic
 
                 Output.Write("{");
                 Output.WriteLine("");
-                OutputExpressionList(initializersEnumerator, newlineBetweenItems: true, newLineContinuation: false);
+                OutputExpressionList(e.Initializers, newlineBetweenItems: true, newLineContinuation: false);
                 Output.WriteLine("");
                 Output.Write('}');
             }
@@ -662,11 +660,10 @@ namespace VarDump.CodeDom.VisualBasic
         protected override void GenerateMethodInvokeExpression(CodeMethodInvokeExpression e)
         {
             GenerateMethodReferenceExpression(e.Method);
-            using var parametersEnumerator = e.Parameters.GetEnumerator();
-            if (parametersEnumerator.MoveNext())
+            if (e.Parameters.Count > 0)
             {
                 Output.Write('(');
-                OutputExpressionList(parametersEnumerator);
+                OutputExpressionList(e.Parameters);
                 Output.Write(')');
             }
             else
@@ -699,24 +696,18 @@ namespace VarDump.CodeDom.VisualBasic
             Output.Write("New ");
             OutputType(e.CreateType);
 
-            using var parametersEnumerator = e.Parameters.GetEnumerator();
-            using var initializeExpressionsEnumerator = e.InitializeExpressions.GetEnumerator();
-
-            var anyInitializeExpressions = initializeExpressionsEnumerator.MoveNext();
-            var anyParameters = parametersEnumerator.MoveNext();
-
-            if (anyParameters || !anyInitializeExpressions)
+            if (e.Parameters.Count > 0 || e.InitializeExpressions.Count == 0)
             {
                 // always write out the () to disambiguate cases like "New System.Random().Next(x,y)"
                 Output.Write('(');
-                if (anyParameters)
+                if (e.Parameters.Count > 0)
                 {
-                    OutputExpressionList(parametersEnumerator);
+                    OutputExpressionList(e.Parameters);
                 }
                 Output.Write(')');
             }
 
-            if (!anyInitializeExpressions) return;
+            if (e.InitializeExpressions.Count == 0) return;
 
             Output.Write(e.CreateType switch
             {
@@ -725,7 +716,7 @@ namespace VarDump.CodeDom.VisualBasic
                 _ => " With "
             });
             Output.WriteLine('{');
-            OutputExpressionList(initializeExpressionsEnumerator, newlineBetweenItems: true, newLineContinuation: false);
+            OutputExpressionList(e.InitializeExpressions, newlineBetweenItems: true, newLineContinuation: false);
             Output.WriteLine();
             Output.Write("}");
         }
@@ -740,7 +731,7 @@ namespace VarDump.CodeDom.VisualBasic
         protected override void GenerateCodeImplicitKeyValuePairCreateExpression(CodeImplicitKeyValuePairCreateExpression e)
         {
             Output.WriteLine('{');
-            OutputExpressionList(new CodeExpressionContainer(new[] { e.Key, e.Value }), true, false);
+            OutputExpressionList(new CodeExpressionCollection(new[] { e.Key, e.Value }), true, false);
             Output.WriteLine();
             Output.Write('}');
         }
@@ -914,7 +905,7 @@ namespace VarDump.CodeDom.VisualBasic
             if (typeRef.ArrayRank == 1 && e.InitExpression != null)
             {
                 CodeArrayCreateExpression eAsArrayCreate = e.InitExpression as CodeArrayCreateExpression;
-                if (eAsArrayCreate != null && !eAsArrayCreate.Initializers.Any())
+                if (eAsArrayCreate != null && eAsArrayCreate.Initializers.Count == 0)
                 {
                     doInit = false;
                     OutputIdentifier(e.Name);

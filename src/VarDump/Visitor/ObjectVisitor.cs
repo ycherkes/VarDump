@@ -142,7 +142,7 @@ internal sealed class ObjectVisitor : IObjectVisitor
                                      ReflectionUtils.GetDefaultValue(pv.Type)?.Equals(pv.Value) != true))
                     .Select(pv => (CodeExpression)new CodeAssignExpression(new CodePropertyReferenceExpression(null, pv.Name), Visit(pv.Value)));
 
-            var result = new CodeObjectCreateAndInitializeExpression(new CodeTypeReference(objectType, _typeReferenceOptions), initializeExpressions, constructorParams);
+            var result = new CodeObjectCreateAndInitializeExpression(new CodeTypeReference(objectType, _typeReferenceOptions), initializeExpressions.ToArray(), constructorParams.ToArray());
 
             return result;
         }

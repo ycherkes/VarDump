@@ -10,16 +10,16 @@ namespace VarDump.CodeDom.Common;
 
 internal class CodeObjectCreateAndInitializeExpression : CodeObjectCreateExpression
 {
-    public CodeExpressionContainer InitializeExpressions { get; set; } = new CodeExpressionContainer();
+    public CodeExpressionCollection InitializeExpressions { get; set; } = new CodeExpressionCollection();
 
     public CodeObjectCreateAndInitializeExpression() { }
 
-    public CodeObjectCreateAndInitializeExpression(CodeTypeReference createType, IEnumerable<CodeExpression> initializeExpressions = null, IEnumerable<CodeExpression> parameters = null)
+    public CodeObjectCreateAndInitializeExpression(CodeTypeReference createType, IEnumerable<CodeExpression> initializeExpressions = null, params CodeExpression[] parameters)
         : base(createType, parameters)
     {
         if (initializeExpressions != null)
         {
-            InitializeExpressions = new CodeExpressionContainer(initializeExpressions.ToArray());
+            InitializeExpressions = new CodeExpressionCollection(initializeExpressions.ToArray());
         }
     }
 
@@ -28,7 +28,7 @@ internal class CodeObjectCreateAndInitializeExpression : CodeObjectCreateExpress
     {
         if (initializeExpressions != null)
         {
-            InitializeExpressions = new CodeExpressionContainer(initializeExpressions.ToArray());
+            InitializeExpressions = new CodeExpressionCollection(initializeExpressions.ToArray());
         }
     }
 
@@ -37,7 +37,7 @@ internal class CodeObjectCreateAndInitializeExpression : CodeObjectCreateExpress
     {
         if (initializeExpressions != null)
         {
-            InitializeExpressions = new CodeExpressionContainer(initializeExpressions.ToArray());
+            InitializeExpressions = new CodeExpressionCollection(initializeExpressions.ToArray());
         }
     }
 }

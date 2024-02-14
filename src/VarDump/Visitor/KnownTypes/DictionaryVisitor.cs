@@ -108,7 +108,7 @@ internal sealed class DictionaryVisitor : IKnownObjectVisitor
         
         var type = dictionary.GetType();
 
-        CodeExpression expr = new CodeArrayCreateExpression(new CodeAnonymousTypeReference { ArrayRank = 1 }, items);
+        CodeExpression expr = new CodeArrayCreateExpression(new CodeAnonymousTypeReference { ArrayRank = 1 }, items.ToArray());
 
         var variableReferenceExpression = new CodeVariableReferenceExpression("kvp");
         var keyLambdaExpression = new CodeLambdaExpression(new CodePropertyReferenceExpression(variableReferenceExpression, keyName), variableReferenceExpression);
@@ -136,7 +136,7 @@ internal sealed class DictionaryVisitor : IKnownObjectVisitor
         var propertyValues = objectType.GetProperties().Select(p => ReflectionUtils.GetValue(p, o)).Select(_rootObjectVisitor.Visit).ToArray();
         var result = new CodeObjectCreateAndInitializeExpression(new CodeAnonymousTypeReference())
         {
-            InitializeExpressions = new CodeExpressionContainer(new[]
+            InitializeExpressions = new CodeExpressionCollection(new[]
             {
                 (CodeExpression)new CodeAssignExpression(new CodePropertyReferenceExpression(null, keyName), propertyValues[0]),
                 new CodeAssignExpression(new CodePropertyReferenceExpression(null, valueName), propertyValues[1])

@@ -3,7 +3,6 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
-using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
@@ -144,14 +143,14 @@ namespace VarDump.CodeDom.CSharp
         {
             Output.Write("new ");
 
-            using var initializersEnumerator = e.Initializers.GetEnumerator();
+            var initializers = e.Initializers;
 
-            if (initializersEnumerator.MoveNext())
+            if (initializers.Count > 0)
             {
                 OutputType(e.CreateType);
                 Output.WriteLine("");
                 Output.WriteLine("{");
-                OutputExpressionList(initializersEnumerator, newlineBetweenItems: true);
+                OutputExpressionList(initializers, newlineBetweenItems: true);
                 Output.WriteLine();
                 Output.Write("}");
             }
@@ -364,23 +363,17 @@ namespace VarDump.CodeDom.CSharp
             Output.Write("new ");
             OutputType(e.CreateType);
             
-            using var parametersEnumerator = e.Parameters.GetEnumerator();
-            using var initializeExpressionsEnumerator = e.InitializeExpressions.GetEnumerator();
-
-            var anyInitializeExpressions = initializeExpressionsEnumerator.MoveNext();
-            var anyParameters = parametersEnumerator.MoveNext();
-            
-            if (anyParameters || !anyInitializeExpressions)
+            if (e.Parameters.Count > 0 || e.InitializeExpressions.Count == 0)
             {
                 Output.Write('(');
-                if (anyParameters)
+                if (e.Parameters.Count > 0)
                 {
-                    OutputExpressionList(parametersEnumerator);
+                    OutputExpressionList(e.Parameters);
                 }
                 Output.Write(')');
             }
 
-            if (!anyInitializeExpressions)
+            if (e.InitializeExpressions.Count == 0)
             {
                 return;
             }
@@ -832,20 +825,19 @@ namespace VarDump.CodeDom.CSharp
         private void GenerateCodeImplicitKeyValuePairCreateExpression(CodeImplicitKeyValuePairCreateExpression e)
         {
             Output.WriteLine('{');
-            OutputExpressionList(new CodeExpressionContainer(new[] { e.Key, e.Value }), true);
+            OutputExpressionList(new CodeExpressionCollection(new[] { e.Key, e.Value }), true);
             Output.WriteLine();
             Output.Write('}');
         }
 
         private void GenerateLambdaExpression(CodeLambdaExpression codeLambdaExpression)
         {
-            var parameters = codeLambdaExpression.Parameters.ToArray();
-            if (parameters.Length != 1)
+            if (codeLambdaExpression.Parameters.Count != 1)
             {
                 Output.Write('(');
             }
             bool first = true;
-            foreach (CodeExpression current in parameters)
+            foreach (CodeExpression current in codeLambdaExpression.Parameters)
             {
                 if (first)
                 {
@@ -858,7 +850,7 @@ namespace VarDump.CodeDom.CSharp
                 GenerateExpression(current);
             }
 
-            if (parameters.Length != 1)
+            if (codeLambdaExpression.Parameters.Count != 1)
             {
                 Output.Write(')');
             }
@@ -993,30 +985,16 @@ namespace VarDump.CodeDom.CSharp
             Output.Write(')');
         }
 
-        private void OutputExpressionList(CodeExpressionContainer expressions)
-        {
-           OutputExpressionList(expressions, false /*newlineBetweenItems*/);
-        }
-
-        private void OutputExpressionList(CodeExpressionContainer expressions, bool newlineBetweenItems)
-        {
-            using var expressionsEnumerator = expressions.GetEnumerator();
-            if (expressionsEnumerator.MoveNext())
-            {
-                OutputExpressionList(expressionsEnumerator, newlineBetweenItems);
-            }
-        }
-
-        private void OutputExpressionList(IEnumerator<CodeExpression> expressions)
+        private void OutputExpressionList(CodeExpressionCollection expressions)
         {
             OutputExpressionList(expressions, false /*newlineBetweenItems*/);
         }
 
-        private void OutputExpressionList(IEnumerator<CodeExpression> expressions, bool newlineBetweenItems)
+        private void OutputExpressionList(CodeExpressionCollection expressions, bool newlineBetweenItems)
         {
             bool first = true;
             Indent++;
-            while (true)
+            foreach(CodeExpression expression in expressions)
             {
                 if (first)
                 {
@@ -1029,12 +1007,7 @@ namespace VarDump.CodeDom.CSharp
                     else
                         Output.Write(", ");
                 }
-                ((ICodeGenerator)this).GenerateCodeFromExpression(expressions.Current, _output.InnerWriter, _options);
-
-                if (!expressions.MoveNext())
-                {
-                    break;
-                }
+                ((ICodeGenerator)this).GenerateCodeFromExpression(expression, _output.InnerWriter, _options);
             }
             Indent--;
         }

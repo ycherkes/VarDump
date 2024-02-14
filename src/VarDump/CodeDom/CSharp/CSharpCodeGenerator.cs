@@ -363,23 +363,17 @@ namespace VarDump.CodeDom.CSharp
             Output.Write("new ");
             OutputType(e.CreateType);
             
-            var parameters = e.Parameters;
-            var initializeExpressions = e.InitializeExpressions;
-
-            var anyInitializeExpressions = initializeExpressions.Count > 0;
-            var anyParameters = parameters.Count > 0;
-            
-            if (anyParameters || !anyInitializeExpressions)
+            if (e.Parameters.Count > 0 || e.InitializeExpressions.Count == 0)
             {
                 Output.Write('(');
-                if (anyParameters)
+                if (e.Parameters.Count > 0)
                 {
-                    OutputExpressionList(parameters);
+                    OutputExpressionList(e.Parameters);
                 }
                 Output.Write(')');
             }
 
-            if (!anyInitializeExpressions)
+            if (e.InitializeExpressions.Count == 0)
             {
                 return;
             }
@@ -838,13 +832,12 @@ namespace VarDump.CodeDom.CSharp
 
         private void GenerateLambdaExpression(CodeLambdaExpression codeLambdaExpression)
         {
-            var parameters = codeLambdaExpression.Parameters;
-            if (parameters.Count != 1)
+            if (codeLambdaExpression.Parameters.Count != 1)
             {
                 Output.Write('(');
             }
             bool first = true;
-            foreach (CodeExpression current in parameters)
+            foreach (CodeExpression current in codeLambdaExpression.Parameters)
             {
                 if (first)
                 {
@@ -857,7 +850,7 @@ namespace VarDump.CodeDom.CSharp
                 GenerateExpression(current);
             }
 
-            if (parameters.Count != 1)
+            if (codeLambdaExpression.Parameters.Count != 1)
             {
                 Output.Write(')');
             }

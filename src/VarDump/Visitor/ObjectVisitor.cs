@@ -4,6 +4,7 @@ using System.ComponentModel;
 using System.Linq;
 using VarDump.CodeDom.Common;
 using VarDump.Collections;
+using VarDump.Comparers;
 using VarDump.Utils;
 using VarDump.Visitor.Descriptors;
 using VarDump.Visitor.Descriptors.Implementation;
@@ -18,7 +19,7 @@ internal sealed class ObjectVisitor : IObjectVisitor
     private readonly bool _ignoreNullValues;
     private readonly int _maxDepth;
     private readonly CodeTypeReferenceOptions _typeReferenceOptions;
-    private readonly Stack<object> _visitedObjects;
+    private readonly HashSet<object> _visitedObjects;
     private readonly ListSortDirection? _sortDirection;
     private readonly IObjectDescriptor _objectDescriptor;
     private readonly OrderedDictionary<string, IKnownObjectVisitor> _knownTypes;
@@ -50,7 +51,7 @@ internal sealed class ObjectVisitor : IObjectVisitor
             anonymousObjectDescriptor = anonymousObjectDescriptor.ApplyMiddleware(options.Descriptors);
         }
 
-        _visitedObjects = new Stack<object>();
+        _visitedObjects = new HashSet<object>(new IdentityComparer<object>());
 
         _knownTypes = new[]
         {
@@ -116,7 +117,7 @@ internal sealed class ObjectVisitor : IObjectVisitor
             return CodeDomUtils.GetCircularReferenceDetectedExpression();
         }
 
-        PushVisited(o);
+        RegisterVisited(o);
 
         try
         {
@@ -148,18 +149,18 @@ internal sealed class ObjectVisitor : IObjectVisitor
         }
         finally
         {
-            PopVisited();
+            UnregisterVisited(o);
         }
     }
 
-    public void PushVisited(object value)
+    public void RegisterVisited(object value)
     {
-        _visitedObjects.Push(value);
+        _visitedObjects.Add(value);
     }
 
-    public void PopVisited()
+    public void UnregisterVisited(object value)
     {
-        _visitedObjects.Pop();
+        _visitedObjects.Remove(value);
     }
 
     public bool IsVisited(object value)

@@ -43,7 +43,7 @@ internal sealed class DictionaryVisitor : IKnownObjectVisitor
             return CodeDomUtils.GetCircularReferenceDetectedExpression();
         }
 
-        _rootObjectVisitor.PushVisited(dict);
+        _rootObjectVisitor.RegisterVisited(dict);
 
         try
         {
@@ -59,7 +59,7 @@ internal sealed class DictionaryVisitor : IKnownObjectVisitor
         }
         finally
         {
-            _rootObjectVisitor.PopVisited();
+            _rootObjectVisitor.UnregisterVisited(obj);
         }
     }
 

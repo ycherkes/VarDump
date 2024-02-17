@@ -5,7 +5,7 @@ namespace VarDump.Visitor;
 internal interface IObjectVisitor
 {
     CodeExpression Visit(object @object);
-    void PushVisited(object value);
-    void PopVisited();
+    void RegisterVisited(object value);
+    void UnregisterVisited(object value);
     bool IsVisited(object value);
 }

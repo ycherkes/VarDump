@@ -46,7 +46,7 @@ internal sealed class CollectionVisitor : IKnownObjectVisitor
             return CodeDomUtils.GetCircularReferenceDetectedExpression();
         }
 
-        _rootObjectVisitor.PushVisited(collection);
+        _rootObjectVisitor.RegisterVisited(collection);
 
         try
         {
@@ -65,7 +65,7 @@ internal sealed class CollectionVisitor : IKnownObjectVisitor
         }
         finally
         {
-            _rootObjectVisitor.PopVisited();
+            _rootObjectVisitor.UnregisterVisited(obj);
         }
     }
 

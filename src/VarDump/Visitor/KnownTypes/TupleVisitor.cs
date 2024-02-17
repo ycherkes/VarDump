@@ -31,7 +31,7 @@ internal sealed class TupleVisitor : IKnownObjectVisitor
             return CodeDomUtils.GetCircularReferenceDetectedExpression();
         }
 
-        _rootObjectVisitor.PushVisited(o);
+        _rootObjectVisitor.RegisterVisited(o);
 
         try
         {
@@ -41,7 +41,7 @@ internal sealed class TupleVisitor : IKnownObjectVisitor
         }
         finally
         {
-            _rootObjectVisitor.PopVisited();
+            _rootObjectVisitor.UnregisterVisited(o);
         }
     }
 }

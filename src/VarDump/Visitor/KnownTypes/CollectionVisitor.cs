@@ -24,7 +24,6 @@ internal sealed class CollectionVisitor : IKnownObjectVisitor
         }
 
         _maxCollectionSize = maxCollectionSize;
-
         _rootObjectVisitor = rootObjectVisitor;
         _codeGenerator = codeGenerator;
     }

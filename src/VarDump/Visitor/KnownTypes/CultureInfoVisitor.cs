@@ -1,18 +1,17 @@
 ﻿using System;
 using System.Globalization;
 using VarDump.CodeDom.Common;
+using VarDump.CodeDom.Compiler;
 
 namespace VarDump.Visitor.KnownTypes;
 
 internal sealed class CultureInfoVisitor : IKnownObjectVisitor
 {
-    private readonly CodeTypeReferenceOptions _typeReferenceOptions;
+    private readonly ICodeGenerator _codeGenerator;
 
-    public CultureInfoVisitor(DumpOptions options)
+    public CultureInfoVisitor(ICodeGenerator codeGenerator)
     {
-        _typeReferenceOptions = options.UseTypeFullName
-            ? CodeTypeReferenceOptions.FullTypeName
-            : CodeTypeReferenceOptions.ShortTypeName;
+        _codeGenerator = codeGenerator;
     }
 
     public string Id => nameof(CultureInfo);
@@ -21,10 +20,14 @@ internal sealed class CultureInfoVisitor : IKnownObjectVisitor
         return obj is CultureInfo;
     }
 
-    public CodeExpression Visit(object obj, Type objectType)
+    public void Visit(object obj, Type objectType)
     {
         var cultureInfo = (CultureInfo)obj;
-        return new CodeObjectCreateExpression(new CodeTypeReference(typeof(CultureInfo), _typeReferenceOptions),
-            new CodePrimitiveExpression(cultureInfo.ToString()));
+
+        _codeGenerator.GenerateObjectCreateAndInitialize(new CodeTypeReference(typeof(CultureInfo)),
+            [
+                () => _codeGenerator.GeneratePrimitive(cultureInfo.ToString())
+            ],
+            []);
     }
 }

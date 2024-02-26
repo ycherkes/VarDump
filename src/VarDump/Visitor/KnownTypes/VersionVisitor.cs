@@ -1,17 +1,16 @@
 ﻿using System;
 using VarDump.CodeDom.Common;
+using VarDump.CodeDom.Compiler;
 
 namespace VarDump.Visitor.KnownTypes;
 
 internal sealed class VersionVisitor : IKnownObjectVisitor
 {
-    private readonly CodeTypeReferenceOptions _typeReferenceOptions;
+    private readonly ICodeGenerator _codeGenerator;
 
-    public VersionVisitor(DumpOptions options)
+    public VersionVisitor(ICodeGenerator codeGenerator)
     {
-        _typeReferenceOptions = options.UseTypeFullName
-            ? CodeTypeReferenceOptions.FullTypeName
-            : CodeTypeReferenceOptions.ShortTypeName;
+        _codeGenerator = codeGenerator;
     }
 
     public string Id => nameof(Version);
@@ -21,10 +20,12 @@ internal sealed class VersionVisitor : IKnownObjectVisitor
         return obj is Version;
     }
 
-    public CodeExpression Visit(object obj, Type objectType)
+    public void Visit(object obj, Type objectType)
     {
         var version  = (Version)obj;
-        return new CodeObjectCreateExpression(new CodeTypeReference(typeof(Version), _typeReferenceOptions),
-            new CodePrimitiveExpression(version.ToString()));
+        _codeGenerator.GenerateObjectCreateAndInitialize(new CodeTypeReference(typeof(Version)), 
+            [
+                () => _codeGenerator.GeneratePrimitive(version.ToString())
+            ], []);
     }
 }

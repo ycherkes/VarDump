@@ -7,7 +7,7 @@ namespace VarDump.Collections;
 
 // original version see https://github.com/jehugaleahsa/truncon.collections.OrderedDictionary
 
-internal interface IOrderedDictionary<TKey, TValue> : IDictionary<TKey, TValue>, IList<KeyValuePair<TKey, TValue>>
+public interface IOrderedDictionary<TKey, TValue> : IDictionary<TKey, TValue>, IList<KeyValuePair<TKey, TValue>>
 {
 }
 

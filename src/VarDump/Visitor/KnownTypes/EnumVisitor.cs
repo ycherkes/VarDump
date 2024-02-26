@@ -1,18 +1,17 @@
 ﻿using System;
 using System.Linq;
 using VarDump.CodeDom.Common;
+using VarDump.CodeDom.Compiler;
 
 namespace VarDump.Visitor.KnownTypes;
 
 internal sealed class EnumVisitor : IKnownObjectVisitor
 {
-    private readonly CodeTypeReferenceOptions _typeReferenceOptions;
+    private readonly ICodeGenerator _codeGenerator;
 
-    public EnumVisitor(DumpOptions options)
+    public EnumVisitor(ICodeGenerator codeGenerator)
     {
-        _typeReferenceOptions = options.UseTypeFullName
-            ? CodeTypeReferenceOptions.FullTypeName
-            : CodeTypeReferenceOptions.ShortTypeName;
+        _codeGenerator = codeGenerator;
     }
 
     public string Id => nameof(Enum);
@@ -21,21 +20,18 @@ internal sealed class EnumVisitor : IKnownObjectVisitor
         return obj is Enum;
     }
 
-    public CodeExpression Visit(object obj, Type objectType)
+    public void Visit(object obj, Type objectType)
     {
         var values = obj.ToString().Split(new[] { "," }, StringSplitOptions.RemoveEmptyEntries);
 
         if (values.Length == 1)
         {
-            return new CodeFieldReferenceExpression(
-                new CodeTypeReferenceExpression(new CodeTypeReference(obj.GetType(), _typeReferenceOptions)), obj.ToString());
+            _codeGenerator.GenerateFieldReference(values[0].Trim(), () => _codeGenerator.GenerateTypeReference(new CodeTypeReference(obj.GetType())));
+            return;
         }
 
-        var expressions = values.Select(v => (CodeExpression)new CodeFieldReferenceExpression(
-            new CodeTypeReferenceExpression(new CodeTypeReference(obj.GetType(), _typeReferenceOptions)), v.Trim())).ToArray();
+        var actions = values.Select(v => (Action)(() => _codeGenerator.GenerateFieldReference(v.Trim(), () => _codeGenerator.GenerateTypeReference(new CodeTypeReference(obj.GetType())))));
 
-        var bitwiseOrExpression = new CodeFlagsBinaryOperatorExpression(CodeBinaryOperatorType.BitwiseOr, expressions);
-
-        return bitwiseOrExpression;
+        _codeGenerator.GenerateFlagsBinaryOperator(CodeBinaryOperatorType.BitwiseOr, actions);
     }
 }

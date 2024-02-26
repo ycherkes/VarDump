@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Linq;
 using VarDump.CodeDom.Common;
+using VarDump.CodeDom.Compiler;
 using VarDump.Utils;
 
 namespace VarDump.Visitor.KnownTypes;
@@ -8,14 +9,12 @@ namespace VarDump.Visitor.KnownTypes;
 internal sealed class KeyValuePairVisitor : IKnownObjectVisitor
 {
     private readonly IObjectVisitor _rootObjectVisitor;
-    private readonly CodeTypeReferenceOptions _typeReferenceOptions;
+    private readonly ICodeGenerator _codeGenerator;
 
-    public KeyValuePairVisitor(DumpOptions options, IObjectVisitor rootObjectVisitor)
+    public KeyValuePairVisitor(IObjectVisitor rootObjectVisitor, ICodeGenerator codeGenerator)
     {
         _rootObjectVisitor = rootObjectVisitor;
-        _typeReferenceOptions = options.UseTypeFullName
-            ? CodeTypeReferenceOptions.FullTypeName
-            : CodeTypeReferenceOptions.ShortTypeName;
+        _codeGenerator = codeGenerator;
     }
 
     public string Id => "KeyValuePair";
@@ -24,10 +23,12 @@ internal sealed class KeyValuePairVisitor : IKnownObjectVisitor
         return objectType.IsKeyValuePair();
     }
 
-    public CodeExpression Visit(object obj, Type objectType)
+    public void Visit(object obj, Type objectType)
     {
-        var propertyValues = objectType.GetProperties().Select(p => ReflectionUtils.GetValue(p, obj)).Select(_rootObjectVisitor.Visit);
-        return new CodeObjectCreateExpression(new CodeTypeReference(objectType, _typeReferenceOptions),
-            propertyValues.ToArray());
+        var propertyValues = objectType.GetProperties().Select(p => ReflectionUtils.GetValue(p, obj)).Select(v => (Action)(() => _rootObjectVisitor.Visit(v)));
+
+        _codeGenerator.GenerateObjectCreateAndInitialize(new CodeTypeReference(objectType),
+            propertyValues,
+            []);
     }
 }

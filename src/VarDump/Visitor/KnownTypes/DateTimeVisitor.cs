@@ -1,23 +1,21 @@
 ﻿using System;
 using System.Globalization;
 using VarDump.CodeDom.Common;
+using VarDump.CodeDom.Compiler;
 
 namespace VarDump.Visitor.KnownTypes;
 
 internal sealed class DateTimeVisitor : IKnownObjectVisitor
 {
-    private readonly CodeTypeReferenceOptions _typeReferenceOptions;
+    private readonly ICodeGenerator _codeGenerator;
     private readonly DateTimeInstantiation _dateTimeInstantiation;
     private readonly DateKind _dateKind;
 
-    public DateTimeVisitor(DumpOptions options)
+    public DateTimeVisitor(ICodeGenerator codeGenerator, DateTimeInstantiation dateTimeInstantiation, DateKind dateKind)
     {
-        _typeReferenceOptions = options.UseTypeFullName
-            ? CodeTypeReferenceOptions.FullTypeName
-            : CodeTypeReferenceOptions.ShortTypeName;
-
-        _dateTimeInstantiation = options.DateTimeInstantiation;
-        _dateKind = options.DateKind;
+        _codeGenerator = codeGenerator;
+        _dateTimeInstantiation = dateTimeInstantiation;
+        _dateKind = dateKind;
     }
 
     public string Id => nameof(DateTime);
@@ -26,24 +24,22 @@ internal sealed class DateTimeVisitor : IKnownObjectVisitor
         return obj is DateTime;
     }
 
-    public CodeExpression Visit(object obj, Type objectType)
+    public void Visit(object obj, Type objectType)
     {
         var dateTime = (DateTime)obj;
-        var dateTimeCodeTypeReference = new CodeTypeReference(typeof(DateTime), _typeReferenceOptions);
+        var dateTimeCodeTypeReference = new CodeTypeReference(typeof(DateTime));
 
         if (dateTime == DateTime.MaxValue)
-            return new CodeFieldReferenceExpression
-            (
-                new CodeTypeReferenceExpression(dateTimeCodeTypeReference),
-                nameof(DateTime.MaxValue)
-            );
+        {
+            _codeGenerator.GenerateFieldReference(nameof(DateTime.MaxValue), () => _codeGenerator.GenerateTypeReference(dateTimeCodeTypeReference));
+            return;
+        }
 
         if (dateTime == DateTime.MinValue)
-            return new CodeFieldReferenceExpression
-            (
-                new CodeTypeReferenceExpression(dateTimeCodeTypeReference),
-                nameof(DateTime.MinValue)
-            );
+        {
+            _codeGenerator.GenerateFieldReference(nameof(DateTime.MinValue), () => _codeGenerator.GenerateTypeReference(dateTimeCodeTypeReference));
+            return;
+        }
 
         if (_dateKind == DateKind.ConvertToUtc)
         {
@@ -52,52 +48,49 @@ internal sealed class DateTimeVisitor : IKnownObjectVisitor
 
         if (_dateTimeInstantiation == DateTimeInstantiation.Parse)
         {
-            return new CodeMethodInvokeExpression
-            (
-                new CodeMethodReferenceExpression(
-                    new CodeTypeReferenceExpression(dateTimeCodeTypeReference),
-                    nameof(DateTime.ParseExact)),
-                new CodePrimitiveExpression(dateTime.ToString("O")),
-                new CodePrimitiveExpression("O"),
-                new CodeFieldReferenceExpression(
-                    new CodeTypeReferenceExpression(
-                        new CodeTypeReference(typeof(CultureInfo), _typeReferenceOptions)),
-                    nameof(CultureInfo.InvariantCulture)),
-                new CodeFieldReferenceExpression(
-                    new CodeTypeReferenceExpression(
-                        new CodeTypeReference(typeof(DateTimeStyles), _typeReferenceOptions)),
-                    nameof(DateTimeStyles.RoundtripKind))
-            );
+            _codeGenerator.GenerateMethodInvoke(
+                () => _codeGenerator.GenerateMethodReference(
+                    () => _codeGenerator.GenerateTypeReference(dateTimeCodeTypeReference), nameof(DateTime.ParseExact)),
+                [
+                    () => _codeGenerator.GeneratePrimitive(dateTime.ToString("O")),
+                    () => _codeGenerator.GeneratePrimitive("O"),
+                    () => _codeGenerator.GenerateFieldReference(nameof(CultureInfo.InvariantCulture),
+                        () => _codeGenerator.GenerateTypeReference(new CodeTypeReference(typeof(CultureInfo)))),
+                    () => _codeGenerator.GenerateFieldReference(nameof(DateTimeStyles.RoundtripKind),
+                        () => _codeGenerator.GenerateTypeReference(new CodeTypeReference(typeof(DateTimeStyles))))
+                ]);
+
+            return;
         }
-
-        var kind = new CodeFieldReferenceExpression
-        (
-            new CodeTypeReferenceExpression(new CodeTypeReference(typeof(DateTimeKind), _typeReferenceOptions)),
-            dateTime.Kind.ToString()
-        );
-
-        var year = new CodePrimitiveExpression(dateTime.Year);
-        var month = new CodePrimitiveExpression(dateTime.Month);
-        var day = new CodePrimitiveExpression(dateTime.Day);
-        var hour = new CodePrimitiveExpression(dateTime.Hour);
-        var minute = new CodePrimitiveExpression(dateTime.Minute);
-        var second = new CodePrimitiveExpression(dateTime.Second);
-        var millisecond = new CodePrimitiveExpression(dateTime.Millisecond);
-
-        var createDateTimeExpression = new CodeObjectCreateExpression(dateTimeCodeTypeReference, year,
-            month, day, hour, minute, second, millisecond, kind);
 
         var lessThanMillisecondTicks = dateTime.Ticks % TimeSpan.TicksPerMillisecond;
 
         if (lessThanMillisecondTicks == 0)
-            return createDateTimeExpression;
+        {
+            GenerateObjectCreateAction();
+            return;
+        }
 
-        return new CodeMethodInvokeExpression
-        (
-            new CodeMethodReferenceExpression(
-                createDateTimeExpression,
-                nameof(DateTime.AddTicks)),
-            new CodePrimitiveExpression(lessThanMillisecondTicks)
-        );
+        _codeGenerator.GenerateMethodInvoke(() => _codeGenerator.GenerateMethodReference(GenerateObjectCreateAction, nameof(DateTime.AddTicks)), [() => _codeGenerator.GeneratePrimitive(lessThanMillisecondTicks)]);
+
+        void GenerateObjectCreateAction() => _codeGenerator.GenerateObjectCreateAndInitialize(dateTimeCodeTypeReference, 
+            [
+                GenerateYearAction, 
+                GenerateMontAction, 
+                GenerateDayAction, 
+                GenerateHourAction, 
+                GenerateMinuteAction, 
+                GenerateSecondAction, 
+                GenerateMillisecondAction, 
+                GenerateKindAction], 
+            []);
+        void GenerateKindAction() => _codeGenerator.GenerateFieldReference(dateTime.Kind.ToString(), () => _codeGenerator.GenerateTypeReference(new CodeTypeReference(typeof(DateTimeKind))));
+        void GenerateYearAction() => _codeGenerator.GeneratePrimitive(dateTime.Year);
+        void GenerateMontAction() => _codeGenerator.GeneratePrimitive(dateTime.Month);
+        void GenerateDayAction() => _codeGenerator.GeneratePrimitive(dateTime.Day);
+        void GenerateHourAction() => _codeGenerator.GeneratePrimitive(dateTime.Hour);
+        void GenerateMinuteAction() => _codeGenerator.GeneratePrimitive(dateTime.Minute);
+        void GenerateSecondAction() => _codeGenerator.GeneratePrimitive(dateTime.Second);
+        void GenerateMillisecondAction() => _codeGenerator.GeneratePrimitive(dateTime.Millisecond);
     }
 }

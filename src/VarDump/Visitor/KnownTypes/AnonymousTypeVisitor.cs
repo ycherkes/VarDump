@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Linq;
 using VarDump.CodeDom.Common;
+using VarDump.CodeDom.Compiler;
 using VarDump.Utils;
 using VarDump.Visitor.Descriptors;
 
@@ -10,16 +11,14 @@ internal sealed class AnonymousTypeVisitor : IKnownObjectVisitor
 {
     private readonly IObjectVisitor _rootObjectVisitor;
     private readonly IObjectDescriptor _anonymousObjectDescriptor;
-    private readonly CodeTypeReferenceOptions _typeReferenceOptions;
+    private readonly ICodeGenerator _codeGenerator;
 
-    public AnonymousTypeVisitor(DumpOptions options, IObjectVisitor rootObjectVisitor,
-        IObjectDescriptor anonymousObjectDescriptor)
+    public AnonymousTypeVisitor(IObjectVisitor rootObjectVisitor,
+        IObjectDescriptor anonymousObjectDescriptor, ICodeGenerator codeGenerator)
     {
         _rootObjectVisitor = rootObjectVisitor;
         _anonymousObjectDescriptor = anonymousObjectDescriptor;
-        _typeReferenceOptions = options.UseTypeFullName
-            ? CodeTypeReferenceOptions.FullTypeName
-            : CodeTypeReferenceOptions.ShortTypeName;
+        _codeGenerator = codeGenerator;
     }
 
     public string Id => "Anonymous";
@@ -28,18 +27,26 @@ internal sealed class AnonymousTypeVisitor : IKnownObjectVisitor
         return objectType.IsAnonymousType();
     }
 
-    public CodeExpression Visit(object obj, Type objectType)
+    public void Visit(object obj, Type objectType)
     {
-        var result = new CodeObjectCreateAndInitializeExpression(new CodeAnonymousTypeReference())
-        {
-            InitializeExpressions = new CodeExpressionCollection(_anonymousObjectDescriptor.Describe(obj, objectType)
-                .Select(pv => (CodeExpression)new CodeAssignExpression(
-                    new CodePropertyReferenceExpression(null, pv.Name),
-                    pv.Type.IsNullableType() || pv.Value == null ? new CodeCastExpression(new CodeTypeReference(pv.Type, _typeReferenceOptions), _rootObjectVisitor.Visit(pv.Value), true) : _rootObjectVisitor.Visit(pv.Value)))
-                .ToArray()
-                )
-        };
+        var initializeActions = _anonymousObjectDescriptor.Describe(obj, objectType)
+            .Select(pv => (Action)(() => _codeGenerator.GenerateCodeAssign(
+                () => _codeGenerator.GeneratePropertyReference(pv.Name, null),
+                () =>
+                {
+                    if (pv.Type.IsNullableType() || pv.Value == null)
+                    {
+                        _codeGenerator.GenerateCast(new CodeTypeReference(pv.Type), 
+                            () => _rootObjectVisitor.Visit(pv.Value));
+                    }
+                    else
+                    {
+                        _rootObjectVisitor.Visit(pv.Value);
+                    }
+                })));
 
-        return result;
+        _codeGenerator.GenerateObjectCreateAndInitialize(new CodeAnonymousTypeReference(),
+            [],
+            initializeActions);
     }
 }

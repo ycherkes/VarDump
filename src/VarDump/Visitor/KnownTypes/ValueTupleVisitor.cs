@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Linq;
 using VarDump.CodeDom.Common;
+using VarDump.CodeDom.Compiler;
 using VarDump.Utils;
 
 namespace VarDump.Visitor.KnownTypes;
@@ -8,10 +9,12 @@ namespace VarDump.Visitor.KnownTypes;
 internal sealed class ValueTupleVisitor : IKnownObjectVisitor
 {
     private readonly IObjectVisitor _rootObjectVisitor;
+    private readonly ICodeGenerator _codeGenerator;
 
-    public ValueTupleVisitor(IObjectVisitor rootObjectVisitor)
+    public ValueTupleVisitor(IObjectVisitor rootObjectVisitor, ICodeGenerator codeGenerator)
     {
         _rootObjectVisitor = rootObjectVisitor;
+        _codeGenerator = codeGenerator;
     }
     public string Id => "ValueTuple";
     public bool IsSuitableFor(object obj, Type objectType)
@@ -19,10 +22,10 @@ internal sealed class ValueTupleVisitor : IKnownObjectVisitor
         return objectType.IsValueTuple();
     }
 
-    public CodeExpression Visit(object obj, Type objectType)
+    public void Visit(object obj, Type objectType)
     {
-        var propertyValues = objectType.GetFields().Select(p => ReflectionUtils.GetValue(p, obj)).Select(_rootObjectVisitor.Visit);
+        var propertyValues = objectType.GetFields().Select(p => ReflectionUtils.GetValue(p, obj)).Select(v => (Action)(() => _rootObjectVisitor.Visit(v)));
 
-        return new CodeValueTupleCreateExpression(propertyValues.ToArray());
+        _codeGenerator.GenerateValueTupleCreate(propertyValues);
     }
 }

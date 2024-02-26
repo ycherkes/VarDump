@@ -1,20 +1,19 @@
 ﻿using System;
 using VarDump.CodeDom.Common;
+using VarDump.CodeDom.Compiler;
 using VarDump.Utils;
 
 namespace VarDump.Visitor.KnownTypes;
 
 internal sealed class DateOnlyVisitor : IKnownObjectVisitor
 {
-    private readonly CodeTypeReferenceOptions _typeReferenceOptions;
+    private readonly ICodeGenerator _codeGenerator;
     private readonly DateTimeInstantiation _dateTimeInstantiation;
 
-    public DateOnlyVisitor(DumpOptions options)
+    public DateOnlyVisitor(ICodeGenerator codeGenerator, DateTimeInstantiation dateTimeInstantiation)
     {
-        _dateTimeInstantiation = options.DateTimeInstantiation;
-        _typeReferenceOptions = options.UseTypeFullName
-            ? CodeTypeReferenceOptions.FullTypeName
-            : CodeTypeReferenceOptions.ShortTypeName;
+        _codeGenerator = codeGenerator;
+        _dateTimeInstantiation = dateTimeInstantiation;
     }
 
     public string Id => "DateOnly";
@@ -23,48 +22,52 @@ internal sealed class DateOnlyVisitor : IKnownObjectVisitor
         return objectType.IsDateOnly();
     }
 
-    public CodeExpression Visit(object dateOnly, Type objectType)
+    public void Visit(object dateOnly, Type objectType)
     {
-        var dateOnlyCodeTypeReference = new CodeTypeReference(objectType, _typeReferenceOptions);
+        var dateOnlyCodeTypeReference = new CodeTypeReference(objectType);
         var dayNumber = (int?)objectType.GetProperty("DayNumber")?.GetValue(dateOnly);
 
         if (dayNumber == null)
         {
-            return CodeDomUtils.GetErrorDetectedExpression("Wrong DateOnly struct");
+            CodeDomUtils.WriteErrorDetectedExpression(_codeGenerator, "Wrong DateOnly struct");
+            return;
         }
 
         if (dayNumber == 3652058U)
-            return new CodeFieldReferenceExpression
-            (
-                new CodeTypeReferenceExpression(dateOnlyCodeTypeReference),
-                nameof(DateTime.MaxValue)
-            );
+        {
+            _codeGenerator.GenerateFieldReference(nameof(DateTime.MaxValue), () => _codeGenerator.GenerateTypeReference(dateOnlyCodeTypeReference));
+
+            return;
+        }
 
         if (dayNumber == 1)
-            return new CodeFieldReferenceExpression
-            (
-                new CodeTypeReferenceExpression(dateOnlyCodeTypeReference),
-                nameof(DateTime.MinValue)
-            );
+        {
+            _codeGenerator.GenerateFieldReference(nameof(DateTime.MinValue), () => _codeGenerator.GenerateTypeReference(dateOnlyCodeTypeReference));
+
+            return;
+        }
 
         var dateTime = new DateTime((long)dayNumber * 864000000000L);
 
         if (_dateTimeInstantiation == DateTimeInstantiation.Parse)
         {
-            return new CodeMethodInvokeExpression
-            (
-                new CodeMethodReferenceExpression(
-                    new CodeTypeReferenceExpression(dateOnlyCodeTypeReference),
-                    nameof(DateTime.ParseExact)),
-                new CodePrimitiveExpression($"{dateTime:yyyy-MM-dd}"),
-                new CodePrimitiveExpression("O")
-            );
+            _codeGenerator.GenerateMethodInvoke(
+                () => _codeGenerator.GenerateMethodReference(
+                    () => _codeGenerator.GenerateTypeReference(dateOnlyCodeTypeReference), nameof(DateTimeOffset.ParseExact)),
+                [
+                    () => _codeGenerator.GeneratePrimitive($"{dateTime:yyyy-MM-dd}"),
+                    () => _codeGenerator.GeneratePrimitive("O")
+                ]);
+
+            return;
         }
 
-        var year = new CodePrimitiveExpression(dateTime.Year);
-        var month = new CodePrimitiveExpression(dateTime.Month);
-        var day = new CodePrimitiveExpression(dateTime.Day);
-
-        return new CodeObjectCreateExpression(dateOnlyCodeTypeReference, year, month, day);
+        _codeGenerator.GenerateObjectCreateAndInitialize(dateOnlyCodeTypeReference,
+            [
+                () => _codeGenerator.GeneratePrimitive(dateTime.Year),
+                () => _codeGenerator.GeneratePrimitive(dateTime.Month),
+                () => _codeGenerator.GeneratePrimitive(dateTime.Day)
+            ],
+            []);
     }
 }

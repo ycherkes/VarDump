@@ -3,7 +3,6 @@ using System.IO;
 using VarDump.CodeDom.Common;
 using VarDump.CodeDom.Compiler;
 using VarDump.CodeDom.CSharp;
-using VarDump.Extensions;
 using VarDump.Utils;
 using VarDump.Visitor;
 
@@ -46,25 +45,18 @@ public class CSharpDumper : IDumper
 
     private void DumpImpl(object obj, TextWriter textWriter)
     {
-        var objectVisitor = new ObjectVisitor(_options);
+        ICodeGenerator codeGenerator = new CSharpCodeGenerator(textWriter, new CodeGeneratorOptions{ UseFullTypeName = _options.UseTypeFullName });
 
-        var expression = objectVisitor.Visit(obj);
+        var objectVisitor = new ObjectVisitor(_options, codeGenerator);
 
-        CodeObject codeObject = _options.GenerateVariableInitializer
-            ? new CodeVariableDeclarationStatement(new CodeImplicitlyTypedTypeReference(),
-                obj != null ? ReflectionUtils.ComposeCsharpVariableName(obj.GetType()) : "nullValue")
-            {
-                InitExpression = expression
-            }
-            : expression;
-
-        var codeGeneratorOptions = new CodeGeneratorOptions
+        if (_options.GenerateVariableInitializer)
         {
-            BracingStyle = "C"
-        };
-
-        ICodeGenerator generator = new CSharpCodeGenerator();
-
-        generator.GenerateCode(codeObject, textWriter, codeGeneratorOptions);
+            codeGenerator.GenerateVariableDeclarationStatement(new CodeImplicitlyTypedTypeReference(),
+                obj != null ? ReflectionUtils.ComposeCsharpVariableName(obj.GetType()) : "nullValue", () => objectVisitor.Visit(obj));
+        }
+        else
+        {
+            objectVisitor.Visit(obj);
+        }
     }
 }

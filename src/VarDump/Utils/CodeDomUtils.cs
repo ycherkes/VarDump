@@ -1,41 +1,47 @@
 ﻿using VarDump.CodeDom.Common;
+using VarDump.CodeDom.Compiler;
 using VarDump.Visitor;
 
 namespace VarDump.Utils;
 
 internal static class CodeDomUtils
 {
-    public static CodeExpression GetErrorDetectedExpression(string errorMessage)
+    public static void WriteErrorDetectedExpression(ICodeGenerator codeGenerator, string errorMessage)
     {
-        return new CodeSeparatedExpressionCollection(
-        [
-            new CodePrimitiveExpression(null),
-            new CodeStatementExpression(new CodeCommentStatement(new CodeComment(errorMessage) { NoNewLine = true }))
-        ], ", ");
+        codeGenerator.GeneratePrimitive(null);
+
+        codeGenerator.GenerateSeparator();
+
+        codeGenerator.GenerateComment(errorMessage, true);
     }
 
-    public static CodeExpression GetCircularReferenceDetectedExpression()
+    public static void WriteCircularReferenceDetectedExpression(ICodeGenerator codeGenerator)
     {
-        return new CodeSeparatedExpressionCollection(
-        [
-            new CodePrimitiveExpression(null),
-            new CodeStatementExpression(new CodeCommentStatement(new CodeComment("Circular reference detected") { NoNewLine = true }))
-        ], ", ");
+        codeGenerator.GeneratePrimitive(null);
+
+        codeGenerator.GenerateSeparator();
+
+        codeGenerator.GenerateComment("Circular reference detected", true);
     }
 
-    public static CodeExpression GetTooManyItemsExpression(int maxCollectionSize)
+    public static void WriteTooManyItemsExpression(ICodeGenerator codeGenerator, int maxCollectionSize)
     {
-        return new CodeStatementExpression(new CodeCommentStatement(new CodeComment($"Too many items (> {maxCollectionSize}). Consider increasing the {nameof(DumpOptions.MaxCollectionSize)} option.") { NoNewLine = true }));
+        codeGenerator.GenerateComment($"Too many items (> {maxCollectionSize}). Consider increasing the {nameof(DumpOptions.MaxCollectionSize)} option.", noNewLine: true);
     }
 
-    public static CodeExpression GetMaxDepthExpression(object @object, CodeTypeReferenceOptions typeReferenceOptions)
+    public static void WriteMaxDepthExpression(object @object, ICodeGenerator codeGenerator)
     {
-        return new CodeSeparatedExpressionCollection(
-        [
-            @object == null || @object.GetType().IsAnonymousType()
-                ? new CodePrimitiveExpression(null)
-                : new CodeDefaultValueExpression(new CodeTypeReference(@object.GetType(), typeReferenceOptions)),
-            new CodeStatementExpression(new CodeCommentStatement(new CodeComment("Max depth") { NoNewLine = true }))
-        ], ", ");
+        if (@object == null || @object.GetType().IsAnonymousType())
+        {
+            codeGenerator.GeneratePrimitive(null);
+        }
+        else
+        {
+            codeGenerator.GenerateDefaultValue(new CodeTypeReference(@object.GetType()));
+        }
+
+        codeGenerator.GenerateSeparator();
+
+        codeGenerator.GenerateComment("Max depth", true);
     }
 }

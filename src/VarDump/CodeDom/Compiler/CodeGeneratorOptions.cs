@@ -15,30 +15,20 @@ namespace VarDump.CodeDom.Compiler
         {
             get
             {
-                object o = _options[nameof(IndentString)];
+                var o = _options[nameof(IndentString)];
                 return o != null ? (string)o : "    ";
             }
             set => _options[nameof(IndentString)] = value;
         }
 
-        public string BracingStyle
+        public bool UseFullTypeName
         {
             get
             {
-                object o = _options[nameof(BracingStyle)];
-                return o != null ? (string)o : "Block";
-            }
-            set => _options[nameof(BracingStyle)] = value;
-        }
-
-        public bool ElseOnClosing
-        {
-            get
-            {
-                object o = _options[nameof(ElseOnClosing)];
+                var o = _options[nameof(UseFullTypeName)];
                 return o != null && (bool)o;
             }
-            set => _options[nameof(ElseOnClosing)] = value;
+            set => _options[nameof(UseFullTypeName)] = value;
         }
     }
 }

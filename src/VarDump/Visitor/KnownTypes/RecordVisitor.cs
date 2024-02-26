@@ -2,6 +2,7 @@
 using System.Linq;
 using System.Reflection;
 using VarDump.CodeDom.Common;
+using VarDump.CodeDom.Compiler;
 using VarDump.Utils;
 
 namespace VarDump.Visitor.KnownTypes;
@@ -9,16 +10,14 @@ namespace VarDump.Visitor.KnownTypes;
 internal sealed class RecordVisitor : IKnownObjectVisitor
 {
     private readonly IObjectVisitor _rootObjectVisitor;
+    private readonly ICodeGenerator _codeGenerator;
     private readonly bool _useNamedArgumentsForReferenceRecordTypes;
-    private readonly CodeTypeReferenceOptions _typeReferenceOptions;
 
-    public RecordVisitor(DumpOptions options, IObjectVisitor rootObjectVisitor)
+    public RecordVisitor(IObjectVisitor rootObjectVisitor, ICodeGenerator codeGenerator, bool useNamedArgumentsForReferenceRecordTypes)
     {
         _rootObjectVisitor = rootObjectVisitor;
-        _useNamedArgumentsForReferenceRecordTypes = options.UseNamedArgumentsForReferenceRecordTypes;
-        _typeReferenceOptions = options.UseTypeFullName
-            ? CodeTypeReferenceOptions.FullTypeName
-            : CodeTypeReferenceOptions.ShortTypeName;
+        _codeGenerator = codeGenerator;
+        _useNamedArgumentsForReferenceRecordTypes = useNamedArgumentsForReferenceRecordTypes;
     }
 
     public string Id => "Record";
@@ -27,15 +26,15 @@ internal sealed class RecordVisitor : IKnownObjectVisitor
         return objectType.IsRecord();
     }
 
-    public CodeExpression Visit(object obj, Type objectType)
+    public void Visit(object obj, Type objectType)
     {
         var properties = objectType.GetProperties(BindingFlags.Public | BindingFlags.Instance | BindingFlags.NonPublic).Where(p => p.CanWrite);
-        var argumentValues = _useNamedArgumentsForReferenceRecordTypes 
-            ? properties.Select(p => (CodeExpression)new CodeNamedArgumentExpression(p.Name, _rootObjectVisitor.Visit(ReflectionUtils.GetValue(p, obj))))
-            : properties.Select(p => ReflectionUtils.GetValue(p, obj)).Select(_rootObjectVisitor.Visit);
+        var argumentValues = _useNamedArgumentsForReferenceRecordTypes
+            ? properties.Select(p => (Action)(() => _codeGenerator.GenerateNamedArgument(p.Name, () => _rootObjectVisitor.Visit(ReflectionUtils.GetValue(p, obj)))))
+            : properties.Select(p => ReflectionUtils.GetValue(p, obj)).Select(value => (Action)(() => _rootObjectVisitor.Visit(value)));
 
-        return new CodeObjectCreateExpression(
-            new CodeTypeReference(objectType, _typeReferenceOptions),
-            argumentValues.ToArray());
+        _codeGenerator.GenerateObjectCreateAndInitialize(new CodeTypeReference(objectType),
+            argumentValues,
+            []);
     }
 }

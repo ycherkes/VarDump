@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Linq;
 using VarDump.CodeDom.Common;
+using VarDump.CodeDom.Compiler;
 using VarDump.Utils;
 
 namespace VarDump.Visitor.KnownTypes;
@@ -8,14 +9,12 @@ namespace VarDump.Visitor.KnownTypes;
 internal sealed class TupleVisitor : IKnownObjectVisitor
 {
     private readonly IObjectVisitor _rootObjectVisitor;
-    private readonly CodeTypeReferenceOptions _typeReferenceOptions;
+    private readonly ICodeGenerator _codeGenerator;
 
-    public TupleVisitor(DumpOptions options, IObjectVisitor rootObjectVisitor)
+    public TupleVisitor(IObjectVisitor rootObjectVisitor, ICodeGenerator codeGenerator)
     {
         _rootObjectVisitor = rootObjectVisitor;
-        _typeReferenceOptions = options.UseTypeFullName
-            ? CodeTypeReferenceOptions.FullTypeName
-            : CodeTypeReferenceOptions.ShortTypeName;
+        _codeGenerator = codeGenerator;
     }
 
     public string Id => "Tuple";
@@ -24,20 +23,23 @@ internal sealed class TupleVisitor : IKnownObjectVisitor
         return objectType.IsTuple();
     }
 
-    public CodeExpression Visit(object o, Type objectType)
+    public void Visit(object o, Type objectType)
     {
         if (_rootObjectVisitor.IsVisited(o))
         {
-            return CodeDomUtils.GetCircularReferenceDetectedExpression();
+            CodeDomUtils.WriteCircularReferenceDetectedExpression(_codeGenerator);
+            return;
         }
 
         _rootObjectVisitor.PushVisited(o);
 
         try
         {
-            var propertyValues = objectType.GetProperties().Select(p => ReflectionUtils.GetValue(p, o)).Select(_rootObjectVisitor.Visit);
-            var result = new CodeObjectCreateExpression(new CodeTypeReference(objectType, _typeReferenceOptions), propertyValues.ToArray());
-            return result;
+            var propertyValues = objectType.GetProperties().Select(p => ReflectionUtils.GetValue(p, o)).Select(v => (Action)(() => _rootObjectVisitor.Visit(v)));
+
+            _codeGenerator.GenerateObjectCreateAndInitialize(new CodeTypeReference(objectType),
+                propertyValues,
+                []);
         }
         finally
         {

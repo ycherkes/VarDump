@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using VarDump.CodeDom.Common;
+using VarDump.CodeDom.Compiler;
 using VarDump.Extensions;
 using VarDump.Utils;
 
@@ -11,22 +12,19 @@ namespace VarDump.Visitor.KnownTypes;
 internal sealed class DictionaryVisitor : IKnownObjectVisitor
 {
     private readonly IObjectVisitor _rootObjectVisitor;
-    private readonly CodeTypeReferenceOptions _typeReferenceOptions;
+    private readonly ICodeGenerator _codeGenerator;
     private readonly int _maxCollectionSize;
 
-    public DictionaryVisitor(DumpOptions options, IObjectVisitor rootObjectVisitor)
+    public DictionaryVisitor(IObjectVisitor rootObjectVisitor, ICodeGenerator codeGenerator, int maxCollectionSize)
     {
-        _typeReferenceOptions = options.UseTypeFullName
-            ? CodeTypeReferenceOptions.FullTypeName
-            : CodeTypeReferenceOptions.ShortTypeName;
-
-        if (options.MaxCollectionSize <= 0)
+        if (maxCollectionSize <= 0)
         {
-            throw new ArgumentOutOfRangeException(nameof(options.MaxCollectionSize));
+            throw new ArgumentOutOfRangeException(nameof(maxCollectionSize));
         }
         
-        _maxCollectionSize = options.MaxCollectionSize;
+        _maxCollectionSize = maxCollectionSize;
         _rootObjectVisitor = rootObjectVisitor;
+        _codeGenerator = codeGenerator;
     }
 
     public string Id => "Dictionary";
@@ -35,12 +33,13 @@ internal sealed class DictionaryVisitor : IKnownObjectVisitor
         return obj is IDictionary;
     }
 
-    public CodeExpression Visit(object obj, Type objectType)
+    public void Visit(object obj, Type objectType)
     {
         IDictionary dict = (IDictionary)obj;
         if (_rootObjectVisitor.IsVisited(dict))
         {
-            return CodeDomUtils.GetCircularReferenceDetectedExpression();
+            CodeDomUtils.WriteCircularReferenceDetectedExpression(_codeGenerator);
+            return;
         }
 
         _rootObjectVisitor.PushVisited(dict);
@@ -50,12 +49,14 @@ internal sealed class DictionaryVisitor : IKnownObjectVisitor
             var valuesType = dict.Values.GetType();
             var keysType = dict.Keys.GetType();
 
-            var result = keysType.ContainsAnonymousType() ||
-                         valuesType.ContainsAnonymousType()
-                ? VisitAnonymousDictionary(dict)
-                : VisitSimpleDictionary(dict);
+            if (keysType.ContainsAnonymousType() ||
+                valuesType.ContainsAnonymousType())
+            {
+                VisitAnonymousDictionary(dict);
+                return;
+            }
 
-            return result;
+            VisitSimpleDictionary(dict);
         }
         finally
         {
@@ -63,13 +64,13 @@ internal sealed class DictionaryVisitor : IKnownObjectVisitor
         }
     }
 
-    private CodeExpression VisitSimpleDictionary(IDictionary dict)
+    private void VisitSimpleDictionary(IDictionary dict)
     {
-        var items = dict.Cast<object>().Select(VisitKeyValuePairGenerateImplicitly);
+        var items = dict.Cast<object>().Select(item => (Action)(() => VisitKeyValuePairGenerateImplicitly(item)));
 
         if (_maxCollectionSize < int.MaxValue)
         {
-            items = items.Take(_maxCollectionSize + 1).Replace(_maxCollectionSize, CodeDomUtils.GetTooManyItemsExpression(_maxCollectionSize));
+            items = items.Take(_maxCollectionSize + 1).Replace(_maxCollectionSize, () => CodeDomUtils.WriteTooManyItemsExpression(_codeGenerator, _maxCollectionSize));
         }
 
         var type = dict.GetType();
@@ -82,67 +83,71 @@ internal sealed class DictionaryVisitor : IKnownObjectVisitor
 
             var dictionaryType = typeof(Dictionary<,>).MakeGenericType(keyType, valueType);
 
-            CodeExpression dictionaryCreateExpression = new CodeObjectCreateAndInitializeExpression(new CodeCollectionTypeReference(dictionaryType, _typeReferenceOptions), items);
+            var dictionaryCreateAction = () =>
+                _codeGenerator.GenerateObjectCreateAndInitialize(
+                    new CodeCollectionTypeReference(dictionaryType), [], items);
 
-            dictionaryCreateExpression = new CodeMethodInvokeExpression(dictionaryCreateExpression, $"To{type.GetImmutableOrFrozenTypeName()}");
+            _codeGenerator.GenerateMethodInvoke(() => _codeGenerator.GenerateMethodReference(dictionaryCreateAction, $"To{type.GetImmutableOrFrozenTypeName()}"), []);
 
-            return dictionaryCreateExpression;
+            return;
         }
-        else
-        {
-            CodeExpression dictionaryCreateExpression = new CodeObjectCreateAndInitializeExpression(new CodeCollectionTypeReference(type, _typeReferenceOptions), items);
-            return dictionaryCreateExpression;
-        }
+
+        _codeGenerator.GenerateObjectCreateAndInitialize(
+            new CodeCollectionTypeReference(type), [], items);
     }
 
-    private CodeExpression VisitAnonymousDictionary(IEnumerable dictionary)
+    private void VisitAnonymousDictionary(IEnumerable dictionary)
     {
         const string keyName = "Key";
         const string valueName = "Value";
-        var items = dictionary.Cast<object>().Select(o => VisitKeyValuePairGenerateAnonymousType(o, keyName, valueName));
+        var items = dictionary.Cast<object>().Select(o => (Action)(() => VisitKeyValuePairGenerateAnonymousType(o, keyName, valueName)));
 
         if (_maxCollectionSize < int.MaxValue)
         {
-            items = items.Take(_maxCollectionSize + 1).Replace(_maxCollectionSize, CodeDomUtils.GetTooManyItemsExpression(_maxCollectionSize));
+            items = items.Take(_maxCollectionSize + 1).Replace(_maxCollectionSize, () => CodeDomUtils.WriteTooManyItemsExpression(_codeGenerator, _maxCollectionSize));
         }
         
         var type = dictionary.GetType();
 
-        CodeExpression expr = new CodeArrayCreateExpression(new CodeAnonymousTypeReference { ArrayRank = 1 }, items.ToArray());
-
-        var variableReferenceExpression = new CodeVariableReferenceExpression("kvp");
-        var keyLambdaExpression = new CodeLambdaExpression(new CodePropertyReferenceExpression(variableReferenceExpression, keyName), variableReferenceExpression);
-        var valueLambdaExpression = new CodeLambdaExpression(new CodePropertyReferenceExpression(variableReferenceExpression, valueName), variableReferenceExpression);
-
         var isImmutableOrFrozen = type.IsPublicImmutableOrFrozenCollection();
 
-        expr = isImmutableOrFrozen
-            ? new CodeMethodInvokeExpression(expr, $"To{type.GetImmutableOrFrozenTypeName()}", keyLambdaExpression, valueLambdaExpression)
-            : new CodeMethodInvokeExpression(expr, "ToDictionary", keyLambdaExpression, valueLambdaExpression);
+        var methodName = isImmutableOrFrozen
+            ? $"To{type.GetImmutableOrFrozenTypeName()}"
+            : "ToDictionary";
 
-        return expr;
+        _codeGenerator.GenerateMethodInvoke(() =>
+                _codeGenerator.GenerateMethodReference(
+                    () => _codeGenerator.GenerateArrayCreate(new CodeAnonymousTypeReference { ArrayRank = 1 },
+                        items),
+                    methodName),
+            [
+                GenerateKeyLambdaExpression,
+                GenerateValueLambdaExpression
+            ]);
+
+        void GenerateVariableReference() => _codeGenerator.GenerateVariableReference("kvp");
+        void GenerateKeyLambdaPropertyExpression() => _codeGenerator.GeneratePropertyReference(keyName, GenerateVariableReference);
+        void GenerateKeyLambdaExpression() => _codeGenerator.GenerateLambdaExpression(GenerateKeyLambdaPropertyExpression, [GenerateVariableReference]);
+        void GenerateValueLambdaPropertyExpression() => _codeGenerator.GeneratePropertyReference(valueName, GenerateVariableReference);
+        void GenerateValueLambdaExpression() => _codeGenerator.GenerateLambdaExpression(GenerateValueLambdaPropertyExpression, [GenerateVariableReference]);
     }
 
-    private CodeExpression VisitKeyValuePairGenerateImplicitly(object o)
+    private void VisitKeyValuePairGenerateImplicitly(object o)
     {
         var objectType = o.GetType();
-        var propertyValues = objectType.GetProperties().Select(p => ReflectionUtils.GetValue(p, o)).Select(_rootObjectVisitor.Visit).Take(2).ToArray();
-        return new CodeImplicitKeyValuePairCreateExpression(propertyValues.First(), propertyValues.Last());
+        var propertyValues = objectType.GetProperties().Select(p => ReflectionUtils.GetValue(p, o)).Take(2).ToArray();
+        _codeGenerator.GenerateCodeImplicitKeyValuePairCreate(() => _rootObjectVisitor.Visit(propertyValues[0]), () => _rootObjectVisitor.Visit(propertyValues[1]));
     }
 
-    private CodeExpression VisitKeyValuePairGenerateAnonymousType(object o, string keyName, string valueName)
+    private void VisitKeyValuePairGenerateAnonymousType(object o, string keyName, string valueName)
     {
         var objectType = o.GetType();
-        var propertyValues = objectType.GetProperties().Select(p => ReflectionUtils.GetValue(p, o)).Select(_rootObjectVisitor.Visit).ToArray();
-        var result = new CodeObjectCreateAndInitializeExpression(new CodeAnonymousTypeReference())
-        {
-            InitializeExpressions = new CodeExpressionCollection(new[]
-            {
-                (CodeExpression)new CodeAssignExpression(new CodePropertyReferenceExpression(null, keyName), propertyValues[0]),
-                new CodeAssignExpression(new CodePropertyReferenceExpression(null, valueName), propertyValues[1])
-            })
-        };
-
-        return result;
+        var propertyValues = objectType.GetProperties().Select(p => ReflectionUtils.GetValue(p, o)).Take(2).ToArray();
+        
+        _codeGenerator.GenerateObjectCreateAndInitialize(new CodeAnonymousTypeReference(), [],
+            [
+                () => _codeGenerator.GenerateCodeAssign(() => _codeGenerator.GeneratePropertyReference(keyName, null), () => _rootObjectVisitor.Visit(propertyValues[0])),
+                () => _codeGenerator.GenerateCodeAssign(() => _codeGenerator.GeneratePropertyReference(valueName, null), () => _rootObjectVisitor.Visit(propertyValues[1])),
+            ]);
     }
 }

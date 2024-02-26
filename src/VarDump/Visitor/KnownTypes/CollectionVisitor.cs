@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using VarDump.CodeDom.Common;
+using VarDump.CodeDom.Compiler;
 using VarDump.Extensions;
 using VarDump.Utils;
 
@@ -11,24 +12,21 @@ namespace VarDump.Visitor.KnownTypes;
 
 internal sealed class CollectionVisitor : IKnownObjectVisitor
 {
-    private readonly CodeTypeReferenceOptions _typeReferenceOptions;
     private readonly IObjectVisitor _rootObjectVisitor;
+    private readonly ICodeGenerator _codeGenerator;
     private readonly int _maxCollectionSize;
 
-    public CollectionVisitor(DumpOptions options, IObjectVisitor rootObjectVisitor)
+    public CollectionVisitor(IObjectVisitor rootObjectVisitor, ICodeGenerator codeGenerator, int maxCollectionSize)
     {
-        _typeReferenceOptions = options.UseTypeFullName
-            ? CodeTypeReferenceOptions.FullTypeName
-            : CodeTypeReferenceOptions.ShortTypeName;
-
-        if (options.MaxCollectionSize <= 0)
+        if (maxCollectionSize <= 0)
         {
-            throw new ArgumentOutOfRangeException(nameof(options.MaxCollectionSize));
+            throw new ArgumentOutOfRangeException(nameof(maxCollectionSize));
         }
 
-        _maxCollectionSize = options.MaxCollectionSize;
+        _maxCollectionSize = maxCollectionSize;
 
         _rootObjectVisitor = rootObjectVisitor;
+        _codeGenerator = codeGenerator;
     }
 
     public string Id => "Collection";
@@ -38,12 +36,13 @@ internal sealed class CollectionVisitor : IKnownObjectVisitor
         return obj is IEnumerable;
     }
 
-    public CodeExpression Visit(object obj, Type collectionType)
+    public void Visit(object obj, Type collectionType)
     {
         IEnumerable collection = (IEnumerable)obj;
         if (_rootObjectVisitor.IsVisited(collection))
         {
-            return CodeDomUtils.GetCircularReferenceDetectedExpression();
+            CodeDomUtils.WriteCircularReferenceDetectedExpression(_codeGenerator);
+            return;
         }
 
         _rootObjectVisitor.PushVisited(collection);
@@ -54,14 +53,17 @@ internal sealed class CollectionVisitor : IKnownObjectVisitor
 
             if (elementType.IsGrouping())
             {
-                return VisitGroupingCollection(collection);
+                VisitGroupingCollection(collection);
+                return;
             }
 
-            var result = collectionType.ContainsAnonymousType()
-                ? VisitAnonymousCollection(collection)
-                : VisitSimpleCollection(collection, elementType);
+            if (collectionType.ContainsAnonymousType())
+            {
+                VisitAnonymousCollection(collection);
+                return;
+            }
 
-            return result;
+            VisitSimpleCollection(collection, elementType);
         }
         finally
         {
@@ -69,7 +71,7 @@ internal sealed class CollectionVisitor : IKnownObjectVisitor
         }
     }
 
-    private CodeExpression VisitGroupingCollection(IEnumerable collection)
+    private void VisitGroupingCollection(IEnumerable collection)
     {
         var type = collection.GetType();
 
@@ -77,44 +79,59 @@ internal sealed class CollectionVisitor : IKnownObjectVisitor
 
         if (_maxCollectionSize < int.MaxValue)
         {
-            items = items.Take(_maxCollectionSize + 1).Replace(_maxCollectionSize, CodeDomUtils.GetTooManyItemsExpression(_maxCollectionSize));
+            items = items.Take(_maxCollectionSize + 1).Replace(_maxCollectionSize, () => CodeDomUtils.WriteTooManyItemsExpression(_codeGenerator, _maxCollectionSize));
         }
-
-        CodeExpression expr = new CodeArrayCreateExpression(new CodeAnonymousTypeReference { ArrayRank = 1 }, items.ToArray());
-
-        var variableReferenceExpression = new CodeVariableReferenceExpression("grp");
-        var keyLambdaExpression =
-            new CodeLambdaExpression(new CodePropertyReferenceExpression(variableReferenceExpression, "Key"),
-                variableReferenceExpression);
-        var valueLambdaExpression =
-            new CodeLambdaExpression(new CodePropertyReferenceExpression(variableReferenceExpression, "Element"),
-                variableReferenceExpression);
-
+        
         var isLookup = type.IsLookup();
 
-        expr = isLookup
-            ? new CodeMethodInvokeExpression(expr, "ToLookup", keyLambdaExpression, valueLambdaExpression)
-            : new CodeMethodInvokeExpression(expr, "GroupBy", keyLambdaExpression, valueLambdaExpression);
+        var methodName = isLookup
+            ? "ToLookup"
+            : "GroupBy";
+
+        Action arrayCreateAction = () => _codeGenerator.GenerateArrayCreate(new CodeAnonymousTypeReference { ArrayRank = 1 }, items);
+
+        Action lambdaAction = () => _codeGenerator.GenerateMethodInvoke(() =>
+                _codeGenerator.GenerateMethodReference(arrayCreateAction, methodName),
+            [
+                GenerateKeyLambdaExpression,
+                GenerateValueLambdaExpression
+            ]);
 
         if (type.IsArray)
         {
-            expr = new CodeMethodInvokeExpression(expr, "ToArray");
-        }
-        else if (collection is IList)
-        {
-            expr = new CodeMethodInvokeExpression(expr, "ToList");
+           _codeGenerator.GenerateMethodInvoke(() =>
+                    _codeGenerator.GenerateMethodReference(lambdaAction, "ToArray"), []);
+
+           return;
+
         }
 
-        return expr;
+        if (collection is IList)
+        {
+            _codeGenerator.GenerateMethodInvoke(() =>
+                _codeGenerator.GenerateMethodReference(lambdaAction, "ToList"), []);
+
+            return;
+        }
+
+        lambdaAction();
+
+        return;
+
+        void GenerateVariableReference() => _codeGenerator.GenerateVariableReference("grp");
+        void GenerateKeyLambdaPropertyExpression() => _codeGenerator.GeneratePropertyReference("Key", GenerateVariableReference);
+        void GenerateKeyLambdaExpression() => _codeGenerator.GenerateLambdaExpression(GenerateKeyLambdaPropertyExpression, [GenerateVariableReference]);
+        void GenerateValueLambdaPropertyExpression() => _codeGenerator.GeneratePropertyReference("Element", GenerateVariableReference);
+        void GenerateValueLambdaExpression() => _codeGenerator.GenerateLambdaExpression(GenerateValueLambdaPropertyExpression, [GenerateVariableReference]);
     }
 
-    private CodeExpression VisitSimpleCollection(IEnumerable enumerable, Type elementType)
+    private void VisitSimpleCollection(IEnumerable enumerable, Type elementType)
     {
-        var items = enumerable.Cast<object>().Select(_rootObjectVisitor.Visit);
+        var items = enumerable.Cast<object>().Select(item => (Action)(() => _rootObjectVisitor.Visit(item)));
 
         if (_maxCollectionSize < int.MaxValue)
         {
-            items = items.Take(_maxCollectionSize + 1).Replace(_maxCollectionSize, CodeDomUtils.GetTooManyItemsExpression(_maxCollectionSize));
+            items = items.Take(_maxCollectionSize + 1).Replace(_maxCollectionSize, () => CodeDomUtils.WriteTooManyItemsExpression(_codeGenerator, _maxCollectionSize));
         }
 
         var type = enumerable.GetType();
@@ -129,38 +146,40 @@ internal sealed class CollectionVisitor : IKnownObjectVisitor
                 items = ChunkMultiDimensionalArrayExpression((Array)enumerable, items);
             }
 
-            CodeExpression expr = new CodeArrayCreateExpression(
-                new CodeTypeReference(isImmutableOrFrozen || !type.IsPublic ? elementType.MakeArrayType() : type,
-                    _typeReferenceOptions),
-                items.ToArray());
+            var typeReference = new CodeTypeReference(isImmutableOrFrozen || !type.IsPublic ? elementType.MakeArrayType() : type);
+
+            Action createAction = () => _codeGenerator.GenerateArrayCreate(typeReference, items);
 
             if (isImmutableOrFrozen)
-                expr = new CodeMethodInvokeExpression(expr, $"To{type.GetImmutableOrFrozenTypeName()}");
+            {
+               _codeGenerator.GenerateMethodInvoke(() =>
+                    _codeGenerator.GenerateMethodReference(createAction, $"To{type.GetImmutableOrFrozenTypeName()}"), []);
+            }
+            else
+            {
+                createAction();
+            }
 
-            return expr;
+            return;
         }
 
         if (type.IsReadonlyCollection())
         {
             var typeReference =
-                new CodeCollectionTypeReference(typeof(List<>).MakeGenericType(elementType), _typeReferenceOptions);
+                new CodeCollectionTypeReference(typeof(List<>).MakeGenericType(elementType));
 
-            var expression = new CodeObjectCreateAndInitializeExpression(
-                typeReference,
-                items);
+            _codeGenerator.GenerateMethodInvoke(() => _codeGenerator.GenerateMethodReference(() => 
+               _codeGenerator.GenerateObjectCreateAndInitialize(typeReference, [], items), "AsReadOnly"), []);
 
-            return new CodeMethodInvokeExpression(expression, "AsReadOnly");
+            return;
         }
 
-        var initializeExpression = new CodeObjectCreateAndInitializeExpression(
-            new CodeCollectionTypeReference(type, _typeReferenceOptions),
-            items);
-
-        return initializeExpression;
+        _codeGenerator.GenerateObjectCreateAndInitialize(
+            new CodeCollectionTypeReference(type), [], items);
     }
 
-    private static IEnumerable<CodeExpression> ChunkMultiDimensionalArrayExpression(Array array,
-        IEnumerable<CodeExpression> enumerable)
+    private IEnumerable<Action> ChunkMultiDimensionalArrayExpression(Array array,
+        IEnumerable<Action> enumerable)
     {
         var dimensions = new int[array.Rank - 1];
 
@@ -169,24 +188,24 @@ internal sealed class CollectionVisitor : IKnownObjectVisitor
             dimensions[i] = array.GetLength(i + 1);
         }
 
-        IEnumerable<CodeExpression> result = enumerable;
+        IEnumerable<Action> result = enumerable;
 
         for (var index = dimensions.Length - 1; index >= 0; index--)
         {
             var dimension = dimensions[index];
-            result = result.Chunk(dimension).Select(x => new CodeArrayDimensionExpression(x));
+            result = result.Chunk(dimension).Select(x => (Action) (()=> _codeGenerator.GenerateCodeArrayDimension(x)));
         }
 
         return result;
     }
 
-    private CodeExpression VisitAnonymousCollection(IEnumerable enumerable)
+    private void VisitAnonymousCollection(IEnumerable enumerable)
     {
-        var items = enumerable.Cast<object>().Select(_rootObjectVisitor.Visit);
+        var items = enumerable.Cast<object>().Select(item => (Action)(() => _rootObjectVisitor.Visit(item)));
 
         if (_maxCollectionSize < int.MaxValue)
         {
-            items = items.Take(_maxCollectionSize + 1).Replace(_maxCollectionSize, CodeDomUtils.GetTooManyItemsExpression(_maxCollectionSize));
+            items = items.Take(_maxCollectionSize + 1).Replace(_maxCollectionSize, () => CodeDomUtils.WriteTooManyItemsExpression(_codeGenerator, _maxCollectionSize));
         }
 
         var type = enumerable.GetType();
@@ -201,12 +220,17 @@ internal sealed class CollectionVisitor : IKnownObjectVisitor
             items = ChunkMultiDimensionalArrayExpression((Array)enumerable, items);
         }
 
-        CodeExpression expr = new CodeArrayCreateExpression(typeReference, items.ToArray());
+        Action createAction = () => _codeGenerator.GenerateArrayCreate(typeReference, items);
 
         if (isImmutableOrFrozen || enumerable is IList && !type.IsArray)
-            expr = new CodeMethodInvokeExpression(expr, $"To{type.GetImmutableOrFrozenTypeName()}");
-
-        return expr;
+        {
+            _codeGenerator.GenerateMethodInvoke(() =>
+                _codeGenerator.GenerateMethodReference(createAction, $"To{type.GetImmutableOrFrozenTypeName()}"), []);
+        }
+        else
+        {
+            createAction();
+        }
     }
 
     private static bool IsCollection(object obj)
@@ -225,11 +249,11 @@ internal sealed class CollectionVisitor : IKnownObjectVisitor
         return new KeyValuePair<object, IEnumerable>(fieldValues[0], (IEnumerable)fieldValues[1]);
     }
 
-    private IEnumerable<CodeExpression> VisitGroupings(IEnumerable<object> objects)
+    private IEnumerable<Action> VisitGroupings(IEnumerable<object> objects)
     {
         var items = objects.Select(GetIGroupingValue)
             .SelectMany(g => g.Value.Cast<object>().Select(e => new { g.Key, Element = e }));
 
-        return items.Select(_rootObjectVisitor.Visit);
+        return items.Select(item =>(Action)(() => _rootObjectVisitor.Visit(item)));
     }
 }

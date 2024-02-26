@@ -1,21 +1,21 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Net;
 using System.Net.Sockets;
 using VarDump.CodeDom.Common;
+using VarDump.CodeDom.Compiler;
 
 namespace VarDump.Visitor.KnownTypes;
 
 internal sealed class DnsEndPointVisitor : IKnownObjectVisitor
 {
     private readonly IObjectVisitor _rootObjectVisitor;
-    private readonly CodeTypeReferenceOptions _typeReferenceOptions;
+    private readonly ICodeGenerator _codeGenerator;
 
-    public DnsEndPointVisitor(DumpOptions options, IObjectVisitor rootObjectVisitor)
+    public DnsEndPointVisitor(IObjectVisitor rootObjectVisitor, ICodeGenerator codeGenerator)
     {
         _rootObjectVisitor = rootObjectVisitor;
-        _typeReferenceOptions = options.UseTypeFullName
-            ? CodeTypeReferenceOptions.FullTypeName
-            : CodeTypeReferenceOptions.ShortTypeName;
+        _codeGenerator = codeGenerator;
     }
 
     public string Id => nameof(DnsEndPoint);
@@ -24,16 +24,20 @@ internal sealed class DnsEndPointVisitor : IKnownObjectVisitor
         return obj is DnsEndPoint;
     }
 
-    public CodeExpression Visit(object obj, Type objectType)
+    public void Visit(object obj, Type objectType)
     {
         var dnsEndPoint = (DnsEndPoint)obj;
-        return dnsEndPoint.AddressFamily == AddressFamily.Unspecified ?
-            new CodeObjectCreateExpression(new CodeTypeReference(typeof(DnsEndPoint), _typeReferenceOptions),
-                new CodePrimitiveExpression(dnsEndPoint.Host),
-                new CodePrimitiveExpression(dnsEndPoint.Port))
-            : new CodeObjectCreateExpression(new CodeTypeReference(typeof(DnsEndPoint), _typeReferenceOptions),
-                new CodePrimitiveExpression(dnsEndPoint.Host),
-                new CodePrimitiveExpression(dnsEndPoint.Port),
-                _rootObjectVisitor.Visit(dnsEndPoint.AddressFamily));
+
+        _codeGenerator.GenerateObjectCreateAndInitialize(new CodeTypeReference(typeof(DnsEndPoint)), GetConstructorArguments(), []);
+
+        IEnumerable<Action> GetConstructorArguments()
+        {
+            yield return () => _codeGenerator.GeneratePrimitive(dnsEndPoint.Host);
+            yield return () => _codeGenerator.GeneratePrimitive(dnsEndPoint.Port);
+            if (dnsEndPoint.AddressFamily != AddressFamily.Unspecified)
+            {
+                yield return () => _rootObjectVisitor.Visit(dnsEndPoint.AddressFamily);
+            }
+        }
     }
 }

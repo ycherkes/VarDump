@@ -1,17 +1,16 @@
 ﻿using System;
 using VarDump.CodeDom.Common;
+using VarDump.CodeDom.Compiler;
 
 namespace VarDump.Visitor.KnownTypes;
 
 internal sealed class GuidVisitor : IKnownObjectVisitor
 {
-    private readonly CodeTypeReferenceOptions _typeReferenceOptions;
+    private readonly ICodeGenerator _codeGenerator;
 
-    public GuidVisitor(DumpOptions options)
+    public GuidVisitor(ICodeGenerator codeGenerator)
     {
-        _typeReferenceOptions = options.UseTypeFullName
-            ? CodeTypeReferenceOptions.FullTypeName
-            : CodeTypeReferenceOptions.ShortTypeName;
+        _codeGenerator = codeGenerator;
     }
 
     public string Id => nameof(Guid);
@@ -20,10 +19,14 @@ internal sealed class GuidVisitor : IKnownObjectVisitor
         return obj is Guid;
     }
 
-    public CodeExpression Visit(object obj, Type objectType)
+    public void Visit(object obj, Type objectType)
     {
         var guid = (Guid)obj;
-        return new CodeObjectCreateExpression(new CodeTypeReference(typeof(Guid), _typeReferenceOptions),
-            new CodePrimitiveExpression(guid.ToString("D")));
+
+        _codeGenerator.GenerateObjectCreateAndInitialize(new CodeTypeReference(typeof(Guid)),
+            [
+                () => _codeGenerator.GeneratePrimitive(guid.ToString("D"))
+            ], 
+            []);
     }
 }

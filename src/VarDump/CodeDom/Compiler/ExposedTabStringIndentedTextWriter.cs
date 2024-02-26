@@ -7,13 +7,9 @@ using System.IO;
 
 namespace VarDump.CodeDom.Compiler
 {
-    internal sealed class ExposedTabStringIndentedTextWriter : IndentedTextWriter
+    internal sealed class ExposedTabStringIndentedTextWriter(TextWriter writer, string tabString)
+        : IndentedTextWriter(writer, tabString)
     {
-        public ExposedTabStringIndentedTextWriter(TextWriter writer, string tabString) : base(writer, tabString)
-        {
-            TabString = tabString ?? IndentedTextWriter.DefaultTabString;
-        }
-
         internal void InternalOutputTabs()
         {
             TextWriter inner = InnerWriter;
@@ -23,7 +19,7 @@ namespace VarDump.CodeDom.Compiler
             }
         }
 
-        internal string TabString { get; } // IndentedTextWriter doesn't expose this publicly
+        internal string TabString { get; } = tabString ?? DefaultTabString; // IndentedTextWriter doesn't expose this publicly
     }
 
     internal sealed class Indentation

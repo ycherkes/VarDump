@@ -3,6 +3,7 @@ using Microsoft.Extensions.DependencyInjection.Extensions;
 using System;
 using System.Collections.Generic;
 using VarDump.CodeDom.Common;
+using VarDump.CodeDom.Compiler;
 using VarDump.UnitTests.TestModel;
 using VarDump.Visitor;
 using VarDump.Visitor.KnownTypes;
@@ -21,12 +22,12 @@ public class KnownTypesSpec
             ServiceDescriptor.Singleton<IPerson, Person>(),
             ServiceDescriptor.Scoped<IPerson, Person>()
         };
-        
+
         var dumpOptions = DumpOptions.Default;
 
-        dumpOptions.ConfigureKnownTypes = (knownObjects, rootObjectVisitor, opts) =>
+        dumpOptions.ConfigureKnownTypes = (knownObjects, rootObjectVisitor, opts, codeGenerator) =>
         {
-            var sdv = new ServiceDescriptorVisitor(rootObjectVisitor, opts);
+            var sdv = new ServiceDescriptorVisitor(rootObjectVisitor, codeGenerator);
             knownObjects.Add(sdv.Id, sdv);
         };
 
@@ -53,9 +54,9 @@ public class KnownTypesSpec
 
         var dumpOptions = DumpOptions.Default;
 
-        dumpOptions.ConfigureKnownTypes = (knownObjects, rootObjectVisitor, opts) =>
+        dumpOptions.ConfigureKnownTypes = (knownObjects, rootObjectVisitor, opts, codeGenerator) =>
         {
-            var sdv = new ServiceDescriptorVisitor(rootObjectVisitor, opts);
+            var sdv = new ServiceDescriptorVisitor(rootObjectVisitor, codeGenerator);
             knownObjects.Add(sdv.Id, sdv);
         };
 
@@ -68,51 +69,49 @@ public class KnownTypesSpec
 ", result);
     }
 
-    private class ServiceDescriptorVisitor(IObjectVisitor rootObjectVisitor, DumpOptions options) : IKnownObjectVisitor
+    private class ServiceDescriptorVisitor(IObjectVisitor rootObjectVisitor, ICodeGenerator codeGenerator) : IKnownObjectVisitor
     {
-        private readonly CodeTypeReferenceOptions _typeReferenceOptions = options.UseTypeFullName
-            ? CodeTypeReferenceOptions.FullTypeName
-            : CodeTypeReferenceOptions.ShortTypeName;
-
         public string Id => "ServiceDescriptor";
         public bool IsSuitableFor(object obj, Type objectType)
         {
             return obj is ServiceDescriptor;
         }
 
-        public CodeExpression Visit(object obj, Type objectType)
+        public void Visit(object obj, Type objectType)
         {
             var serviceDescriptor = (ServiceDescriptor)obj;
 
             var typeParameters = new List<CodeTypeReference>
             {
-                new(serviceDescriptor.ServiceType, _typeReferenceOptions)
+                new(serviceDescriptor.ServiceType)
             };
 
             if (serviceDescriptor.ImplementationType != null)
             {
-                typeParameters.Add(new CodeTypeReference(serviceDescriptor.ImplementationType, _typeReferenceOptions));
+                typeParameters.Add(new CodeTypeReference(serviceDescriptor.ImplementationType));
             }
 
-            var parameters = new List<CodeExpression>(1);
+            var parameters = new List<Action>(1);
 
             if (serviceDescriptor.ImplementationInstance != null)
             {
-                parameters.Add(rootObjectVisitor.Visit(serviceDescriptor.ImplementationInstance));
+                parameters.Add(() => rootObjectVisitor.Visit(serviceDescriptor.ImplementationInstance));
             }
 
             if (serviceDescriptor.ImplementationFactory != null)
             {
-                parameters.Add(new CodeLambdaExpression(new CodeDefaultValueExpression(new CodeTypeReference(
-                    serviceDescriptor.ImplementationType ?? serviceDescriptor.ServiceType, _typeReferenceOptions)),
-                    new CodeVariableReferenceExpression("serviceProvider")));
+                var typeRef = new CodeTypeReference(
+                    serviceDescriptor.ImplementationType ?? serviceDescriptor.ServiceType);
+
+                parameters.Add(() => codeGenerator.GenerateLambdaExpression(() => codeGenerator.GenerateDefaultValue(typeRef), [ () => codeGenerator.GenerateVariableReference("serviceProvider")]));
+               
             }
 
-            return new CodeMethodInvokeExpression(
-                        new CodeMethodReferenceExpression(
-                            new CodeTypeReferenceExpression(new CodeTypeReference(typeof(ServiceDescriptor), _typeReferenceOptions)),
-                            serviceDescriptor.Lifetime.ToString(), typeParameters.ToArray()),
-                        parameters.ToArray());
+            codeGenerator.GenerateMethodInvoke(() => 
+                codeGenerator.GenerateMethodReference(
+                    () => codeGenerator.GenerateTypeReference(new CodeTypeReference(typeof(ServiceDescriptor))),
+                    serviceDescriptor.Lifetime.ToString(), typeParameters.ToArray()
+                    ), parameters);
         }
     }
 }

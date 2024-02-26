@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using VarDump.CodeDom.Common;
+using VarDump.CodeDom.Compiler;
 using VarDump.Utils;
 
 namespace VarDump.Visitor.KnownTypes;
@@ -11,10 +12,12 @@ namespace VarDump.Visitor.KnownTypes;
 internal sealed class GroupingVisitor : IKnownObjectVisitor
 {
     private readonly IObjectVisitor _rootObjectVisitor;
+    private readonly ICodeGenerator _codeGenerator;
 
-    public GroupingVisitor(IObjectVisitor rootObjectVisitor)
+    public GroupingVisitor(IObjectVisitor rootObjectVisitor, ICodeGenerator codeGenerator)
     {
         _rootObjectVisitor = rootObjectVisitor;
+        _codeGenerator = codeGenerator;
     }
 
     public string Id => "Grouping";
@@ -23,18 +26,24 @@ internal sealed class GroupingVisitor : IKnownObjectVisitor
         return objectType.IsGrouping();
     }
 
-    public CodeExpression Visit(object o, Type objectType)
+    public void Visit(object o, Type objectType)
     {
-        CodeExpression expr = VisitGroupings(new[] { o });
+        _codeGenerator.GenerateMethodInvoke(() => 
+                _codeGenerator.GenerateMethodReference(() => 
+                    _codeGenerator.GenerateMethodInvoke(() => 
+                            _codeGenerator.GenerateMethodReference(() => VisitGroupings(o), 
+                            "GroupBy"),
+                [
+                    GenerateKeyLambdaExpression,
+                    GenerateValueLambdaExpression
+                ]), "Single"),
+        []);
 
-        var variableReferenceExpression = new CodeVariableReferenceExpression("grp");
-        var keyLambdaExpression = new CodeLambdaExpression(new CodePropertyReferenceExpression(variableReferenceExpression, "Key"), variableReferenceExpression);
-        var valueLambdaExpression = new CodeLambdaExpression(new CodePropertyReferenceExpression(variableReferenceExpression, "Element"), variableReferenceExpression);
-
-        expr = new CodeMethodInvokeExpression(expr, "GroupBy", keyLambdaExpression, valueLambdaExpression);
-        expr = new CodeMethodInvokeExpression(expr, "Single");
-
-        return expr;
+        void GenerateVariableReference() => _codeGenerator.GenerateVariableReference("grp");
+        void GenerateKeyLambdaPropertyExpression() => _codeGenerator.GeneratePropertyReference("Key", GenerateVariableReference);
+        void GenerateKeyLambdaExpression() => _codeGenerator.GenerateLambdaExpression(GenerateKeyLambdaPropertyExpression, [GenerateVariableReference]);
+        void GenerateValueLambdaPropertyExpression() => _codeGenerator.GeneratePropertyReference("Element", GenerateVariableReference);
+        void GenerateValueLambdaExpression() => _codeGenerator.GenerateLambdaExpression(GenerateValueLambdaPropertyExpression, [GenerateVariableReference]);
     }
 
     private static KeyValuePair<object, IEnumerable> GetIGroupingValue(object o)
@@ -43,16 +52,16 @@ internal sealed class GroupingVisitor : IKnownObjectVisitor
         var fieldValues = objectType.GetFields(BindingFlags.Instance | BindingFlags.NonPublic)
             .Where(x => x.Name is "_key" or "key" or "_elements" or "elements")
             .Select(p => ReflectionUtils.GetValue(p, o))
+            .Take(2)
             .ToArray();
 
         return new KeyValuePair<object, IEnumerable>(fieldValues[0], (IEnumerable)fieldValues[1]);
     }
 
-    private CodeExpression VisitGroupings(IEnumerable<object> objects)
+    private void VisitGroupings(object @object)
     {
-        var groupingValues = objects.Select(GetIGroupingValue)
-            .SelectMany(g => g.Value.Cast<object>().Select(e => new { g.Key, Element = e }));
-
-        return _rootObjectVisitor.Visit(groupingValues);
+        var grouping = GetIGroupingValue(@object);
+        var groupingValues = grouping.Value.Cast<object>().Select(e => new { grouping.Key, Element = e });
+        _rootObjectVisitor.Visit(groupingValues);
     }
 }

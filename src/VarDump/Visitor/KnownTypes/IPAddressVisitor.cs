@@ -1,18 +1,17 @@
 ﻿using System;
 using System.Net;
 using VarDump.CodeDom.Common;
+using VarDump.CodeDom.Compiler;
 
 namespace VarDump.Visitor.KnownTypes;
 
 internal sealed class IPAddressVisitor : IKnownObjectVisitor
 {
-    private readonly CodeTypeReferenceOptions _typeReferenceOptions;
+    private readonly ICodeGenerator _codeGenerator;
 
-    public IPAddressVisitor(DumpOptions options)
+    public IPAddressVisitor(ICodeGenerator codeGenerator)
     {
-        _typeReferenceOptions = options.UseTypeFullName
-            ? CodeTypeReferenceOptions.FullTypeName
-            : CodeTypeReferenceOptions.ShortTypeName;
+        _codeGenerator = codeGenerator;
     }
 
     public string Id => nameof(IPAddress);
@@ -21,14 +20,15 @@ internal sealed class IPAddressVisitor : IKnownObjectVisitor
         return obj is IPAddress;
     }
 
-    public CodeExpression Visit(object obj, Type objectType)
+    public void Visit(object obj, Type objectType)
     {
         var ipAddress = (IPAddress)obj;
-        return new CodeMethodInvokeExpression(
-            new CodeMethodReferenceExpression(
-                new CodeTypeReferenceExpression(
-                    new CodeTypeReference(typeof(IPAddress), _typeReferenceOptions)),
-                nameof(IPAddress.Parse)),
-            new CodePrimitiveExpression(ipAddress.ToString()));
+
+        _codeGenerator.GenerateMethodInvoke(
+            () => _codeGenerator.GenerateMethodReference(
+                () => _codeGenerator.GenerateTypeReference(new CodeTypeReference(typeof(IPAddress))), nameof(IPAddress.Parse)),
+            [
+                () => _codeGenerator.GeneratePrimitive(ipAddress.ToString())
+            ]);
     }
 }

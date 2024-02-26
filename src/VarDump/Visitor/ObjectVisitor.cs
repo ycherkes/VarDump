@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using VarDump.CodeDom.Common;
+using VarDump.CodeDom.Compiler;
 using VarDump.Collections;
 using VarDump.Utils;
 using VarDump.Visitor.Descriptors;
@@ -13,11 +14,11 @@ namespace VarDump.Visitor;
 
 internal sealed class ObjectVisitor : IObjectVisitor
 {
+    private readonly ICodeGenerator _codeGenerator;
     private readonly ICollection<string> _excludeTypes;
     private readonly bool _ignoreDefaultValues;
     private readonly bool _ignoreNullValues;
     private readonly int _maxDepth;
-    private readonly CodeTypeReferenceOptions _typeReferenceOptions;
     private readonly Stack<object> _visitedObjects;
     private readonly ListSortDirection? _sortDirection;
     private readonly IObjectDescriptor _objectDescriptor;
@@ -25,15 +26,13 @@ internal sealed class ObjectVisitor : IObjectVisitor
 
     private int _depth;
 
-    public ObjectVisitor(DumpOptions options)
+    public ObjectVisitor(DumpOptions options, ICodeGenerator codeGenerator)
     {
+        _codeGenerator = codeGenerator;
         _maxDepth = options.MaxDepth;
         _ignoreDefaultValues = options.IgnoreDefaultValues;
         _ignoreNullValues = options.IgnoreNullValues;
-        _typeReferenceOptions = options.UseTypeFullName
-            ? CodeTypeReferenceOptions.FullTypeName
-            : CodeTypeReferenceOptions.ShortTypeName;
-        _excludeTypes = options.ExcludeTypes ?? new List<string>();
+        _excludeTypes = options.ExcludeTypes ?? [];
         _sortDirection = options.SortDirection;
 
         IObjectDescriptor anonymousObjectDescriptor = new ObjectPropertiesDescriptor(options.GetPropertiesBindingFlags, false);
@@ -54,38 +53,39 @@ internal sealed class ObjectVisitor : IObjectVisitor
 
         _knownTypes = new[]
         {
-            (IKnownObjectVisitor)new PrimitiveVisitor(options),
-            new TimeSpanVisitor(options),
-            new DateTimeVisitor(options),
-            new DateTimeOffsetVisitor(options, this),
-            new EnumVisitor(options),
-            new GuidVisitor(options),
-            new CultureInfoVisitor(options),
-            new TypeVisitor(options),
-            new IPAddressVisitor(options),
-            new IPEndpointVisitor(options, this),
-            new DnsEndPointVisitor(options, this),
-            new VersionVisitor(options),
-            new DateOnlyVisitor(options),
-            new TimeOnlyVisitor(options),
-            new RecordVisitor(options, this),
-            new AnonymousTypeVisitor(options, this, anonymousObjectDescriptor),
-            new KeyValuePairVisitor(options, this),
-            new TupleVisitor(options, this),
-            new ValueTupleVisitor(this),
-            new GroupingVisitor(this),
-            new DictionaryVisitor(options, this),
-            new CollectionVisitor(options, this)
+            (IKnownObjectVisitor)new PrimitiveVisitor(codeGenerator),
+            new TimeSpanVisitor(codeGenerator, options.DateTimeInstantiation),
+            new DateTimeVisitor(codeGenerator, options.DateTimeInstantiation, options.DateKind),
+            new DateTimeOffsetVisitor(this, codeGenerator, options.DateTimeInstantiation),
+            new EnumVisitor(codeGenerator),
+            new GuidVisitor(codeGenerator),
+            new CultureInfoVisitor(codeGenerator),
+            new TypeVisitor(codeGenerator),
+            new IPAddressVisitor(codeGenerator),
+            new IPEndpointVisitor(this, codeGenerator),
+            new DnsEndPointVisitor(this, codeGenerator),
+            new VersionVisitor(codeGenerator),
+            new DateOnlyVisitor(codeGenerator, options.DateTimeInstantiation),
+            new TimeOnlyVisitor(codeGenerator, options.DateTimeInstantiation),
+            new RecordVisitor(this, codeGenerator, options.UseNamedArgumentsForReferenceRecordTypes),
+            new AnonymousTypeVisitor(this, anonymousObjectDescriptor, codeGenerator),
+            new KeyValuePairVisitor(this, codeGenerator),
+            new TupleVisitor(this, codeGenerator),
+            new ValueTupleVisitor(this, codeGenerator),
+            new GroupingVisitor(this, codeGenerator),
+            new DictionaryVisitor(this, codeGenerator, options.MaxCollectionSize),
+            new CollectionVisitor(this, codeGenerator, options.MaxCollectionSize),
         }.ToOrderedDictionary(v => v.Id);
 
-        options.ConfigureKnownTypes?.Invoke(_knownTypes, this, options);
+        options.ConfigureKnownTypes?.Invoke(_knownTypes, this, options, codeGenerator);
     }
 
-    public CodeExpression Visit(object @object)
+    public void Visit(object @object)
     {
         if (IsMaxDepth())
         {
-            return CodeDomUtils.GetMaxDepthExpression(@object, _typeReferenceOptions);
+            CodeDomUtils.WriteMaxDepthExpression(@object, _codeGenerator);
+            return;
         }
 
         try
@@ -98,10 +98,11 @@ internal sealed class ObjectVisitor : IObjectVisitor
             
             if (knownObjectVisitor != null)
             {
-                return knownObjectVisitor.Visit(@object, objectType);
+                knownObjectVisitor.Visit(@object, objectType);
+                return;
             }
 
-            return VisitObject(@object, objectType);
+            VisitObject(@object, objectType);
         }
         finally
         {
@@ -109,11 +110,12 @@ internal sealed class ObjectVisitor : IObjectVisitor
         }
     }
 
-    private CodeExpression VisitObject(object o, Type objectType)
+    private void VisitObject(object o, Type objectType)
     {
         if (IsVisited(o))
         {
-            return CodeDomUtils.GetCircularReferenceDetectedExpression();
+            CodeDomUtils.WriteCircularReferenceDetectedExpression(_codeGenerator);
+            return;
         }
 
         PushVisited(o);
@@ -132,19 +134,21 @@ internal sealed class ObjectVisitor : IObjectVisitor
             }
 
             var constructorParams = membersAndConstructorParams
-                .Where(mc => mc.ReflectionType == ReflectionType.ConstructorParameter)
-                .Select(cp => Visit(cp.Value));
+                    .Where(mc => mc.ReflectionType == ReflectionType.ConstructorParameter)
+                    .Select(cp => (Action)(() => Visit(cp.Value)));
 
-            var initializeExpressions = members
+            var initializeActions = members
                     .Where(pv => !_excludeTypes.Contains(pv.Type.FullName) &&
                                  (!_ignoreNullValues || _ignoreNullValues && pv.Value != null) &&
                                  (!_ignoreDefaultValues || !pv.Type.IsValueType || _ignoreDefaultValues &&
                                      ReflectionUtils.GetDefaultValue(pv.Type)?.Equals(pv.Value) != true))
-                    .Select(pv => (CodeExpression)new CodeAssignExpression(new CodePropertyReferenceExpression(null, pv.Name), Visit(pv.Value)));
+                    .Select(pv => (Action)(() => _codeGenerator.GenerateCodeAssign(
+                        () => _codeGenerator.GeneratePropertyReference(pv.Name, null),
+                        () => Visit(pv.Value))));
 
-            var result = new CodeObjectCreateAndInitializeExpression(new CodeTypeReference(objectType, _typeReferenceOptions), initializeExpressions.ToArray(), constructorParams.ToArray());
-
-            return result;
+            _codeGenerator.GenerateObjectCreateAndInitialize(new CodeTypeReference(objectType),
+                constructorParams,
+                initializeActions);
         }
         finally
         {

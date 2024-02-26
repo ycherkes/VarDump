@@ -3,21 +3,19 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using VarDump.CodeDom.Common;
+using VarDump.CodeDom.Compiler;
 
 namespace VarDump.Visitor.KnownTypes;
 
 internal sealed class TimeSpanVisitor : IKnownObjectVisitor
 {
-    private readonly CodeTypeReferenceOptions _typeReferenceOptions;
+    private readonly ICodeGenerator _codeGenerator;
     private readonly DateTimeInstantiation _dateTimeInstantiation;
 
-    public TimeSpanVisitor(DumpOptions options)
+    public TimeSpanVisitor(ICodeGenerator codeGenerator, DateTimeInstantiation dateTimeInstantiation)
     {
-        _typeReferenceOptions = options.UseTypeFullName
-            ? CodeTypeReferenceOptions.FullTypeName
-            : CodeTypeReferenceOptions.ShortTypeName;
-
-        _dateTimeInstantiation = options.DateTimeInstantiation;
+        _codeGenerator = codeGenerator;
+        _dateTimeInstantiation = dateTimeInstantiation;
     }
 
     public string Id => nameof(TimeSpan);
@@ -26,7 +24,7 @@ internal sealed class TimeSpanVisitor : IKnownObjectVisitor
         return obj is TimeSpan;
     }
 
-    public CodeExpression Visit(object obj, Type objectType)
+    public void Visit(object obj, Type objectType)
     {
         var timeSpan = (TimeSpan)obj;
 
@@ -37,14 +35,14 @@ internal sealed class TimeSpanVisitor : IKnownObjectVisitor
             { TimeSpan.Zero, nameof(TimeSpan.Zero) }
         };
 
-        var timeSpanCodeTypeReference = new CodeTypeReference(typeof(TimeSpan), _typeReferenceOptions);
+        var timeSpanCodeTypeReference = new CodeTypeReference(typeof(TimeSpan));
 
         if (specialValuesDictionary.TryGetValue(timeSpan, out var name))
-            return new CodeFieldReferenceExpression
-            (
-                new CodeTypeReferenceExpression(timeSpanCodeTypeReference),
-                name
-            );
+        {
+            _codeGenerator.GenerateFieldReference(name, () => _codeGenerator.GenerateTypeReference(new CodeTypeReference(objectType)));
+
+            return;
+        }
 
         var valuesCollection = new Dictionary<string, long>
         {
@@ -58,55 +56,57 @@ internal sealed class TimeSpanVisitor : IKnownObjectVisitor
         var nonZeroValues = valuesCollection.Where(v => v.Value > 0).ToArray();
 
         if (nonZeroValues.Length == 1)
-            return new CodeMethodInvokeExpression
-            (
-                new CodeMethodReferenceExpression(
-                    new CodeTypeReferenceExpression(timeSpanCodeTypeReference),
-                    nonZeroValues[0].Key),
-                new CodePrimitiveExpression(nonZeroValues[0].Value)
-            );
+        {
+            _codeGenerator.GenerateMethodInvoke(() => _codeGenerator.GenerateMethodReference(
+                () => _codeGenerator.GenerateTypeReference(timeSpanCodeTypeReference), nonZeroValues[0].Key), 
+                [() => _codeGenerator.GeneratePrimitive(nonZeroValues[0].Value)]);
+            
+            return;
+        }
 
         if (timeSpan.Ticks % TimeSpan.TicksPerMillisecond != 0)
-            return new CodeMethodInvokeExpression
-            (
-                new CodeMethodReferenceExpression(
-                    new CodeTypeReferenceExpression(timeSpanCodeTypeReference),
-                    nameof(TimeSpan.FromTicks)),
-                new CodePrimitiveExpression(timeSpan.Ticks)
-            );
+        {
+            _codeGenerator.GenerateMethodInvoke(
+                () => _codeGenerator.GenerateMethodReference(
+                    () => _codeGenerator.GenerateTypeReference(timeSpanCodeTypeReference), nameof(TimeSpan.FromTicks)),
+                [() => _codeGenerator.GeneratePrimitive(timeSpan.Ticks)]);
+
+            return;
+        }
 
         if (_dateTimeInstantiation == DateTimeInstantiation.Parse)
         {
-            return new CodeMethodInvokeExpression
-            (
-                new CodeMethodReferenceExpression(
-                    new CodeTypeReferenceExpression(timeSpanCodeTypeReference),
-                    nameof(TimeSpan.ParseExact)),
-                new CodePrimitiveExpression(timeSpan.ToString("c")),
-                new CodePrimitiveExpression("c"),
-                new CodeFieldReferenceExpression(
-                    new CodeTypeReferenceExpression(
-                        new CodeTypeReference(typeof(CultureInfo), _typeReferenceOptions)),
-                    nameof(CultureInfo.InvariantCulture)),
-                new CodeFieldReferenceExpression(
-                    new CodeTypeReferenceExpression(
-                        new CodeTypeReference(typeof(TimeSpanStyles), _typeReferenceOptions)),
-                    nameof(TimeSpanStyles.None))
-            );
+            _codeGenerator.GenerateMethodInvoke(() => _codeGenerator.GenerateMethodReference(
+                    () => _codeGenerator.GenerateTypeReference(timeSpanCodeTypeReference), nameof(TimeSpan.ParseExact)),
+                [
+                    () => _codeGenerator.GeneratePrimitive(timeSpan.ToString("c")),
+                    () => _codeGenerator.GeneratePrimitive("c"),
+                    () => _codeGenerator.GenerateFieldReference(nameof(CultureInfo.InvariantCulture),
+                        () => _codeGenerator.GenerateTypeReference(new CodeTypeReference(typeof(CultureInfo)))),
+                    () => _codeGenerator.GenerateFieldReference(nameof(TimeSpanStyles.None),
+                        () => _codeGenerator.GenerateTypeReference(new CodeTypeReference(typeof(TimeSpanStyles))))
+                ]);
+
+            return;
         }
 
-        var days = new CodePrimitiveExpression(timeSpan.Days);
-        var hours = new CodePrimitiveExpression(timeSpan.Hours);
-        var minutes = new CodePrimitiveExpression(timeSpan.Minutes);
-        var seconds = new CodePrimitiveExpression(timeSpan.Seconds);
-        var milliseconds = new CodePrimitiveExpression(timeSpan.Milliseconds);
-
-        if (timeSpan.Days == 0 && timeSpan.Milliseconds == 0)
-            return new CodeObjectCreateExpression(timeSpanCodeTypeReference, hours, minutes, seconds);
+        if (timeSpan is { Days: 0, Milliseconds: 0 })
+        {
+            _codeGenerator.GenerateObjectCreateAndInitialize(timeSpanCodeTypeReference, [GenerateHoursAction, GenerateMinutesAction, GenerateSecondsAction], []);
+            return;
+        }
 
         if (timeSpan.Milliseconds == 0)
-            return new CodeObjectCreateExpression(timeSpanCodeTypeReference, days, hours, minutes, seconds);
+        {
+            _codeGenerator.GenerateObjectCreateAndInitialize(timeSpanCodeTypeReference, [GenerateDaysAction, GenerateHoursAction, GenerateMinutesAction, GenerateSecondsAction], []);
+        }
 
-        return new CodeObjectCreateExpression(timeSpanCodeTypeReference, days, hours, minutes, seconds, milliseconds);
+        _codeGenerator.GenerateObjectCreateAndInitialize(timeSpanCodeTypeReference, [GenerateDaysAction, GenerateHoursAction, GenerateMinutesAction, GenerateSecondsAction, GenerateMillisecondsAction], []);
+
+        void GenerateSecondsAction() => _codeGenerator.GeneratePrimitive(timeSpan.Seconds);
+        void GenerateMinutesAction() => _codeGenerator.GeneratePrimitive(timeSpan.Minutes);
+        void GenerateHoursAction() => _codeGenerator.GeneratePrimitive(timeSpan.Hours);
+        void GenerateDaysAction() => _codeGenerator.GeneratePrimitive(timeSpan.Days);
+        void GenerateMillisecondsAction() => _codeGenerator.GeneratePrimitive(timeSpan.Milliseconds);
     }
 }

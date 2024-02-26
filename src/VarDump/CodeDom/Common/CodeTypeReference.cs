@@ -9,31 +9,18 @@ using System.Globalization;
 
 namespace VarDump.CodeDom.Common;
 
-public enum CodeTypeReferenceOptions
-{
-    FullTypeName = 0x00000000,
-    GlobalReference = 0x00000001,
-    GenericTypeParameter = 0x00000002,
-    ShortTypeName = 0x00000004
-}
-
-internal class CodeTypeReference : CodeObject
+public class CodeTypeReference
 {
     private string _baseType;
-    private readonly bool _isInterface;
-    private CodeTypeReferenceCollection _typeArguments;
-    private bool _needsFixup = false;
+    private List<CodeTypeReference> _typeArguments;
+    private bool _needsFixup;
 
-    public CodeTypeReference()
+    internal CodeTypeReference()
     {
-        _baseType = string.Empty;
-        ArrayRank = 0;
-        ArrayElementType = null;
     }
 
-    public CodeTypeReference(Type type, CodeTypeReferenceOptions codeTypeReferenceOption)
+    public CodeTypeReference(Type type)
     {
-        Options = codeTypeReferenceOption;
         if (type == null)
         {
             throw new ArgumentNullException(nameof(type));
@@ -42,7 +29,7 @@ internal class CodeTypeReference : CodeObject
         if (type.IsArray)
         {
             ArrayRank = type.GetArrayRank();
-            ArrayElementType = new CodeTypeReference(type.GetElementType(), codeTypeReferenceOption);
+            ArrayElementType = new CodeTypeReference(type.GetElementType());
             _baseType = null;
         }
         else
@@ -51,17 +38,6 @@ internal class CodeTypeReference : CodeObject
             ArrayRank = 0;
             ArrayElementType = null;
         }
-
-        _isInterface = type.IsInterface;
-    }
-
-    public CodeTypeReference(Type type) : this(type, CodeTypeReferenceOptions.GenericTypeParameter)
-    {
-    }
-
-    public CodeTypeReference(string typeName, CodeTypeReferenceOptions codeTypeReferenceOption)
-    {
-        Initialize(typeName, codeTypeReferenceOption);
     }
 
     public CodeTypeReference(string typeName)
@@ -93,7 +69,7 @@ internal class CodeTypeReference : CodeObject
             Type[] genericArgs = type.GetGenericArguments();
             for (int i = 0; i < genericArgs.Length; i++)
             {
-                TypeArguments.Add(new CodeTypeReference(genericArgs[i], Options));
+                TypeArguments.Add(new CodeTypeReference(genericArgs[i]));
             }
         }
         else if (!type.IsGenericTypeDefinition)
@@ -109,12 +85,6 @@ internal class CodeTypeReference : CodeObject
 
     private void Initialize(string typeName)
     {
-        Initialize(typeName, Options);
-    }
-
-    private void Initialize(string typeName, CodeTypeReferenceOptions options)
-    {
-        Options = options;
         if (string.IsNullOrEmpty(typeName))
         {
             typeName = typeof(void).FullName;
@@ -217,7 +187,7 @@ internal class CodeTypeReference : CodeObject
                 while (subTypeNames.Count > 0)
                 {
                     string name = RipOffAssemblyInformationFromTypeName(subTypeNames.Pop());
-                    typeArgumentList.Add(new CodeTypeReference(name, options));
+                    typeArgumentList.Add(new CodeTypeReference(name));
                 }
                 end = current - 1;
             }
@@ -232,7 +202,7 @@ internal class CodeTypeReference : CodeObject
 
         if (q.Count > 0)
         {
-            CodeTypeReference type = new CodeTypeReference(typeName.Substring(0, end + 1), options);
+            CodeTypeReference type = new CodeTypeReference(typeName.Substring(0, end + 1));
 
             for (int i = 0; i < typeArgumentList.Count; i++)
             {
@@ -273,17 +243,10 @@ internal class CodeTypeReference : CodeObject
 
     public CodeTypeReference(string typeName, params CodeTypeReference[] typeArguments) : this(typeName)
     {
-        if (typeArguments != null && typeArguments.Length > 0)
+        if (typeArguments is { Length: > 0 })
         {
             TypeArguments.AddRange(typeArguments);
         }
-    }
-
-    public CodeTypeReference(string baseType, int rank)
-    {
-        _baseType = null;
-        ArrayRank = rank;
-        ArrayElementType = new CodeTypeReference(baseType);
     }
 
     public CodeTypeReference(CodeTypeReference arrayType, int rank)
@@ -325,9 +288,7 @@ internal class CodeTypeReference : CodeObject
         }
     }
 
-    public CodeTypeReferenceOptions Options { get; set; }
-
-    public CodeTypeReferenceCollection TypeArguments
+    public List<CodeTypeReference> TypeArguments
     {
         get
         {
@@ -336,16 +297,9 @@ internal class CodeTypeReference : CodeObject
                 return ArrayElementType.TypeArguments;
             }
 
-            if (_typeArguments == null)
-            {
-                _typeArguments = new CodeTypeReferenceCollection();
-            }
-
-            return _typeArguments;
+            return _typeArguments ??= [];
         }
     }
-
-    internal bool IsInterface => _isInterface; // Note that this only works correctly if the Type ctor was used. Otherwise, it's always false.
 
     //
     // The string for generic type argument might contain assembly information and square bracket pair.

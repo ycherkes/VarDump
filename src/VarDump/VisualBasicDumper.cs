@@ -3,7 +3,6 @@ using System.IO;
 using VarDump.CodeDom.Common;
 using VarDump.CodeDom.Compiler;
 using VarDump.CodeDom.VisualBasic;
-using VarDump.Extensions;
 using VarDump.Utils;
 using VarDump.Visitor;
 
@@ -46,20 +45,18 @@ public class VisualBasicDumper : IDumper
 
     private void DumpImpl(object obj, TextWriter textWriter)
     {
-        var objectVisitor = new ObjectVisitor(_options);
+        ICodeGenerator codeGenerator = new VBCodeGenerator(textWriter, new CodeGeneratorOptions { UseFullTypeName = _options.UseTypeFullName });
 
-        var expression = objectVisitor.Visit(obj);
+        var objectVisitor = new ObjectVisitor(_options, codeGenerator);
 
-        CodeObject codeObject = _options.GenerateVariableInitializer
-            ? new CodeVariableDeclarationStatement(new CodeImplicitlyTypedTypeReference(),
-                obj != null ? ReflectionUtils.ComposeVisualBasicVariableName(obj.GetType()) : "nullValue")
-            {
-                InitExpression = expression
-            }
-            : expression;
-
-        ICodeGenerator generator = new VBCodeGenerator();
-
-        generator.GenerateCode(codeObject, textWriter, new CodeGeneratorOptions());
+        if (_options.GenerateVariableInitializer)
+        {
+            codeGenerator.GenerateVariableDeclarationStatement(new CodeImplicitlyTypedTypeReference(),
+                obj != null ? ReflectionUtils.ComposeVisualBasicVariableName(obj.GetType()) : "nullValue", () => objectVisitor.Visit(obj));
+        }
+        else
+        {
+            objectVisitor.Visit(obj);
+        }
     }
 }

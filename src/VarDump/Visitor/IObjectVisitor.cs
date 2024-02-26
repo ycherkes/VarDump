@@ -1,10 +1,8 @@
-﻿using VarDump.CodeDom.Common;
+﻿namespace VarDump.Visitor;
 
-namespace VarDump.Visitor;
-
-internal interface IObjectVisitor
+public interface IObjectVisitor
 {
-    CodeExpression Visit(object @object);
+    void Visit(object @object);
     void PushVisited(object value);
     void PopVisited();
     bool IsVisited(object value);

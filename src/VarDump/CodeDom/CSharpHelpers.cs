@@ -41,24 +41,24 @@ namespace VarDump.CodeDom
             return name;
         }
 
-        private static readonly string[][] s_keywords = {
+        private static readonly string[][] s_keywords = [
             null,           // 1 character
-            new[] {  // 2 characters
+            [  // 2 characters
                 "as",
                 "do",
                 "if",
                 "in",
                 "is",
-            },
-            new[] {  // 3 characters
+            ],
+            [  // 3 characters
                 "for",
                 "int",
                 "new",
                 "out",
                 "ref",
                 "try",
-            },
-            new[] {  // 4 characters
+            ],
+            [  // 4 characters
                 "base",
                 "bool",
                 "byte",
@@ -74,8 +74,8 @@ namespace VarDump.CodeDom
                 "true",
                 "uint",
                 "void",
-            },
-            new[] {  // 5 characters
+            ],
+            [  // 5 characters
                 "break",
                 "catch",
                 "class",
@@ -92,8 +92,8 @@ namespace VarDump.CodeDom
                 "where",
                 "while",
                 "yield",
-            },
-            new[] {  // 6 characters
+            ],
+            [  // 6 characters
                 "double",
                 "extern",
                 "object",
@@ -109,8 +109,8 @@ namespace VarDump.CodeDom
                 "typeof",
                 "unsafe",
                 "ushort",
-            },
-            new[] {  // 7 characters
+            ],
+            [  // 7 characters
                 "checked",
                 "decimal",
                 "default",
@@ -119,8 +119,8 @@ namespace VarDump.CodeDom
                 "partial",
                 "private",
                 "virtual",
-            },
-            new[] {  // 8 characters
+            ],
+            [  // 8 characters
                 "abstract",
                 "continue",
                 "delegate",
@@ -131,8 +131,8 @@ namespace VarDump.CodeDom
                 "override",
                 "readonly",
                 "volatile",
-            },
-            new[] {  // 9 characters
+            ],
+            [  // 9 characters
                 "__arglist",
                 "__makeref",
                 "__reftype",
@@ -140,12 +140,12 @@ namespace VarDump.CodeDom
                 "namespace",
                 "protected",
                 "unchecked",
-            },
-            new[] {  // 10 characters
+            ],
+            [  // 10 characters
                 "__refvalue",
                 "stackalloc",
-            },
-        };
+            ],
+        ];
 
         internal static bool IsKeyword(string value)
         {

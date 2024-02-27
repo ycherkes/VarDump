@@ -1,7 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Net;
-using System.Net.Sockets;
 using VarDump.CodeDom.Common;
 using VarDump.CodeDom.Compiler;
 
@@ -9,12 +7,10 @@ namespace VarDump.Visitor.KnownTypes;
 
 internal sealed class UriVisitor : IKnownObjectVisitor
 {
-    private readonly IObjectVisitor _rootObjectVisitor;
     private readonly IDotnetCodeGenerator _codeGenerator;
 
-    public UriVisitor(IObjectVisitor rootObjectVisitor, IDotnetCodeGenerator codeGenerator)
+    public UriVisitor(IDotnetCodeGenerator codeGenerator)
     {
-        _rootObjectVisitor = rootObjectVisitor;
         _codeGenerator = codeGenerator;
     }
 

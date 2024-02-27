@@ -38,7 +38,7 @@ internal sealed class DictionaryVisitor : IKnownObjectVisitor
         IDictionary dict = (IDictionary)obj;
         if (_rootObjectVisitor.IsVisited(dict))
         {
-            CodeDomUtils.WriteCircularReferenceDetectedExpression(_codeGenerator);
+            _codeGenerator.WriteCircularReferenceDetected();
             return;
         }
 
@@ -70,7 +70,7 @@ internal sealed class DictionaryVisitor : IKnownObjectVisitor
 
         if (_maxCollectionSize < int.MaxValue)
         {
-            items = items.Take(_maxCollectionSize + 1).Replace(_maxCollectionSize, () => CodeDomUtils.WriteTooManyItemsExpression(_codeGenerator, _maxCollectionSize));
+            items = items.Take(_maxCollectionSize + 1).Replace(_maxCollectionSize, () => _codeGenerator.WriteTooManyItems(_maxCollectionSize));
         }
 
         var type = dict.GetType();
@@ -104,7 +104,7 @@ internal sealed class DictionaryVisitor : IKnownObjectVisitor
 
         if (_maxCollectionSize < int.MaxValue)
         {
-            items = items.Take(_maxCollectionSize + 1).Replace(_maxCollectionSize, () => CodeDomUtils.WriteTooManyItemsExpression(_codeGenerator, _maxCollectionSize));
+            items = items.Take(_maxCollectionSize + 1).Replace(_maxCollectionSize, () => _codeGenerator.WriteTooManyItems(_maxCollectionSize));
         }
         
         var type = dictionary.GetType();

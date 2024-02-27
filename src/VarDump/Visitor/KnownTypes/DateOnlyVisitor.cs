@@ -29,7 +29,7 @@ internal sealed class DateOnlyVisitor : IKnownObjectVisitor
 
         if (dayNumber == null)
         {
-            CodeDomUtils.WriteErrorDetectedExpression(_codeGenerator, "Wrong DateOnly struct");
+            _codeGenerator.WriteErrorDetected("Wrong DateOnly struct");
             return;
         }
 

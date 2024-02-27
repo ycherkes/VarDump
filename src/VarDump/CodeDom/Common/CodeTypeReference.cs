@@ -6,6 +6,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
+using System.Linq;
 
 namespace VarDump.CodeDom.Common;
 
@@ -66,11 +67,7 @@ public class CodeTypeReference
         // pick up the type arguments from an instantiated generic type but not an open one    
         if (type.IsGenericType && !type.ContainsGenericParameters)
         {
-            Type[] genericArgs = type.GetGenericArguments();
-            for (int i = 0; i < genericArgs.Length; i++)
-            {
-                TypeArguments.Add(new CodeTypeReference(genericArgs[i]));
-            }
+            TypeArguments.AddRange(type.GetGenericArguments().Select(x => new CodeTypeReference(x)));
         }
         else if (!type.IsGenericTypeDefinition)
         {
@@ -204,10 +201,7 @@ public class CodeTypeReference
         {
             CodeTypeReference type = new CodeTypeReference(typeName.Substring(0, end + 1));
 
-            for (int i = 0; i < typeArgumentList.Count; i++)
-            {
-                type.TypeArguments.Add(typeArgumentList[i]);
-            }
+            type.TypeArguments.AddRange(typeArgumentList);
 
             while (q.Count > 1)
             {
@@ -222,10 +216,7 @@ public class CodeTypeReference
         }
         else if (typeArgumentList.Count > 0)
         {
-            for (int i = 0; i < typeArgumentList.Count; i++)
-            {
-                TypeArguments.Add(typeArgumentList[i]);
-            }
+            TypeArguments.AddRange(typeArgumentList);
 
             _baseType = typeName.Substring(0, end + 1);
         }

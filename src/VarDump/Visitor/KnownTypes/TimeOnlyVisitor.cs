@@ -29,7 +29,7 @@ internal sealed class TimeOnlyVisitor : IKnownObjectVisitor
 
         if (ticks == null)
         {
-            CodeDomUtils.WriteErrorDetectedExpression(_codeGenerator, "Wrong TimeOnly struct");
+            _codeGenerator.WriteErrorDetected("Wrong TimeOnly struct");
             return;
         }
 

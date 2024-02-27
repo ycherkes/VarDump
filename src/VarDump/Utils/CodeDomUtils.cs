@@ -6,7 +6,7 @@ namespace VarDump.Utils;
 
 internal static class CodeDomUtils
 {
-    public static void WriteErrorDetectedExpression(ICodeGenerator codeGenerator, string errorMessage)
+    public static void WriteErrorDetected(this ICodeGenerator codeGenerator, string errorMessage)
     {
         codeGenerator.GeneratePrimitive(null);
 
@@ -15,7 +15,7 @@ internal static class CodeDomUtils
         codeGenerator.GenerateComment(errorMessage, true);
     }
 
-    public static void WriteCircularReferenceDetectedExpression(ICodeGenerator codeGenerator)
+    public static void WriteCircularReferenceDetected(this ICodeGenerator codeGenerator)
     {
         codeGenerator.GeneratePrimitive(null);
 
@@ -24,12 +24,12 @@ internal static class CodeDomUtils
         codeGenerator.GenerateComment("Circular reference detected", true);
     }
 
-    public static void WriteTooManyItemsExpression(ICodeGenerator codeGenerator, int maxCollectionSize)
+    public static void WriteTooManyItems(this ICodeGenerator codeGenerator, int maxCollectionSize)
     {
         codeGenerator.GenerateComment($"Too many items (> {maxCollectionSize}). Consider increasing the {nameof(DumpOptions.MaxCollectionSize)} option.", noNewLine: true);
     }
 
-    public static void WriteMaxDepthExpression(object @object, ICodeGenerator codeGenerator)
+    public static void WriteMaxDepthExpression(this ICodeGenerator codeGenerator, object @object)
     {
         if (@object == null || @object.GetType().IsAnonymousType())
         {

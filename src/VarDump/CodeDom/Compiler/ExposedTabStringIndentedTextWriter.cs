@@ -38,22 +38,24 @@ namespace VarDump.CodeDom.Compiler
         {
             get
             {
-                if (_s == null)
+                if (_s != null)
                 {
-                    string tabString = _writer.TabString;
+                    return _s;
+                }
 
-                    switch (_indent)
-                    {
-                        case 0: _s = string.Empty; break;
-                        case 1: _s = tabString; break;
-                        case 2: _s = tabString + tabString; break;
-                        case 3: _s = tabString + tabString + tabString; break;
-                        case 4: _s = tabString + tabString + tabString + tabString; break;
-                        default:
-                            var args = new string[_indent];
-                            for (int i = 0; i < args.Length; i++) args[i] = tabString;
-                            return string.Concat(args);
-                    }
+                string tabString = _writer.TabString;
+
+                switch (_indent)
+                {
+                    case 0: _s = string.Empty; break;
+                    case 1: _s = tabString; break;
+                    case 2: _s = tabString + tabString; break;
+                    case 3: _s = tabString + tabString + tabString; break;
+                    case 4: _s = tabString + tabString + tabString + tabString; break;
+                    default:
+                        var args = new string[_indent];
+                        for (int i = 0; i < args.Length; i++) args[i] = tabString;
+                        return string.Concat(args);
                 }
 
                 return _s;

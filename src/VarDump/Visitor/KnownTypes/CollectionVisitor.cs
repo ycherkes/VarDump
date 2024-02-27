@@ -40,7 +40,7 @@ internal sealed class CollectionVisitor : IKnownObjectVisitor
         IEnumerable collection = (IEnumerable)obj;
         if (_rootObjectVisitor.IsVisited(collection))
         {
-            CodeDomUtils.WriteCircularReferenceDetectedExpression(_codeGenerator);
+            _codeGenerator.WriteCircularReferenceDetected();
             return;
         }
 
@@ -78,7 +78,7 @@ internal sealed class CollectionVisitor : IKnownObjectVisitor
 
         if (_maxCollectionSize < int.MaxValue)
         {
-            items = items.Take(_maxCollectionSize + 1).Replace(_maxCollectionSize, () => CodeDomUtils.WriteTooManyItemsExpression(_codeGenerator, _maxCollectionSize));
+            items = items.Take(_maxCollectionSize + 1).Replace(_maxCollectionSize, () => _codeGenerator.WriteTooManyItems(_maxCollectionSize));
         }
         
         var isLookup = type.IsLookup();
@@ -130,7 +130,7 @@ internal sealed class CollectionVisitor : IKnownObjectVisitor
 
         if (_maxCollectionSize < int.MaxValue)
         {
-            items = items.Take(_maxCollectionSize + 1).Replace(_maxCollectionSize, () => CodeDomUtils.WriteTooManyItemsExpression(_codeGenerator, _maxCollectionSize));
+            items = items.Take(_maxCollectionSize + 1).Replace(_maxCollectionSize, () => _codeGenerator.WriteTooManyItems(_maxCollectionSize));
         }
 
         var type = enumerable.GetType();
@@ -204,7 +204,7 @@ internal sealed class CollectionVisitor : IKnownObjectVisitor
 
         if (_maxCollectionSize < int.MaxValue)
         {
-            items = items.Take(_maxCollectionSize + 1).Replace(_maxCollectionSize, () => CodeDomUtils.WriteTooManyItemsExpression(_codeGenerator, _maxCollectionSize));
+            items = items.Take(_maxCollectionSize + 1).Replace(_maxCollectionSize, () => _codeGenerator.WriteTooManyItems(_maxCollectionSize));
         }
 
         var type = enumerable.GetType();

@@ -11,26 +11,44 @@ namespace VarDump.CodeDom.Compiler
     public interface ICodeGenerator
     {
         void GenerateArrayCreate(CodeTypeReference typeReference, IEnumerable<Action> generateInitializers, int size = 0);
-        void GenerateCodeArrayDimension(IEnumerable<Action> initializers);
-        void GenerateFlagsBinaryOperator(CodeBinaryOperatorType @operator, IEnumerable<Action> generateOperandActions);
         void GenerateCast(CodeTypeReference typeReference, Action generateAction);
-        void GenerateFieldReference(string fieldName, Action generateTargetObjectAction);
-        void GenerateVariableReference(string variableName);
-        void GenerateMethodInvoke(Action methodReferenceAction, IEnumerable<Action> parametersActions);
-        void GenerateMethodReference(Action targetObject, string methodName, params CodeTypeReference[] typeParameters);
-        void GenerateValueTupleCreate(IEnumerable<Action> actions);
-        void GenerateCodeImplicitKeyValuePairCreate(Action generateKeyAction, Action generateValueAction);
-        void GenerateLambdaExpression(Action generateLambda, Action[] generateParameters);
-        void GenerateObjectCreateAndInitialize(CodeTypeReference type, IEnumerable<Action> generateParametersActions, IEnumerable<Action> generateInitializeActions);
-        void GenerateNamedArgument(string argumentName, Action generateValue);
+
+        void GenerateCodeArrayDimension(IEnumerable<Action> initializers);
         void GenerateCodeAssign(Action left, Action right);
-        void GeneratePrimitive(object obj);
-        void GenerateDefaultValue(CodeTypeReference typeRef);
-        void GeneratePropertyReference(string propertyName, Action targetObjectAction);
-        void GenerateTypeReference(CodeTypeReference typeReference);
-        void GenerateTypeOf(CodeTypeReference e);
+
+        void GenerateCodeImplicitKeyValuePairCreate(Action generateKeyAction, Action generateValueAction);
+
         void GenerateComment(string comment, bool noNewLine);
-        void GenerateVariableDeclarationStatement(CodeTypeReference typeReference, string variableName, Action initAction);
+
+        void GenerateDefaultValue(CodeTypeReference typeRef);
+
+        void GenerateFieldReference(string fieldName, Action generateTargetObjectAction);
+
+        void GenerateFlagsBinaryOperator(CodeBinaryOperatorType @operator, IEnumerable<Action> generateOperandActions);
+        void GenerateLambdaExpression(Action generateLambda, Action[] generateParameters);
+
+        void GenerateMethodInvoke(Action methodReferenceAction, IEnumerable<Action> parametersActions);
+
+        void GenerateMethodReference(Action targetObject, string methodName, params CodeTypeReference[] typeParameters);
+
+        void GenerateNamedArgument(string argumentName, Action generateValue);
+
+        void GenerateObjectCreateAndInitialize(CodeTypeReference type, IEnumerable<Action> generateParametersActions, IEnumerable<Action> generateInitializeActions);
+
+        void GeneratePrimitive(object obj);
+
+        void GeneratePropertyReference(string propertyName, Action targetObjectAction);
+
         void GenerateSeparator();
+
+        void GenerateTypeOf(CodeTypeReference e);
+
+        void GenerateTypeReference(CodeTypeReference typeReference);
+
+        void GenerateValueTupleCreate(IEnumerable<Action> actions);
+
+        void GenerateVariableDeclarationStatement(CodeTypeReference typeReference, string variableName, Action initAction);
+
+        void GenerateVariableReference(string variableName);
     }
 }

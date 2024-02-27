@@ -84,7 +84,7 @@ internal sealed class ObjectVisitor : IObjectVisitor
     {
         if (IsMaxDepth())
         {
-            CodeDomUtils.WriteMaxDepthExpression(@object, _codeGenerator);
+            _codeGenerator.WriteMaxDepthExpression(@object);
             return;
         }
 
@@ -114,7 +114,7 @@ internal sealed class ObjectVisitor : IObjectVisitor
     {
         if (IsVisited(o))
         {
-            CodeDomUtils.WriteCircularReferenceDetectedExpression(_codeGenerator);
+            _codeGenerator.WriteCircularReferenceDetected();
             return;
         }
 

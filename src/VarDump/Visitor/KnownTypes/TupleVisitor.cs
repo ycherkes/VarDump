@@ -27,7 +27,7 @@ internal sealed class TupleVisitor : IKnownObjectVisitor
     {
         if (_rootObjectVisitor.IsVisited(o))
         {
-            CodeDomUtils.WriteCircularReferenceDetectedExpression(_codeGenerator);
+            _codeGenerator.WriteCircularReferenceDetected();
             return;
         }
 

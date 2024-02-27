@@ -73,6 +73,7 @@ internal sealed class ObjectVisitor : IObjectVisitor
             new KeyValuePairVisitor(this, codeGenerator),
             new TupleVisitor(this, codeGenerator),
             new ValueTupleVisitor(this, codeGenerator),
+            new UriVisitor(this, codeGenerator),
             new GroupingVisitor(this, codeGenerator),
             new DictionaryVisitor(this, codeGenerator, options.MaxCollectionSize),
             new CollectionVisitor(this, codeGenerator, options.MaxCollectionSize),

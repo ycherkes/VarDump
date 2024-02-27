@@ -2,6 +2,7 @@
 using System.Linq;
 using VarDump.CodeDom.Common;
 using VarDump.CodeDom.Compiler;
+using VarDump.Extensions;
 using VarDump.Utils;
 
 namespace VarDump.Visitor.KnownTypes;
@@ -9,9 +10,9 @@ namespace VarDump.Visitor.KnownTypes;
 internal sealed class TupleVisitor : IKnownObjectVisitor
 {
     private readonly IObjectVisitor _rootObjectVisitor;
-    private readonly ICodeGenerator _codeGenerator;
+    private readonly IDotnetCodeGenerator _codeGenerator;
 
-    public TupleVisitor(IObjectVisitor rootObjectVisitor, ICodeGenerator codeGenerator)
+    public TupleVisitor(IObjectVisitor rootObjectVisitor, IDotnetCodeGenerator codeGenerator)
     {
         _rootObjectVisitor = rootObjectVisitor;
         _codeGenerator = codeGenerator;
@@ -27,7 +28,7 @@ internal sealed class TupleVisitor : IKnownObjectVisitor
     {
         if (_rootObjectVisitor.IsVisited(o))
         {
-            _codeGenerator.WriteCircularReferenceDetected();
+            _codeGenerator.GenerateCircularReferenceDetected();
             return;
         }
 
@@ -37,7 +38,7 @@ internal sealed class TupleVisitor : IKnownObjectVisitor
         {
             var propertyValues = objectType.GetProperties().Select(p => ReflectionUtils.GetValue(p, o)).Select(v => (Action)(() => _rootObjectVisitor.Visit(v)));
 
-            _codeGenerator.GenerateObjectCreateAndInitialize(new CodeTypeReference(objectType),
+            _codeGenerator.GenerateObjectCreateAndInitialize(new CodeDotnetTypeReference(objectType),
                 propertyValues,
                 []);
         }

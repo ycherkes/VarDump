@@ -9,9 +9,9 @@ namespace VarDump.Visitor.KnownTypes;
 internal sealed class KeyValuePairVisitor : IKnownObjectVisitor
 {
     private readonly IObjectVisitor _rootObjectVisitor;
-    private readonly ICodeGenerator _codeGenerator;
+    private readonly IDotnetCodeGenerator _codeGenerator;
 
-    public KeyValuePairVisitor(IObjectVisitor rootObjectVisitor, ICodeGenerator codeGenerator)
+    public KeyValuePairVisitor(IObjectVisitor rootObjectVisitor, IDotnetCodeGenerator codeGenerator)
     {
         _rootObjectVisitor = rootObjectVisitor;
         _codeGenerator = codeGenerator;
@@ -27,7 +27,7 @@ internal sealed class KeyValuePairVisitor : IKnownObjectVisitor
     {
         var propertyValues = objectType.GetProperties().Select(p => ReflectionUtils.GetValue(p, obj)).Select(v => (Action)(() => _rootObjectVisitor.Visit(v)));
 
-        _codeGenerator.GenerateObjectCreateAndInitialize(new CodeTypeReference(objectType),
+        _codeGenerator.GenerateObjectCreateAndInitialize(new CodeDotnetTypeReference(objectType),
             propertyValues,
             []);
     }

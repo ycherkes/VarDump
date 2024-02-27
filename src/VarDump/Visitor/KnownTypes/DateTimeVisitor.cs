@@ -7,11 +7,11 @@ namespace VarDump.Visitor.KnownTypes;
 
 internal sealed class DateTimeVisitor : IKnownObjectVisitor
 {
-    private readonly ICodeGenerator _codeGenerator;
+    private readonly IDotnetCodeGenerator _codeGenerator;
     private readonly DateTimeInstantiation _dateTimeInstantiation;
     private readonly DateKind _dateKind;
 
-    public DateTimeVisitor(ICodeGenerator codeGenerator, DateTimeInstantiation dateTimeInstantiation, DateKind dateKind)
+    public DateTimeVisitor(IDotnetCodeGenerator codeGenerator, DateTimeInstantiation dateTimeInstantiation, DateKind dateKind)
     {
         _codeGenerator = codeGenerator;
         _dateTimeInstantiation = dateTimeInstantiation;
@@ -27,7 +27,7 @@ internal sealed class DateTimeVisitor : IKnownObjectVisitor
     public void Visit(object obj, Type objectType)
     {
         var dateTime = (DateTime)obj;
-        var dateTimeCodeTypeReference = new CodeTypeReference(typeof(DateTime));
+        var dateTimeCodeTypeReference = new CodeDotnetTypeReference(typeof(DateTime));
 
         if (dateTime == DateTime.MaxValue)
         {
@@ -55,9 +55,9 @@ internal sealed class DateTimeVisitor : IKnownObjectVisitor
                     () => _codeGenerator.GeneratePrimitive(dateTime.ToString("O")),
                     () => _codeGenerator.GeneratePrimitive("O"),
                     () => _codeGenerator.GenerateFieldReference(nameof(CultureInfo.InvariantCulture),
-                        () => _codeGenerator.GenerateTypeReference(new CodeTypeReference(typeof(CultureInfo)))),
+                        () => _codeGenerator.GenerateTypeReference(new CodeDotnetTypeReference(typeof(CultureInfo)))),
                     () => _codeGenerator.GenerateFieldReference(nameof(DateTimeStyles.RoundtripKind),
-                        () => _codeGenerator.GenerateTypeReference(new CodeTypeReference(typeof(DateTimeStyles))))
+                        () => _codeGenerator.GenerateTypeReference(new CodeDotnetTypeReference(typeof(DateTimeStyles))))
                 ]);
 
             return;
@@ -84,7 +84,7 @@ internal sealed class DateTimeVisitor : IKnownObjectVisitor
                 GenerateMillisecondAction, 
                 GenerateKindAction], 
             []);
-        void GenerateKindAction() => _codeGenerator.GenerateFieldReference(dateTime.Kind.ToString(), () => _codeGenerator.GenerateTypeReference(new CodeTypeReference(typeof(DateTimeKind))));
+        void GenerateKindAction() => _codeGenerator.GenerateFieldReference(dateTime.Kind.ToString(), () => _codeGenerator.GenerateTypeReference(new CodeDotnetTypeReference(typeof(DateTimeKind))));
         void GenerateYearAction() => _codeGenerator.GeneratePrimitive(dateTime.Year);
         void GenerateMontAction() => _codeGenerator.GeneratePrimitive(dateTime.Month);
         void GenerateDayAction() => _codeGenerator.GeneratePrimitive(dateTime.Day);

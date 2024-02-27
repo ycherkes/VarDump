@@ -2,6 +2,8 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using System;
 using System.Collections.Generic;
+using System.Linq;
+using System.Runtime.CompilerServices;
 using VarDump.CodeDom.Common;
 using VarDump.CodeDom.Compiler;
 using VarDump.UnitTests.TestModel;
@@ -25,7 +27,7 @@ public class KnownTypesSpec
 
         var dumpOptions = DumpOptions.Default;
 
-        dumpOptions.ConfigureKnownTypes = (knownObjects, rootObjectVisitor, opts, codeGenerator) =>
+        dumpOptions.ConfigureKnownTypes = (knownObjects, rootObjectVisitor, _, codeGenerator) =>
         {
             var sdv = new ServiceDescriptorVisitor(rootObjectVisitor, codeGenerator);
             knownObjects.Add(sdv.Id, sdv);
@@ -45,8 +47,7 @@ public class KnownTypesSpec
 
                 """, result);
     }
-
-
+    
     [Fact]
     public void DumpServiceDescriptorSpecVb()
     {
@@ -54,7 +55,7 @@ public class KnownTypesSpec
 
         var dumpOptions = DumpOptions.Default;
 
-        dumpOptions.ConfigureKnownTypes = (knownObjects, rootObjectVisitor, opts, codeGenerator) =>
+        dumpOptions.ConfigureKnownTypes = (knownObjects, rootObjectVisitor, _, codeGenerator) =>
         {
             var sdv = new ServiceDescriptorVisitor(rootObjectVisitor, codeGenerator);
             knownObjects.Add(sdv.Id, sdv);
@@ -69,7 +70,57 @@ public class KnownTypesSpec
 ", result);
     }
 
-    private class ServiceDescriptorVisitor(IObjectVisitor rootObjectVisitor, ICodeGenerator codeGenerator) : IKnownObjectVisitor
+    [Fact]
+    public void DumpFormattableStringCsharp()
+    {
+        const string name = "World";
+        FormattableString str = $"Hello, {name}";
+
+        var dumpOptions = DumpOptions.Default;
+
+        dumpOptions.ConfigureKnownTypes = (knownObjects, rootObjectVisitor, _, codeGenerator) =>
+        {
+            var sdv = new FormattableStringVisitor(rootObjectVisitor, codeGenerator);
+            knownObjects.Add(sdv.Id, sdv);
+        };
+
+        var dumper = new CSharpDumper(dumpOptions);
+
+        var result = dumper.Dump(str);
+
+        Assert.Equal(
+            """
+            var concreteFormattableString = FormattableStringFactory.Create("Hello, {0}", "World");
+
+            """, result);
+    }
+
+    [Fact]
+    public void DumpFormattableStringVb()
+    {
+        const string name = "World";
+        FormattableString str = $"Hello, {name}";
+
+        var dumpOptions = DumpOptions.Default;
+
+        dumpOptions.ConfigureKnownTypes = (knownObjects, rootObjectVisitor, _, codeGenerator) =>
+        {
+            var sdv = new FormattableStringVisitor(rootObjectVisitor, codeGenerator);
+            knownObjects.Add(sdv.Id, sdv);
+        };
+
+        var dumper = new VisualBasicDumper(dumpOptions);
+
+        var result = dumper.Dump(str);
+
+        Assert.Equal(
+            """
+            Dim concreteFormattableStringValue = FormattableStringFactory.Create("Hello, {0}", "World")
+            
+            """, result);
+    }
+
+    private class ServiceDescriptorVisitor(IObjectVisitor rootObjectVisitor, IDotnetCodeGenerator codeGenerator) : IKnownObjectVisitor
     {
         public string Id => "ServiceDescriptor";
         public bool IsSuitableFor(object obj, Type objectType)
@@ -81,14 +132,14 @@ public class KnownTypesSpec
         {
             var serviceDescriptor = (ServiceDescriptor)obj;
 
-            var typeParameters = new List<CodeTypeReference>
+            var typeParameters = new List<CodeDotnetTypeReference>
             {
                 new(serviceDescriptor.ServiceType)
             };
 
             if (serviceDescriptor.ImplementationType != null)
             {
-                typeParameters.Add(new CodeTypeReference(serviceDescriptor.ImplementationType));
+                typeParameters.Add(new CodeDotnetTypeReference(serviceDescriptor.ImplementationType));
             }
 
             var parameters = new List<Action>(1);
@@ -100,7 +151,7 @@ public class KnownTypesSpec
 
             if (serviceDescriptor.ImplementationFactory != null)
             {
-                var typeRef = new CodeTypeReference(
+                var typeRef = new CodeDotnetTypeReference(
                     serviceDescriptor.ImplementationType ?? serviceDescriptor.ServiceType);
 
                 parameters.Add(() => codeGenerator.GenerateLambdaExpression(() => codeGenerator.GenerateDefaultValue(typeRef), [ () => codeGenerator.GenerateVariableReference("serviceProvider")]));
@@ -109,9 +160,36 @@ public class KnownTypesSpec
 
             codeGenerator.GenerateMethodInvoke(() => 
                 codeGenerator.GenerateMethodReference(
-                    () => codeGenerator.GenerateTypeReference(new CodeTypeReference(typeof(ServiceDescriptor))),
+                    () => codeGenerator.GenerateTypeReference(new CodeDotnetTypeReference(typeof(ServiceDescriptor))),
                     serviceDescriptor.Lifetime.ToString(), typeParameters.ToArray()
                     ), parameters);
+        }
+    }
+
+    private class FormattableStringVisitor(IObjectVisitor rootObjectVisitor, IDotnetCodeGenerator codeGenerator) : IKnownObjectVisitor
+    {
+        public string Id => "ServiceDescriptor";
+        public bool IsSuitableFor(object obj, Type objectType)
+        {
+            return obj is FormattableString;
+        }
+
+        public void Visit(object obj, Type objectType)
+        {
+            var formattableString = (FormattableString)obj;
+
+            IEnumerable<Action> argumentActions =
+            [
+                () => codeGenerator.GeneratePrimitive(formattableString.Format)
+            ];
+
+            argumentActions = argumentActions.Concat(formattableString.GetArguments().Select(a => (Action)(() => rootObjectVisitor.Visit(a))));
+
+            codeGenerator.GenerateMethodInvoke(() =>
+                codeGenerator.GenerateMethodReference(
+                    () => codeGenerator.GenerateTypeReference(new CodeDotnetTypeReference(typeof(FormattableStringFactory))),
+                    nameof(FormattableStringFactory.Create)),
+                argumentActions);
         }
     }
 }

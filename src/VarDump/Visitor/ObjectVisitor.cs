@@ -5,6 +5,7 @@ using System.Linq;
 using VarDump.CodeDom.Common;
 using VarDump.CodeDom.Compiler;
 using VarDump.Collections;
+using VarDump.Extensions;
 using VarDump.Utils;
 using VarDump.Visitor.Descriptors;
 using VarDump.Visitor.Descriptors.Implementation;
@@ -14,7 +15,7 @@ namespace VarDump.Visitor;
 
 internal sealed class ObjectVisitor : IObjectVisitor
 {
-    private readonly ICodeGenerator _codeGenerator;
+    private readonly IDotnetCodeGenerator _codeGenerator;
     private readonly ICollection<string> _excludeTypes;
     private readonly bool _ignoreDefaultValues;
     private readonly bool _ignoreNullValues;
@@ -26,7 +27,7 @@ internal sealed class ObjectVisitor : IObjectVisitor
 
     private int _depth;
 
-    public ObjectVisitor(DumpOptions options, ICodeGenerator codeGenerator)
+    public ObjectVisitor(DumpOptions options, IDotnetCodeGenerator codeGenerator)
     {
         _codeGenerator = codeGenerator;
         _maxDepth = options.MaxDepth;
@@ -84,7 +85,7 @@ internal sealed class ObjectVisitor : IObjectVisitor
     {
         if (IsMaxDepth())
         {
-            _codeGenerator.WriteMaxDepthExpression(@object);
+            _codeGenerator.GenerateMaxDepthExpression(@object);
             return;
         }
 
@@ -114,7 +115,7 @@ internal sealed class ObjectVisitor : IObjectVisitor
     {
         if (IsVisited(o))
         {
-            _codeGenerator.WriteCircularReferenceDetected();
+            _codeGenerator.GenerateCircularReferenceDetected();
             return;
         }
 
@@ -122,9 +123,9 @@ internal sealed class ObjectVisitor : IObjectVisitor
 
         try
         {
-            var membersAndConstructorParams = _objectDescriptor.Describe(o, objectType).ToArray();
+            var objectDescription = _objectDescriptor.Describe(o, objectType);
 
-            var members = membersAndConstructorParams.Where(m => m.ReflectionType != ReflectionType.ConstructorParameter);
+            var members = objectDescription.Members;
 
             if (_sortDirection != null)
             {
@@ -133,7 +134,7 @@ internal sealed class ObjectVisitor : IObjectVisitor
                     : members.OrderByDescending(x => x.Name);
             }
 
-            var constructorParams = membersAndConstructorParams
+            var constructorParams = objectDescription.ConstructorParameters
                     .Where(mc => mc.ReflectionType == ReflectionType.ConstructorParameter)
                     .Select(cp => (Action)(() => Visit(cp.Value)));
 
@@ -146,7 +147,7 @@ internal sealed class ObjectVisitor : IObjectVisitor
                         () => _codeGenerator.GeneratePropertyReference(pv.Name, null),
                         () => Visit(pv.Value))));
 
-            _codeGenerator.GenerateObjectCreateAndInitialize(new CodeTypeReference(objectType),
+            _codeGenerator.GenerateObjectCreateAndInitialize(objectDescription.Type ?? new CodeDotnetTypeReference(objectType),
                 constructorParams,
                 initializeActions);
         }

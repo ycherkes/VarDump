@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
 
 namespace VarDump.Visitor.Descriptors.Implementation;
@@ -15,8 +14,16 @@ internal class ConcatenatedObjectDescriptor : IObjectDescriptor
         _second = second;
     }
 
-    public IEnumerable<IReflectionDescriptor> Describe(object @object, Type objectType)
+    public ObjectDescriptionInfo Describe(object @object, Type objectType)
     {
-        return _first.Describe(@object, objectType).Concat(_second.Describe(@object, objectType));
+        var firstInfo = _first.Describe(@object, objectType);
+        var secondInfo = _second.Describe(@object, objectType);
+
+        return new ObjectDescriptionInfo
+        {
+            Type = secondInfo.Type ?? firstInfo.Type,
+            Members = firstInfo.Members.Concat(secondInfo.Members),
+            ConstructorParameters = firstInfo.ConstructorParameters.Concat(secondInfo.ConstructorParameters)
+        };
     }
 }

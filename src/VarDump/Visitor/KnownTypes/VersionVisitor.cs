@@ -6,9 +6,9 @@ namespace VarDump.Visitor.KnownTypes;
 
 internal sealed class VersionVisitor : IKnownObjectVisitor
 {
-    private readonly ICodeGenerator _codeGenerator;
+    private readonly IDotnetCodeGenerator _codeGenerator;
 
-    public VersionVisitor(ICodeGenerator codeGenerator)
+    public VersionVisitor(IDotnetCodeGenerator codeGenerator)
     {
         _codeGenerator = codeGenerator;
     }
@@ -23,7 +23,7 @@ internal sealed class VersionVisitor : IKnownObjectVisitor
     public void Visit(object obj, Type objectType)
     {
         var version  = (Version)obj;
-        _codeGenerator.GenerateObjectCreateAndInitialize(new CodeTypeReference(typeof(Version)), 
+        _codeGenerator.GenerateObjectCreateAndInitialize(new CodeDotnetTypeReference(typeof(Version)), 
             [
                 () => _codeGenerator.GeneratePrimitive(version.ToString())
             ], []);

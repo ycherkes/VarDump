@@ -13,10 +13,10 @@ namespace VarDump.Visitor.KnownTypes;
 internal sealed class CollectionVisitor : IKnownObjectVisitor
 {
     private readonly IObjectVisitor _rootObjectVisitor;
-    private readonly ICodeGenerator _codeGenerator;
+    private readonly IDotnetCodeGenerator _codeGenerator;
     private readonly int _maxCollectionSize;
 
-    public CollectionVisitor(IObjectVisitor rootObjectVisitor, ICodeGenerator codeGenerator, int maxCollectionSize)
+    public CollectionVisitor(IObjectVisitor rootObjectVisitor, IDotnetCodeGenerator codeGenerator, int maxCollectionSize)
     {
         if (maxCollectionSize <= 0)
         {
@@ -40,7 +40,7 @@ internal sealed class CollectionVisitor : IKnownObjectVisitor
         IEnumerable collection = (IEnumerable)obj;
         if (_rootObjectVisitor.IsVisited(collection))
         {
-            _codeGenerator.WriteCircularReferenceDetected();
+            _codeGenerator.GenerateCircularReferenceDetected();
             return;
         }
 
@@ -78,28 +78,19 @@ internal sealed class CollectionVisitor : IKnownObjectVisitor
 
         if (_maxCollectionSize < int.MaxValue)
         {
-            items = items.Take(_maxCollectionSize + 1).Replace(_maxCollectionSize, () => _codeGenerator.WriteTooManyItems(_maxCollectionSize));
+            items = items.Take(_maxCollectionSize + 1).Replace(_maxCollectionSize, () => _codeGenerator.GenerateTooManyItems(_maxCollectionSize));
         }
-        
+
         var isLookup = type.IsLookup();
 
         var methodName = isLookup
             ? "ToLookup"
             : "GroupBy";
 
-        Action arrayCreateAction = () => _codeGenerator.GenerateArrayCreate(new CodeAnonymousTypeReference { ArrayRank = 1 }, items);
-
-        Action lambdaAction = () => _codeGenerator.GenerateMethodInvoke(() =>
-                _codeGenerator.GenerateMethodReference(arrayCreateAction, methodName),
-            [
-                GenerateKeyLambdaExpression,
-                GenerateValueLambdaExpression
-            ]);
-
         if (type.IsArray)
         {
            _codeGenerator.GenerateMethodInvoke(() =>
-                    _codeGenerator.GenerateMethodReference(lambdaAction, "ToArray"), []);
+                    _codeGenerator.GenerateMethodReference(GenerateLambda, "ToArray"), []);
 
            return;
 
@@ -108,15 +99,24 @@ internal sealed class CollectionVisitor : IKnownObjectVisitor
         if (collection is IList)
         {
             _codeGenerator.GenerateMethodInvoke(() =>
-                _codeGenerator.GenerateMethodReference(lambdaAction, "ToList"), []);
+                _codeGenerator.GenerateMethodReference(GenerateLambda, "ToList"), []);
 
             return;
         }
 
-        lambdaAction();
+        GenerateLambda();
 
         return;
 
+        
+        void GenerateLambda() => _codeGenerator.GenerateMethodInvoke(() =>
+                _codeGenerator.GenerateMethodReference(GenerateArrayCreate, methodName),
+            [
+                GenerateKeyLambdaExpression,
+                GenerateValueLambdaExpression
+            ]);
+
+        void GenerateArrayCreate() => _codeGenerator.GenerateArrayCreate(new CodeAnonymousTypeReference { ArrayRank = 1 }, items);
         void GenerateVariableReference() => _codeGenerator.GenerateVariableReference("grp");
         void GenerateKeyLambdaPropertyExpression() => _codeGenerator.GeneratePropertyReference("Key", GenerateVariableReference);
         void GenerateKeyLambdaExpression() => _codeGenerator.GenerateLambdaExpression(GenerateKeyLambdaPropertyExpression, [GenerateVariableReference]);
@@ -130,7 +130,7 @@ internal sealed class CollectionVisitor : IKnownObjectVisitor
 
         if (_maxCollectionSize < int.MaxValue)
         {
-            items = items.Take(_maxCollectionSize + 1).Replace(_maxCollectionSize, () => _codeGenerator.WriteTooManyItems(_maxCollectionSize));
+            items = items.Take(_maxCollectionSize + 1).Replace(_maxCollectionSize, () => _codeGenerator.GenerateTooManyItems(_maxCollectionSize));
         }
 
         var type = enumerable.GetType();
@@ -145,18 +145,18 @@ internal sealed class CollectionVisitor : IKnownObjectVisitor
                 items = ChunkMultiDimensionalArrayExpression((Array)enumerable, items);
             }
 
-            var typeReference = new CodeTypeReference(isImmutableOrFrozen || !type.IsPublic ? elementType.MakeArrayType() : type);
+            var typeReference = new CodeDotnetTypeReference(isImmutableOrFrozen || !type.IsPublic ? elementType.MakeArrayType() : type);
 
-            Action createAction = () => _codeGenerator.GenerateArrayCreate(typeReference, items);
+            void GenerateArrayCreate() => _codeGenerator.GenerateArrayCreate(typeReference, items);
 
             if (isImmutableOrFrozen)
             {
                _codeGenerator.GenerateMethodInvoke(() =>
-                    _codeGenerator.GenerateMethodReference(createAction, $"To{type.GetImmutableOrFrozenTypeName()}"), []);
+                    _codeGenerator.GenerateMethodReference(GenerateArrayCreate, $"To{type.GetImmutableOrFrozenTypeName()}"), []);
             }
             else
             {
-                createAction();
+                GenerateArrayCreate();
             }
 
             return;
@@ -177,8 +177,7 @@ internal sealed class CollectionVisitor : IKnownObjectVisitor
             new CodeCollectionTypeReference(type), [], items);
     }
 
-    private IEnumerable<Action> ChunkMultiDimensionalArrayExpression(Array array,
-        IEnumerable<Action> enumerable)
+    private IEnumerable<Action> ChunkMultiDimensionalArrayExpression(Array array, IEnumerable<Action> enumerable)
     {
         var dimensions = new int[array.Rank - 1];
 
@@ -204,7 +203,7 @@ internal sealed class CollectionVisitor : IKnownObjectVisitor
 
         if (_maxCollectionSize < int.MaxValue)
         {
-            items = items.Take(_maxCollectionSize + 1).Replace(_maxCollectionSize, () => _codeGenerator.WriteTooManyItems(_maxCollectionSize));
+            items = items.Take(_maxCollectionSize + 1).Replace(_maxCollectionSize, () => _codeGenerator.GenerateTooManyItems(_maxCollectionSize));
         }
 
         var type = enumerable.GetType();

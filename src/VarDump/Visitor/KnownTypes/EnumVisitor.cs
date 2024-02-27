@@ -7,9 +7,9 @@ namespace VarDump.Visitor.KnownTypes;
 
 internal sealed class EnumVisitor : IKnownObjectVisitor
 {
-    private readonly ICodeGenerator _codeGenerator;
+    private readonly IDotnetCodeGenerator _codeGenerator;
 
-    public EnumVisitor(ICodeGenerator codeGenerator)
+    public EnumVisitor(IDotnetCodeGenerator codeGenerator)
     {
         _codeGenerator = codeGenerator;
     }
@@ -26,12 +26,12 @@ internal sealed class EnumVisitor : IKnownObjectVisitor
 
         if (values.Length == 1)
         {
-            _codeGenerator.GenerateFieldReference(values[0].Trim(), () => _codeGenerator.GenerateTypeReference(new CodeTypeReference(obj.GetType())));
+            _codeGenerator.GenerateFieldReference(values[0].Trim(), () => _codeGenerator.GenerateTypeReference(new CodeDotnetTypeReference(obj.GetType())));
             return;
         }
 
-        var actions = values.Select(v => (Action)(() => _codeGenerator.GenerateFieldReference(v.Trim(), () => _codeGenerator.GenerateTypeReference(new CodeTypeReference(obj.GetType())))));
+        var actions = values.Select(v => (Action)(() => _codeGenerator.GenerateFieldReference(v.Trim(), () => _codeGenerator.GenerateTypeReference(new CodeDotnetTypeReference(obj.GetType())))));
 
-        _codeGenerator.GenerateFlagsBinaryOperator(CodeBinaryOperatorType.BitwiseOr, actions);
+        _codeGenerator.GenerateFlagsBinaryOperator(actions);
     }
 }

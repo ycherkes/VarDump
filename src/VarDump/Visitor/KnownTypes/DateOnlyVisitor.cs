@@ -1,16 +1,17 @@
 ﻿using System;
 using VarDump.CodeDom.Common;
 using VarDump.CodeDom.Compiler;
+using VarDump.Extensions;
 using VarDump.Utils;
 
 namespace VarDump.Visitor.KnownTypes;
 
 internal sealed class DateOnlyVisitor : IKnownObjectVisitor
 {
-    private readonly ICodeGenerator _codeGenerator;
+    private readonly IDotnetCodeGenerator _codeGenerator;
     private readonly DateTimeInstantiation _dateTimeInstantiation;
 
-    public DateOnlyVisitor(ICodeGenerator codeGenerator, DateTimeInstantiation dateTimeInstantiation)
+    public DateOnlyVisitor(IDotnetCodeGenerator codeGenerator, DateTimeInstantiation dateTimeInstantiation)
     {
         _codeGenerator = codeGenerator;
         _dateTimeInstantiation = dateTimeInstantiation;
@@ -24,12 +25,12 @@ internal sealed class DateOnlyVisitor : IKnownObjectVisitor
 
     public void Visit(object dateOnly, Type objectType)
     {
-        var dateOnlyCodeTypeReference = new CodeTypeReference(objectType);
+        var dateOnlyCodeTypeReference = new CodeDotnetTypeReference(objectType);
         var dayNumber = (int?)objectType.GetProperty("DayNumber")?.GetValue(dateOnly);
 
         if (dayNumber == null)
         {
-            _codeGenerator.WriteErrorDetected("Wrong DateOnly struct");
+            _codeGenerator.GenerateErrorDetected("Wrong DateOnly struct");
             return;
         }
 

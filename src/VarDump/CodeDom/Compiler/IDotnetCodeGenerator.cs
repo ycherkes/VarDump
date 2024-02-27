@@ -5,13 +5,17 @@
 using System.Collections.Generic;
 using System;
 using VarDump.CodeDom.Common;
+using System.IO;
 
 namespace VarDump.CodeDom.Compiler
 {
-    public interface ICodeGenerator
+    public interface IDotnetCodeGenerator
     {
-        void GenerateArrayCreate(CodeTypeReference typeReference, IEnumerable<Action> generateInitializers, int size = 0);
-        void GenerateCast(CodeTypeReference typeReference, Action generateAction);
+        int Indent { get; set; }
+        TextWriter Output { get; }
+
+        void GenerateArrayCreate(CodeDotnetTypeReference typeReference, IEnumerable<Action> generateInitializers, int size = 0);
+        void GenerateCast(CodeDotnetTypeReference typeReference, Action generateAction);
 
         void GenerateCodeArrayDimension(IEnumerable<Action> initializers);
         void GenerateCodeAssign(Action left, Action right);
@@ -20,20 +24,20 @@ namespace VarDump.CodeDom.Compiler
 
         void GenerateComment(string comment, bool noNewLine);
 
-        void GenerateDefaultValue(CodeTypeReference typeRef);
+        void GenerateDefaultValue(CodeDotnetTypeReference typeRef);
 
         void GenerateFieldReference(string fieldName, Action generateTargetObjectAction);
 
-        void GenerateFlagsBinaryOperator(CodeBinaryOperatorType @operator, IEnumerable<Action> generateOperandActions);
+        void GenerateFlagsBinaryOperator(IEnumerable<Action> generateOperandActions);
         void GenerateLambdaExpression(Action generateLambda, Action[] generateParameters);
 
         void GenerateMethodInvoke(Action methodReferenceAction, IEnumerable<Action> parametersActions);
 
-        void GenerateMethodReference(Action targetObject, string methodName, params CodeTypeReference[] typeParameters);
+        void GenerateMethodReference(Action targetObject, string methodName, params CodeDotnetTypeReference[] typeParameters);
 
         void GenerateNamedArgument(string argumentName, Action generateValue);
 
-        void GenerateObjectCreateAndInitialize(CodeTypeReference type, IEnumerable<Action> generateParametersActions, IEnumerable<Action> generateInitializeActions);
+        void GenerateObjectCreateAndInitialize(CodeDotnetTypeReference type, IEnumerable<Action> generateParametersActions, IEnumerable<Action> generateInitializeActions);
 
         void GeneratePrimitive(object obj);
 
@@ -41,13 +45,13 @@ namespace VarDump.CodeDom.Compiler
 
         void GenerateSeparator();
 
-        void GenerateTypeOf(CodeTypeReference e);
+        void GenerateTypeOf(CodeDotnetTypeReference e);
 
-        void GenerateTypeReference(CodeTypeReference typeReference);
+        void GenerateTypeReference(CodeDotnetTypeReference typeReference);
 
         void GenerateValueTupleCreate(IEnumerable<Action> actions);
 
-        void GenerateVariableDeclarationStatement(CodeTypeReference typeReference, string variableName, Action initAction);
+        void GenerateVariableDeclarationStatement(CodeDotnetTypeReference typeReference, string variableName, Action initAction);
 
         void GenerateVariableReference(string variableName);
     }

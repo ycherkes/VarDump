@@ -1,7 +1,7 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using VarDump.CodeDom.Common;
 using VarDump.Extensions;
 using VarDump.Utils;
 
@@ -18,7 +18,7 @@ internal class ObjectPropertiesDescriptor : IObjectDescriptor
         _writablePropertiesOnly = writablePropertiesOnly;
     }
 
-    public IEnumerable<IReflectionDescriptor> Describe(object @object, Type objectType)
+    public ObjectDescriptionInfo Describe(object @object, Type objectType)
     {
         var properties = EnumerableExtensions.AsEnumerable(() => objectType
             .GetProperties(_getPropertiesBindingFlags))
@@ -32,6 +32,12 @@ internal class ObjectPropertiesDescriptor : IObjectDescriptor
                 ReflectionType = ReflectionType.Property
             });
 
-        return properties;
+        var info = new ObjectDescriptionInfo
+        {
+            Type = new CodeDotnetTypeReference(objectType),
+            Members = properties
+        };
+
+        return info;
     }
 }

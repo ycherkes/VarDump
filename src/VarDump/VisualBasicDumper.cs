@@ -45,7 +45,7 @@ public class VisualBasicDumper : IDumper
 
     private void DumpImpl(object obj, TextWriter textWriter)
     {
-        ICodeGenerator codeGenerator = new VBCodeGenerator(textWriter, new CodeGeneratorOptions { UseFullTypeName = _options.UseTypeFullName });
+        IDotnetCodeGenerator codeGenerator = new VBCodeGenerator(textWriter, new CodeGeneratorOptions { UseFullTypeName = _options.UseTypeFullName });
 
         var objectVisitor = new ObjectVisitor(_options, codeGenerator);
 

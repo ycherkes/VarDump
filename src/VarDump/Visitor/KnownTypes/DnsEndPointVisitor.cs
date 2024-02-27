@@ -10,9 +10,9 @@ namespace VarDump.Visitor.KnownTypes;
 internal sealed class DnsEndPointVisitor : IKnownObjectVisitor
 {
     private readonly IObjectVisitor _rootObjectVisitor;
-    private readonly ICodeGenerator _codeGenerator;
+    private readonly IDotnetCodeGenerator _codeGenerator;
 
-    public DnsEndPointVisitor(IObjectVisitor rootObjectVisitor, ICodeGenerator codeGenerator)
+    public DnsEndPointVisitor(IObjectVisitor rootObjectVisitor, IDotnetCodeGenerator codeGenerator)
     {
         _rootObjectVisitor = rootObjectVisitor;
         _codeGenerator = codeGenerator;
@@ -28,7 +28,7 @@ internal sealed class DnsEndPointVisitor : IKnownObjectVisitor
     {
         var dnsEndPoint = (DnsEndPoint)obj;
 
-        _codeGenerator.GenerateObjectCreateAndInitialize(new CodeTypeReference(typeof(DnsEndPoint)), GetConstructorArguments(), []);
+        _codeGenerator.GenerateObjectCreateAndInitialize(new CodeDotnetTypeReference(typeof(DnsEndPoint)), GetConstructorArguments(), []);
 
         IEnumerable<Action> GetConstructorArguments()
         {

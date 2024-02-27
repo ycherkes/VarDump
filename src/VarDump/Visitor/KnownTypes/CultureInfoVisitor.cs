@@ -7,9 +7,9 @@ namespace VarDump.Visitor.KnownTypes;
 
 internal sealed class CultureInfoVisitor : IKnownObjectVisitor
 {
-    private readonly ICodeGenerator _codeGenerator;
+    private readonly IDotnetCodeGenerator _codeGenerator;
 
-    public CultureInfoVisitor(ICodeGenerator codeGenerator)
+    public CultureInfoVisitor(IDotnetCodeGenerator codeGenerator)
     {
         _codeGenerator = codeGenerator;
     }
@@ -24,7 +24,7 @@ internal sealed class CultureInfoVisitor : IKnownObjectVisitor
     {
         var cultureInfo = (CultureInfo)obj;
 
-        _codeGenerator.GenerateObjectCreateAndInitialize(new CodeTypeReference(typeof(CultureInfo)),
+        _codeGenerator.GenerateObjectCreateAndInitialize(new CodeDotnetTypeReference(typeof(CultureInfo)),
             [
                 () => _codeGenerator.GeneratePrimitive(cultureInfo.ToString())
             ],

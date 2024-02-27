@@ -6,9 +6,9 @@ namespace VarDump.Visitor.KnownTypes;
 
 internal sealed class GuidVisitor : IKnownObjectVisitor
 {
-    private readonly ICodeGenerator _codeGenerator;
+    private readonly IDotnetCodeGenerator _codeGenerator;
 
-    public GuidVisitor(ICodeGenerator codeGenerator)
+    public GuidVisitor(IDotnetCodeGenerator codeGenerator)
     {
         _codeGenerator = codeGenerator;
     }
@@ -23,7 +23,7 @@ internal sealed class GuidVisitor : IKnownObjectVisitor
     {
         var guid = (Guid)obj;
 
-        _codeGenerator.GenerateObjectCreateAndInitialize(new CodeTypeReference(typeof(Guid)),
+        _codeGenerator.GenerateObjectCreateAndInitialize(new CodeDotnetTypeReference(typeof(Guid)),
             [
                 () => _codeGenerator.GeneratePrimitive(guid.ToString("D"))
             ], 

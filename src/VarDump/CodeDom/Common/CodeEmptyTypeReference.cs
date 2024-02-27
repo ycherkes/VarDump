@@ -1,3 +1,3 @@
 ﻿namespace VarDump.CodeDom.Common;
 
-internal class CodeEmptyTypeReference : CodeTypeReference;
+internal class CodeEmptyTypeReference : CodeDotnetTypeReference;

@@ -1,35 +1,32 @@
 ﻿using VarDump.CodeDom.Common;
 using VarDump.CodeDom.Compiler;
+using VarDump.Utils;
 using VarDump.Visitor;
 
-namespace VarDump.Utils;
+namespace VarDump.Extensions;
 
-internal static class CodeDomUtils
+public static class CodeGeneratorExtensions
 {
-    public static void WriteErrorDetected(this ICodeGenerator codeGenerator, string errorMessage)
+    public static void GenerateErrorDetected(this IDotnetCodeGenerator codeGenerator, string errorMessage)
     {
         codeGenerator.GeneratePrimitive(null);
-
         codeGenerator.GenerateSeparator();
-
         codeGenerator.GenerateComment(errorMessage, true);
     }
 
-    public static void WriteCircularReferenceDetected(this ICodeGenerator codeGenerator)
+    public static void GenerateCircularReferenceDetected(this IDotnetCodeGenerator codeGenerator)
     {
         codeGenerator.GeneratePrimitive(null);
-
         codeGenerator.GenerateSeparator();
-
         codeGenerator.GenerateComment("Circular reference detected", true);
     }
 
-    public static void WriteTooManyItems(this ICodeGenerator codeGenerator, int maxCollectionSize)
+    public static void GenerateTooManyItems(this IDotnetCodeGenerator codeGenerator, int maxCollectionSize)
     {
         codeGenerator.GenerateComment($"Too many items (> {maxCollectionSize}). Consider increasing the {nameof(DumpOptions.MaxCollectionSize)} option.", noNewLine: true);
     }
 
-    public static void WriteMaxDepthExpression(this ICodeGenerator codeGenerator, object @object)
+    public static void GenerateMaxDepthExpression(this IDotnetCodeGenerator codeGenerator, object @object)
     {
         if (@object == null || @object.GetType().IsAnonymousType())
         {
@@ -37,11 +34,10 @@ internal static class CodeDomUtils
         }
         else
         {
-            codeGenerator.GenerateDefaultValue(new CodeTypeReference(@object.GetType()));
+            codeGenerator.GenerateDefaultValue(new CodeDotnetTypeReference(@object.GetType()));
         }
 
         codeGenerator.GenerateSeparator();
-
         codeGenerator.GenerateComment("Max depth", true);
     }
 }

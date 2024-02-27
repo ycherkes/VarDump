@@ -15,7 +15,7 @@ using VarDump.CodeDom.Resources;
 
 namespace VarDump.CodeDom.VisualBasic;
 
-internal sealed class VBCodeGenerator : ICodeGenerator
+internal sealed class VBCodeGenerator : IDotnetCodeGenerator
 {
     private const int MaxLineLength = int.MaxValue;
     private readonly ExposedTabStringIndentedTextWriter _output;
@@ -95,7 +95,7 @@ internal sealed class VBCodeGenerator : ICodeGenerator
             "when",
             "with",
         ],
-        [  // 5 characters  
+        [  // 5 characters
             "alias",
             "byref",
             "byval",
@@ -226,8 +226,6 @@ internal sealed class VBCodeGenerator : ICodeGenerator
         ]
     ];
 
-    /// <summary>Tells whether the current class should be generated as a module</summary>
-
     public string NullToken => "Nothing";
 
 
@@ -237,10 +235,10 @@ internal sealed class VBCodeGenerator : ICodeGenerator
         _output = new ExposedTabStringIndentedTextWriter(w, _options.IndentString);
     }
 
-    public void GenerateTypeReference(CodeTypeReference typeReference) =>
+    public void GenerateTypeReference(CodeDotnetTypeReference typeReference) =>
         OutputType(typeReference);
 
-    public void GenerateFlagsBinaryOperator(CodeBinaryOperatorType @operator, IEnumerable<Action> generateOperandActions)
+    public void GenerateFlagsBinaryOperator(IEnumerable<Action> generateOperandActions)
     {
         bool isFirst = true;
 
@@ -254,7 +252,7 @@ internal sealed class VBCodeGenerator : ICodeGenerator
             else
             {
                 Output.Write(' ');
-                OutputOperator(@operator);
+                OutputBitwiseOrOperator();
                 Output.Write(' ');
                 generateOperand();
             }
@@ -390,115 +388,28 @@ internal sealed class VBCodeGenerator : ICodeGenerator
         right();
     }
 
-    public void GenerateDefaultValue(CodeTypeReference typeRef)
+    public void GenerateDefaultValue(CodeDotnetTypeReference typeRef)
     {
         Output.Write("CType(Nothing, " + GetTypeOutput(typeRef) + ")");
     }
 
-    public void OutputOperator(CodeBinaryOperatorType op)
+    private void OutputBitwiseOrOperator()
     {
-        switch (op)
-        {
-            case CodeBinaryOperatorType.IdentityInequality:
-                Output.Write("<>");
-                break;
-            case CodeBinaryOperatorType.IdentityEquality:
-                Output.Write("Is");
-                break;
-            case CodeBinaryOperatorType.BooleanOr:
-                Output.Write("OrElse");
-                break;
-            case CodeBinaryOperatorType.BooleanAnd:
-                Output.Write("AndAlso");
-                break;
-            case CodeBinaryOperatorType.ValueEquality:
-                Output.Write('=');
-                break;
-            case CodeBinaryOperatorType.Modulus:
-                Output.Write("Mod");
-                break;
-            case CodeBinaryOperatorType.BitwiseOr:
-                Output.Write("Or");
-                break;
-            case CodeBinaryOperatorType.BitwiseAnd:
-                Output.Write("And");
-                break;
-            default:
-                OutputDefaultOperator(op);
-                break;
-        }
+        Output.Write("Or");
     }
 
-    private void OutputDefaultOperator(CodeBinaryOperatorType op)
-    {
-        switch (op)
-        {
-            case CodeBinaryOperatorType.Add:
-                Output.Write('+');
-                break;
-            case CodeBinaryOperatorType.Subtract:
-                Output.Write('-');
-                break;
-            case CodeBinaryOperatorType.Multiply:
-                Output.Write('*');
-                break;
-            case CodeBinaryOperatorType.Divide:
-                Output.Write('/');
-                break;
-            case CodeBinaryOperatorType.Modulus:
-                Output.Write('%');
-                break;
-            case CodeBinaryOperatorType.Assign:
-                Output.Write('=');
-                break;
-            case CodeBinaryOperatorType.IdentityInequality:
-                Output.Write("!=");
-                break;
-            case CodeBinaryOperatorType.IdentityEquality:
-                Output.Write("==");
-                break;
-            case CodeBinaryOperatorType.ValueEquality:
-                Output.Write("==");
-                break;
-            case CodeBinaryOperatorType.BitwiseOr:
-                Output.Write('|');
-                break;
-            case CodeBinaryOperatorType.BitwiseAnd:
-                Output.Write('&');
-                break;
-            case CodeBinaryOperatorType.BooleanOr:
-                Output.Write("||");
-                break;
-            case CodeBinaryOperatorType.BooleanAnd:
-                Output.Write("&&");
-                break;
-            case CodeBinaryOperatorType.LessThan:
-                Output.Write('<');
-                break;
-            case CodeBinaryOperatorType.LessThanOrEqual:
-                Output.Write("<=");
-                break;
-            case CodeBinaryOperatorType.GreaterThan:
-                Output.Write('>');
-                break;
-            case CodeBinaryOperatorType.GreaterThanOrEqual:
-                Output.Write(">=");
-                break;
-        }
-    }
-
-    public void OutputIdentifier(string ident)
+    private void OutputIdentifier(string ident)
     {
         Output.Write(CreateEscapedIdentifier(ident));
     }
 
-    public void OutputType(CodeTypeReference typeRef)
+    public void OutputType(CodeDotnetTypeReference typeRef)
     {
         Output.Write(GetTypeOutputWithoutArrayPostFix(typeRef));
     }
 
 
-    private void OutputTypeNamePair(CodeTypeReference typeRef, string name)
+    private void OutputTypeNamePair(CodeDotnetTypeReference typeRef, string name)
     {
         if (string.IsNullOrEmpty(name))
             name = "__exception";
@@ -512,7 +423,7 @@ internal sealed class VBCodeGenerator : ICodeGenerator
         }
     }
 
-    private string GetArrayPostfix(CodeTypeReference typeRef)
+    private string GetArrayPostfix(CodeDotnetTypeReference typeRef)
     {
         string s = "";
         if (typeRef.ArrayElementType != null)
@@ -536,7 +447,7 @@ internal sealed class VBCodeGenerator : ICodeGenerator
         return s;
     }
 
-    private void OutputArrayPostfix(CodeTypeReference typeRef)
+    private void OutputArrayPostfix(CodeDotnetTypeReference typeRef)
     {
         if (typeRef.ArrayRank > 0)
         {
@@ -636,7 +547,7 @@ internal sealed class VBCodeGenerator : ICodeGenerator
         }
     }
 
-    public void GenerateArrayCreate(CodeTypeReference typeReference, IEnumerable<Action> generateInitializers, int size = 0)
+    public void GenerateArrayCreate(CodeDotnetTypeReference typeReference, IEnumerable<Action> generateInitializers, int size = 0)
     {
         if (!(typeReference is CodeEmptyTypeReference))
         {
@@ -734,7 +645,7 @@ internal sealed class VBCodeGenerator : ICodeGenerator
         Output.Write("}");
     }
     
-    public void GenerateCast(CodeTypeReference typeReference, Action generateAction)
+    public void GenerateCast(CodeDotnetTypeReference typeReference, Action generateAction)
     {
         Output.Write("CType(");
         generateAction();
@@ -815,7 +726,7 @@ internal sealed class VBCodeGenerator : ICodeGenerator
         Output.Write(')');
     }
     
-    public void GenerateMethodReference(Action targetObject, string methodName, params CodeTypeReference[] typeParameters)
+    public void GenerateMethodReference(Action targetObject, string methodName, params CodeDotnetTypeReference[] typeParameters)
     {
         if (targetObject != null)
         {
@@ -830,7 +741,7 @@ internal sealed class VBCodeGenerator : ICodeGenerator
         }
     }
 
-    public void GenerateObjectCreateAndInitialize(CodeTypeReference type, IEnumerable<Action> generateParametersActions, IEnumerable<Action> generateInitializeActions)
+    public void GenerateObjectCreateAndInitialize(CodeDotnetTypeReference type, IEnumerable<Action> generateParametersActions, IEnumerable<Action> generateInitializeActions)
     {
         Output.Write("New ");
         OutputType(type);
@@ -948,7 +859,7 @@ internal sealed class VBCodeGenerator : ICodeGenerator
         }
     }
 
-    public void GenerateVariableDeclarationStatement(CodeTypeReference typeReference, string variableName, Action initAction)
+    public void GenerateVariableDeclarationStatement(CodeDotnetTypeReference typeReference, string variableName, Action initAction)
     {
         Output.Write("Dim ");
 
@@ -970,7 +881,7 @@ internal sealed class VBCodeGenerator : ICodeGenerator
         OutputIdentifier(propertyName);
     }
     
-    public void GenerateTypeOf(CodeTypeReference typeReference)
+    public void GenerateTypeOf(CodeDotnetTypeReference typeReference)
     {
         Output.Write("GetType(");
         Output.Write(GetTypeOutput(typeReference));
@@ -1033,7 +944,7 @@ internal sealed class VBCodeGenerator : ICodeGenerator
         return name;
     }
 
-    private string GetBaseTypeOutput(CodeTypeReference typeRef, bool preferBuiltInTypes = true)
+    private string GetBaseTypeOutput(CodeDotnetTypeReference typeRef, bool preferBuiltInTypes = true)
     {
         string s = typeRef.BaseType;
 
@@ -1147,7 +1058,7 @@ internal sealed class VBCodeGenerator : ICodeGenerator
         return sb.ToString();
     }
 
-    private string GetTypeOutputWithoutArrayPostFix(CodeTypeReference typeRef)
+    private string GetTypeOutputWithoutArrayPostFix(CodeDotnetTypeReference typeRef)
     {
         StringBuilder sb = new StringBuilder();
 
@@ -1160,7 +1071,7 @@ internal sealed class VBCodeGenerator : ICodeGenerator
         return sb.ToString();
     }
 
-    private string GetTypeArgumentsOutput(CodeTypeReference[] typeArguments)
+    private string GetTypeArgumentsOutput(CodeDotnetTypeReference[] typeArguments)
     {
         typeArguments ??= [];
         StringBuilder sb = new StringBuilder(128);
@@ -1169,7 +1080,7 @@ internal sealed class VBCodeGenerator : ICodeGenerator
     }
 
 
-    private void GetTypeArgumentsOutput(IReadOnlyList<CodeTypeReference> typeArguments, int start, int length, StringBuilder sb)
+    private void GetTypeArgumentsOutput(IReadOnlyList<CodeDotnetTypeReference> typeArguments, int start, int length, StringBuilder sb)
     {
         typeArguments ??= [];
         sb.Append("(Of ");
@@ -1193,7 +1104,7 @@ internal sealed class VBCodeGenerator : ICodeGenerator
         sb.Append(')');
     }
 
-    public string GetTypeOutput(CodeTypeReference typeRef)
+    public string GetTypeOutput(CodeDotnetTypeReference typeRef)
     {
         string s = string.Empty;
         s += GetTypeOutputWithoutArrayPostFix(typeRef);

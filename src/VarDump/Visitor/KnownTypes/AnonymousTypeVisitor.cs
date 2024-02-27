@@ -11,10 +11,10 @@ internal sealed class AnonymousTypeVisitor : IKnownObjectVisitor
 {
     private readonly IObjectVisitor _rootObjectVisitor;
     private readonly IObjectDescriptor _anonymousObjectDescriptor;
-    private readonly ICodeGenerator _codeGenerator;
+    private readonly IDotnetCodeGenerator _codeGenerator;
 
     public AnonymousTypeVisitor(IObjectVisitor rootObjectVisitor,
-        IObjectDescriptor anonymousObjectDescriptor, ICodeGenerator codeGenerator)
+        IObjectDescriptor anonymousObjectDescriptor, IDotnetCodeGenerator codeGenerator)
     {
         _rootObjectVisitor = rootObjectVisitor;
         _anonymousObjectDescriptor = anonymousObjectDescriptor;
@@ -30,13 +30,14 @@ internal sealed class AnonymousTypeVisitor : IKnownObjectVisitor
     public void Visit(object obj, Type objectType)
     {
         var initializeActions = _anonymousObjectDescriptor.Describe(obj, objectType)
+            .Members
             .Select(pv => (Action)(() => _codeGenerator.GenerateCodeAssign(
                 () => _codeGenerator.GeneratePropertyReference(pv.Name, null),
                 () =>
                 {
                     if (pv.Type.IsNullableType() || pv.Value == null)
                     {
-                        _codeGenerator.GenerateCast(new CodeTypeReference(pv.Type), 
+                        _codeGenerator.GenerateCast(new CodeDotnetTypeReference(pv.Type), 
                             () => _rootObjectVisitor.Visit(pv.Value));
                     }
                     else

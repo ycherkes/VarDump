@@ -6,4 +6,4 @@ using System;
 
 namespace VarDump.CodeDom.Common;
 
-internal class CodeCollectionTypeReference(Type type) : CodeTypeReference(type);
+internal class CodeCollectionTypeReference(Type type) : CodeDotnetTypeReference(type);

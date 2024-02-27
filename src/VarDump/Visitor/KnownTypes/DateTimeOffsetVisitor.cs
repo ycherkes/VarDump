@@ -8,10 +8,10 @@ namespace VarDump.Visitor.KnownTypes;
 internal sealed class DateTimeOffsetVisitor : IKnownObjectVisitor
 {
     private readonly IObjectVisitor _rootObjectVisitor;
-    private readonly ICodeGenerator _codeGenerator;
+    private readonly IDotnetCodeGenerator _codeGenerator;
     private readonly DateTimeInstantiation _dateTimeInstantiation;
 
-    public DateTimeOffsetVisitor(IObjectVisitor rootObjectVisitor, ICodeGenerator codeGenerator, DateTimeInstantiation dateTimeInstantiation)
+    public DateTimeOffsetVisitor(IObjectVisitor rootObjectVisitor, IDotnetCodeGenerator codeGenerator, DateTimeInstantiation dateTimeInstantiation)
     {
         _rootObjectVisitor = rootObjectVisitor;
         _codeGenerator = codeGenerator;
@@ -27,7 +27,7 @@ internal sealed class DateTimeOffsetVisitor : IKnownObjectVisitor
     public void Visit(object obj, Type objectType)
     {
         var dateTimeOffset = (DateTimeOffset)obj;
-        var dateTimeOffsetCodeTypeReference = new CodeTypeReference(typeof(DateTimeOffset));
+        var dateTimeOffsetCodeTypeReference = new CodeDotnetTypeReference(typeof(DateTimeOffset));
 
         if (dateTimeOffset == DateTimeOffset.MaxValue)
         {
@@ -50,9 +50,9 @@ internal sealed class DateTimeOffsetVisitor : IKnownObjectVisitor
                     () => _codeGenerator.GeneratePrimitive(dateTimeOffset.ToString("O")),
                     () => _codeGenerator.GeneratePrimitive("O"),
                     () => _codeGenerator.GenerateFieldReference(nameof(CultureInfo.InvariantCulture),
-                        () => _codeGenerator.GenerateTypeReference(new CodeTypeReference(typeof(CultureInfo)))),
+                        () => _codeGenerator.GenerateTypeReference(new CodeDotnetTypeReference(typeof(CultureInfo)))),
                     () => _codeGenerator.GenerateFieldReference(nameof(DateTimeStyles.RoundtripKind),
-                        () => _codeGenerator.GenerateTypeReference(new CodeTypeReference(typeof(DateTimeStyles))))
+                        () => _codeGenerator.GenerateTypeReference(new CodeDotnetTypeReference(typeof(DateTimeStyles))))
                 ]);
 
             return;

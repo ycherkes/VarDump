@@ -8,9 +8,9 @@ namespace VarDump.Visitor.KnownTypes;
 internal sealed class IPEndpointVisitor : IKnownObjectVisitor
 {
     private readonly IObjectVisitor _rootObjectVisitor;
-    private readonly ICodeGenerator _codeGenerator;
+    private readonly IDotnetCodeGenerator _codeGenerator;
 
-    public IPEndpointVisitor(IObjectVisitor rootObjectVisitor, ICodeGenerator codeGenerator)
+    public IPEndpointVisitor(IObjectVisitor rootObjectVisitor, IDotnetCodeGenerator codeGenerator)
     {
         _rootObjectVisitor = rootObjectVisitor;
         _codeGenerator = codeGenerator;
@@ -27,7 +27,7 @@ internal sealed class IPEndpointVisitor : IKnownObjectVisitor
         var ipEndPoint = (IPEndPoint)obj;
 
         _codeGenerator.GenerateObjectCreateAndInitialize(
-            new CodeTypeReference(typeof(IPEndPoint)),
+            new CodeDotnetTypeReference(typeof(IPEndPoint)),
             [
                 () => _rootObjectVisitor.Visit(ipEndPoint.Address),
                 () => _codeGenerator.GeneratePrimitive(ipEndPoint.Port)

@@ -6,8 +6,8 @@ namespace VarDump.Visitor.KnownTypes;
 
 internal sealed class TypeVisitor : IKnownObjectVisitor
 {
-    private readonly ICodeGenerator _codeGenerator;
-    public TypeVisitor(ICodeGenerator codeGenerator)
+    private readonly IDotnetCodeGenerator _codeGenerator;
+    public TypeVisitor(IDotnetCodeGenerator codeGenerator)
     {
         _codeGenerator = codeGenerator;
     }
@@ -23,6 +23,6 @@ internal sealed class TypeVisitor : IKnownObjectVisitor
     {
         var type = (Type)obj;
         
-        _codeGenerator.GenerateTypeOf(new CodeTypeReference(type));
+        _codeGenerator.GenerateTypeOf(new CodeDotnetTypeReference(type));
     }
 }

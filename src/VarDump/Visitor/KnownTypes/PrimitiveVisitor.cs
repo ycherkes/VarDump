@@ -9,9 +9,9 @@ namespace VarDump.Visitor.KnownTypes;
 
 internal sealed class PrimitiveVisitor : IKnownObjectVisitor
 {
-    private readonly ICodeGenerator _codeGenerator;
+    private readonly IDotnetCodeGenerator _codeGenerator;
 
-    public PrimitiveVisitor(ICodeGenerator codeGenerator)
+    public PrimitiveVisitor(IDotnetCodeGenerator codeGenerator)
     {
         _codeGenerator = codeGenerator;
     }
@@ -45,7 +45,7 @@ internal sealed class PrimitiveVisitor : IKnownObjectVisitor
 
         if (specialValueName != null)
         {
-            _codeGenerator.GenerateFieldReference(specialValueName, () => _codeGenerator.GenerateTypeReference(new CodeTypeReference(objectType)));
+            _codeGenerator.GenerateFieldReference(specialValueName, () => _codeGenerator.GenerateTypeReference(new CodeDotnetTypeReference(objectType)));
             return;
         }
 

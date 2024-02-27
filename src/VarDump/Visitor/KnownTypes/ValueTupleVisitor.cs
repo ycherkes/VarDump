@@ -9,9 +9,9 @@ namespace VarDump.Visitor.KnownTypes;
 internal sealed class ValueTupleVisitor : IKnownObjectVisitor
 {
     private readonly IObjectVisitor _rootObjectVisitor;
-    private readonly ICodeGenerator _codeGenerator;
+    private readonly IDotnetCodeGenerator _codeGenerator;
 
-    public ValueTupleVisitor(IObjectVisitor rootObjectVisitor, ICodeGenerator codeGenerator)
+    public ValueTupleVisitor(IObjectVisitor rootObjectVisitor, IDotnetCodeGenerator codeGenerator)
     {
         _rootObjectVisitor = rootObjectVisitor;
         _codeGenerator = codeGenerator;

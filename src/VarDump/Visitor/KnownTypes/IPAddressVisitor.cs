@@ -7,9 +7,9 @@ namespace VarDump.Visitor.KnownTypes;
 
 internal sealed class IPAddressVisitor : IKnownObjectVisitor
 {
-    private readonly ICodeGenerator _codeGenerator;
+    private readonly IDotnetCodeGenerator _codeGenerator;
 
-    public IPAddressVisitor(ICodeGenerator codeGenerator)
+    public IPAddressVisitor(IDotnetCodeGenerator codeGenerator)
     {
         _codeGenerator = codeGenerator;
     }
@@ -26,7 +26,7 @@ internal sealed class IPAddressVisitor : IKnownObjectVisitor
 
         _codeGenerator.GenerateMethodInvoke(
             () => _codeGenerator.GenerateMethodReference(
-                () => _codeGenerator.GenerateTypeReference(new CodeTypeReference(typeof(IPAddress))), nameof(IPAddress.Parse)),
+                () => _codeGenerator.GenerateTypeReference(new CodeDotnetTypeReference(typeof(IPAddress))), nameof(IPAddress.Parse)),
             [
                 () => _codeGenerator.GeneratePrimitive(ipAddress.ToString())
             ]);

@@ -10,17 +10,17 @@ using System.Linq;
 
 namespace VarDump.CodeDom.Common;
 
-public class CodeTypeReference
+public class CodeDotnetTypeReference
 {
     private string _baseType;
-    private List<CodeTypeReference> _typeArguments;
+    private List<CodeDotnetTypeReference> _typeArguments;
     private bool _needsFixup;
 
-    internal CodeTypeReference()
+    internal CodeDotnetTypeReference()
     {
     }
 
-    public CodeTypeReference(Type type)
+    public CodeDotnetTypeReference(Type type)
     {
         if (type == null)
         {
@@ -30,7 +30,7 @@ public class CodeTypeReference
         if (type.IsArray)
         {
             ArrayRank = type.GetArrayRank();
-            ArrayElementType = new CodeTypeReference(type.GetElementType());
+            ArrayElementType = new CodeDotnetTypeReference(type.GetElementType());
             _baseType = null;
         }
         else
@@ -41,7 +41,7 @@ public class CodeTypeReference
         }
     }
 
-    public CodeTypeReference(string typeName)
+    public CodeDotnetTypeReference(string typeName)
     {
         Initialize(typeName);
     }
@@ -67,7 +67,7 @@ public class CodeTypeReference
         // pick up the type arguments from an instantiated generic type but not an open one    
         if (type.IsGenericType && !type.ContainsGenericParameters)
         {
-            TypeArguments.AddRange(type.GetGenericArguments().Select(x => new CodeTypeReference(x)));
+            TypeArguments.AddRange(type.GetGenericArguments().Select(x => new CodeDotnetTypeReference(x)));
         }
         else if (!type.IsGenericTypeDefinition)
         {
@@ -132,7 +132,7 @@ public class CodeTypeReference
 
         // Try find generic type arguments
         current = end;
-        var typeArgumentList = new List<CodeTypeReference>();
+        var typeArgumentList = new List<CodeDotnetTypeReference>();
         var subTypeNames = new Stack<string>();
         if (current > 0 && typeName[current--] == ']')
         {
@@ -184,7 +184,7 @@ public class CodeTypeReference
                 while (subTypeNames.Count > 0)
                 {
                     string name = RipOffAssemblyInformationFromTypeName(subTypeNames.Pop());
-                    typeArgumentList.Add(new CodeTypeReference(name));
+                    typeArgumentList.Add(new CodeDotnetTypeReference(name));
                 }
                 end = current - 1;
             }
@@ -199,13 +199,13 @@ public class CodeTypeReference
 
         if (q.Count > 0)
         {
-            CodeTypeReference type = new CodeTypeReference(typeName.Substring(0, end + 1));
+            CodeDotnetTypeReference type = new CodeDotnetTypeReference(typeName.Substring(0, end + 1));
 
             type.TypeArguments.AddRange(typeArgumentList);
 
             while (q.Count > 1)
             {
-                type = new CodeTypeReference(type, q.Dequeue());
+                type = new CodeDotnetTypeReference(type, q.Dequeue());
             }
 
             // we don't need to create a new CodeTypeReference for the last one.
@@ -232,7 +232,7 @@ public class CodeTypeReference
         }
     }
 
-    public CodeTypeReference(string typeName, params CodeTypeReference[] typeArguments) : this(typeName)
+    public CodeDotnetTypeReference(string typeName, params CodeDotnetTypeReference[] typeArguments) : this(typeName)
     {
         if (typeArguments is { Length: > 0 })
         {
@@ -240,14 +240,14 @@ public class CodeTypeReference
         }
     }
 
-    public CodeTypeReference(CodeTypeReference arrayType, int rank)
+    public CodeDotnetTypeReference(CodeDotnetTypeReference arrayType, int rank)
     {
         _baseType = null;
         ArrayRank = rank;
         ArrayElementType = arrayType;
     }
 
-    public CodeTypeReference ArrayElementType { get; set; }
+    public CodeDotnetTypeReference ArrayElementType { get; set; }
 
     public int ArrayRank { get; set; }
 
@@ -279,7 +279,7 @@ public class CodeTypeReference
         }
     }
 
-    public List<CodeTypeReference> TypeArguments
+    public List<CodeDotnetTypeReference> TypeArguments
     {
         get
         {

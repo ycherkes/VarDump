@@ -12,9 +12,9 @@ namespace VarDump.Visitor.KnownTypes;
 internal sealed class GroupingVisitor : IKnownObjectVisitor
 {
     private readonly IObjectVisitor _rootObjectVisitor;
-    private readonly ICodeGenerator _codeGenerator;
+    private readonly IDotnetCodeGenerator _codeGenerator;
 
-    public GroupingVisitor(IObjectVisitor rootObjectVisitor, ICodeGenerator codeGenerator)
+    public GroupingVisitor(IObjectVisitor rootObjectVisitor, IDotnetCodeGenerator codeGenerator)
     {
         _rootObjectVisitor = rootObjectVisitor;
         _codeGenerator = codeGenerator;

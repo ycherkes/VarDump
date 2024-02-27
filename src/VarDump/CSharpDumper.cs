@@ -45,7 +45,7 @@ public class CSharpDumper : IDumper
 
     private void DumpImpl(object obj, TextWriter textWriter)
     {
-        ICodeGenerator codeGenerator = new CSharpCodeGenerator(textWriter, new CodeGeneratorOptions{ UseFullTypeName = _options.UseTypeFullName });
+        IDotnetCodeGenerator codeGenerator = new CSharpCodeGenerator(textWriter, new CodeGeneratorOptions{ UseFullTypeName = _options.UseTypeFullName });
 
         var objectVisitor = new ObjectVisitor(_options, codeGenerator);
 

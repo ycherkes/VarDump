@@ -12,10 +12,10 @@ namespace VarDump.Visitor.KnownTypes;
 internal sealed class DictionaryVisitor : IKnownObjectVisitor
 {
     private readonly IObjectVisitor _rootObjectVisitor;
-    private readonly ICodeGenerator _codeGenerator;
+    private readonly IDotnetCodeGenerator _codeGenerator;
     private readonly int _maxCollectionSize;
 
-    public DictionaryVisitor(IObjectVisitor rootObjectVisitor, ICodeGenerator codeGenerator, int maxCollectionSize)
+    public DictionaryVisitor(IObjectVisitor rootObjectVisitor, IDotnetCodeGenerator codeGenerator, int maxCollectionSize)
     {
         if (maxCollectionSize <= 0)
         {
@@ -38,7 +38,7 @@ internal sealed class DictionaryVisitor : IKnownObjectVisitor
         IDictionary dict = (IDictionary)obj;
         if (_rootObjectVisitor.IsVisited(dict))
         {
-            _codeGenerator.WriteCircularReferenceDetected();
+            _codeGenerator.GenerateCircularReferenceDetected();
             return;
         }
 
@@ -70,7 +70,7 @@ internal sealed class DictionaryVisitor : IKnownObjectVisitor
 
         if (_maxCollectionSize < int.MaxValue)
         {
-            items = items.Take(_maxCollectionSize + 1).Replace(_maxCollectionSize, () => _codeGenerator.WriteTooManyItems(_maxCollectionSize));
+            items = items.Take(_maxCollectionSize + 1).Replace(_maxCollectionSize, () => _codeGenerator.GenerateTooManyItems(_maxCollectionSize));
         }
 
         var type = dict.GetType();
@@ -104,7 +104,7 @@ internal sealed class DictionaryVisitor : IKnownObjectVisitor
 
         if (_maxCollectionSize < int.MaxValue)
         {
-            items = items.Take(_maxCollectionSize + 1).Replace(_maxCollectionSize, () => _codeGenerator.WriteTooManyItems(_maxCollectionSize));
+            items = items.Take(_maxCollectionSize + 1).Replace(_maxCollectionSize, () => _codeGenerator.GenerateTooManyItems(_maxCollectionSize));
         }
         
         var type = dictionary.GetType();

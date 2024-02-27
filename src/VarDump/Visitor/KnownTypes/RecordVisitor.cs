@@ -10,10 +10,10 @@ namespace VarDump.Visitor.KnownTypes;
 internal sealed class RecordVisitor : IKnownObjectVisitor
 {
     private readonly IObjectVisitor _rootObjectVisitor;
-    private readonly ICodeGenerator _codeGenerator;
+    private readonly IDotnetCodeGenerator _codeGenerator;
     private readonly bool _useNamedArgumentsForReferenceRecordTypes;
 
-    public RecordVisitor(IObjectVisitor rootObjectVisitor, ICodeGenerator codeGenerator, bool useNamedArgumentsForReferenceRecordTypes)
+    public RecordVisitor(IObjectVisitor rootObjectVisitor, IDotnetCodeGenerator codeGenerator, bool useNamedArgumentsForReferenceRecordTypes)
     {
         _rootObjectVisitor = rootObjectVisitor;
         _codeGenerator = codeGenerator;
@@ -33,7 +33,7 @@ internal sealed class RecordVisitor : IKnownObjectVisitor
             ? properties.Select(p => (Action)(() => _codeGenerator.GenerateNamedArgument(p.Name, () => _rootObjectVisitor.Visit(ReflectionUtils.GetValue(p, obj)))))
             : properties.Select(p => ReflectionUtils.GetValue(p, obj)).Select(value => (Action)(() => _rootObjectVisitor.Visit(value)));
 
-        _codeGenerator.GenerateObjectCreateAndInitialize(new CodeTypeReference(objectType),
+        _codeGenerator.GenerateObjectCreateAndInitialize(new CodeDotnetTypeReference(objectType),
             argumentValues,
             []);
     }

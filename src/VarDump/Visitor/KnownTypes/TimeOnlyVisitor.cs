@@ -1,16 +1,17 @@
 ﻿using System;
 using VarDump.CodeDom.Common;
 using VarDump.CodeDom.Compiler;
+using VarDump.Extensions;
 using VarDump.Utils;
 
 namespace VarDump.Visitor.KnownTypes;
 
 internal sealed class TimeOnlyVisitor : IKnownObjectVisitor
 {
-    private readonly ICodeGenerator _codeGenerator;
+    private readonly IDotnetCodeGenerator _codeGenerator;
     private readonly DateTimeInstantiation _dateTimeInstantiation;
 
-    public TimeOnlyVisitor(ICodeGenerator codeGenerator, DateTimeInstantiation dateTimeInstantiation)
+    public TimeOnlyVisitor(IDotnetCodeGenerator codeGenerator, DateTimeInstantiation dateTimeInstantiation)
     {
         _codeGenerator = codeGenerator;
         _dateTimeInstantiation = dateTimeInstantiation;
@@ -24,12 +25,12 @@ internal sealed class TimeOnlyVisitor : IKnownObjectVisitor
 
     public void Visit(object timeOnly, Type objectType)
     {
-        var timeOnlyCodeTypeReference = new CodeTypeReference(objectType);
+        var timeOnlyCodeTypeReference = new CodeDotnetTypeReference(objectType);
         var ticks = (long?)objectType.GetProperty("Ticks")?.GetValue(timeOnly);
 
         if (ticks == null)
         {
-            _codeGenerator.WriteErrorDetected("Wrong TimeOnly struct");
+            _codeGenerator.GenerateErrorDetected("Wrong TimeOnly struct");
             return;
         }
 

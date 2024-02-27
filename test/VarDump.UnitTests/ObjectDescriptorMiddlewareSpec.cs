@@ -4,6 +4,7 @@ using System.ComponentModel;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using VarDump.CodeDom.Common;
 using VarDump.Visitor;
 using VarDump.Visitor.Descriptors;
 using Xunit;
@@ -271,16 +272,16 @@ public class ObjectDescriptorMiddlewareSpec
             "Attributes"
         ];
 
-        public IEnumerable<IReflectionDescriptor> Describe(object @object, Type objectType, Func<IEnumerable<IReflectionDescriptor>> prev)
+        public ObjectDescriptionInfo Describe(object @object, Type objectType, Func<ObjectDescriptionInfo> prev)
         {
-            var members = prev();
+            var info = prev();
 
             if (typeof(MemberInfo).IsAssignableFrom(objectType))
             {
-                members = members.Where(m => _includeProperties.Contains(m.Name));
+                info.Members = info.Members.Where(m => _includeProperties.Contains(m.Name)).ToList();
             }
 
-            return members;
+            return info;
         }
     }
 
@@ -293,30 +294,34 @@ public class ObjectDescriptorMiddlewareSpec
             "Root"
         ];
 
-        public IEnumerable<IReflectionDescriptor> Describe(object @object, Type objectType, Func<IEnumerable<IReflectionDescriptor>> prev)
+        public ObjectDescriptionInfo Describe(object @object, Type objectType, Func<ObjectDescriptionInfo> prev)
         {
-            var members = prev();
+            var info = prev();
 
             if (typeof(FileSystemInfo).IsAssignableFrom(objectType))
             {
-                members = members.Where(m => !_excludeProperties.Contains(m.Name));
+                info.Members = info.Members.Where(m => !_excludeProperties.Contains(m.Name)).ToList();
             }
 
-            return members;
+            return info;
         }
     }
 
     private class FileInfoMiddleware : IObjectDescriptorMiddleware
     {
-        public IEnumerable<IReflectionDescriptor> Describe(object @object, Type objectType, Func<IEnumerable<IReflectionDescriptor>> prev)
+        public ObjectDescriptionInfo Describe(object @object, Type objectType, Func<ObjectDescriptionInfo> prev)
         {
             if (@object is FileInfo fileInfo)
             {
-                return new[]
+                return new ObjectDescriptionInfo
                 {
-                    new ReflectionDescriptor(fileInfo.FullName)
+                    Type = new CodeDotnetTypeReference(objectType),
+                    ConstructorParameters = new []
                     {
-                        ReflectionType = ReflectionType.ConstructorParameter
+                        new ReflectionDescriptor(fileInfo.FullName)
+                        {
+                            ReflectionType = ReflectionType.ConstructorParameter
+                        }
                     }
                 };
             }
@@ -327,15 +332,19 @@ public class ObjectDescriptorMiddlewareSpec
 
     private class DriveInfoMiddleware : IObjectDescriptorMiddleware
     {
-        public IEnumerable<IReflectionDescriptor> Describe(object @object, Type objectType, Func<IEnumerable<IReflectionDescriptor>> prev)
+        public ObjectDescriptionInfo Describe(object @object, Type objectType, Func<ObjectDescriptionInfo> prev)
         {
             if (@object is DriveInfo driveInfo)
             {
-                return new[]
+                return new ObjectDescriptionInfo
                 {
-                    new ReflectionDescriptor(driveInfo.Name)
+                    Type = new CodeDotnetTypeReference(objectType),
+                    ConstructorParameters = new []
                     {
-                        ReflectionType = ReflectionType.ConstructorParameter
+                        new ReflectionDescriptor(driveInfo.Name)
+                        {
+                            ReflectionType = ReflectionType.ConstructorParameter
+                        }
                     }
                 };
             }
@@ -345,7 +354,7 @@ public class ObjectDescriptorMiddlewareSpec
     }
     private class FormattableStringMiddleware : IObjectDescriptorMiddleware
     {
-        public IEnumerable<IReflectionDescriptor> Describe(object @object, Type objectType, Func<IEnumerable<IReflectionDescriptor>> prev)
+        public ObjectDescriptionInfo Describe(object @object, Type objectType, Func<ObjectDescriptionInfo> prev)
         {
             if (@object is FormattableString fs)
             {
@@ -353,7 +362,7 @@ public class ObjectDescriptorMiddlewareSpec
                 {
                     fs.Format,
                     Arguments = fs.GetArguments()
-                });
+                }, objectType);
             }
 
             return prev();

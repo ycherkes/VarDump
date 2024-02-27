@@ -1,7 +1,7 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using VarDump.CodeDom.Common;
 using VarDump.Extensions;
 using VarDump.Utils;
 
@@ -16,7 +16,7 @@ internal class ObjectFieldsDescriptor : IObjectDescriptor
         _getFieldsBindingFlags = getFieldsBindingFlags;
     }
 
-    public IEnumerable<IReflectionDescriptor> Describe(object @object, Type objectType)
+    public ObjectDescriptionInfo Describe(object @object, Type objectType)
     {
         var fields = EnumerableExtensions.AsEnumerable(() => objectType
                 .GetFields(_getFieldsBindingFlags))
@@ -27,6 +27,12 @@ internal class ObjectFieldsDescriptor : IObjectDescriptor
                 ReflectionType = ReflectionType.Field
             });
 
-        return fields;
+        var info = new ObjectDescriptionInfo
+        {
+            Type = new CodeDotnetTypeReference(objectType),
+            Members = fields
+        };
+
+        return info;
     }
 }

@@ -9,10 +9,10 @@ namespace VarDump.Visitor.KnownTypes;
 
 internal sealed class TimeSpanVisitor : IKnownObjectVisitor
 {
-    private readonly ICodeGenerator _codeGenerator;
+    private readonly IDotnetCodeGenerator _codeGenerator;
     private readonly DateTimeInstantiation _dateTimeInstantiation;
 
-    public TimeSpanVisitor(ICodeGenerator codeGenerator, DateTimeInstantiation dateTimeInstantiation)
+    public TimeSpanVisitor(IDotnetCodeGenerator codeGenerator, DateTimeInstantiation dateTimeInstantiation)
     {
         _codeGenerator = codeGenerator;
         _dateTimeInstantiation = dateTimeInstantiation;
@@ -35,11 +35,11 @@ internal sealed class TimeSpanVisitor : IKnownObjectVisitor
             { TimeSpan.Zero, nameof(TimeSpan.Zero) }
         };
 
-        var timeSpanCodeTypeReference = new CodeTypeReference(typeof(TimeSpan));
+        var timeSpanCodeTypeReference = new CodeDotnetTypeReference(typeof(TimeSpan));
 
         if (specialValuesDictionary.TryGetValue(timeSpan, out var name))
         {
-            _codeGenerator.GenerateFieldReference(name, () => _codeGenerator.GenerateTypeReference(new CodeTypeReference(objectType)));
+            _codeGenerator.GenerateFieldReference(name, () => _codeGenerator.GenerateTypeReference(new CodeDotnetTypeReference(objectType)));
 
             return;
         }
@@ -82,9 +82,9 @@ internal sealed class TimeSpanVisitor : IKnownObjectVisitor
                     () => _codeGenerator.GeneratePrimitive(timeSpan.ToString("c")),
                     () => _codeGenerator.GeneratePrimitive("c"),
                     () => _codeGenerator.GenerateFieldReference(nameof(CultureInfo.InvariantCulture),
-                        () => _codeGenerator.GenerateTypeReference(new CodeTypeReference(typeof(CultureInfo)))),
+                        () => _codeGenerator.GenerateTypeReference(new CodeDotnetTypeReference(typeof(CultureInfo)))),
                     () => _codeGenerator.GenerateFieldReference(nameof(TimeSpanStyles.None),
-                        () => _codeGenerator.GenerateTypeReference(new CodeTypeReference(typeof(TimeSpanStyles))))
+                        () => _codeGenerator.GenerateTypeReference(new CodeDotnetTypeReference(typeof(TimeSpanStyles))))
                 ]);
 
             return;

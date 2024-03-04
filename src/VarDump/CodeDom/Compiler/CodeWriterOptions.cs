@@ -5,30 +5,29 @@
 using System.Collections;
 using System.Collections.Specialized;
 
-namespace VarDump.CodeDom.Compiler
-{
-    public class CodeWriterOptions
-    {
-        private readonly IDictionary _options = new ListDictionary();
+namespace VarDump.CodeDom.Compiler;
 
-        public string IndentString
+public class CodeWriterOptions
+{
+    private readonly IDictionary _options = new ListDictionary();
+
+    public string IndentString
+    {
+        get
         {
-            get
-            {
                 var o = _options[nameof(IndentString)];
                 return o != null ? (string)o : "    ";
             }
-            set => _options[nameof(IndentString)] = value;
-        }
+        set => _options[nameof(IndentString)] = value;
+    }
 
-        public bool UseFullTypeName
+    public bool UseFullTypeName
+    {
+        get
         {
-            get
-            {
                 var o = _options[nameof(UseFullTypeName)];
                 return o != null && (bool)o;
             }
-            set => _options[nameof(UseFullTypeName)] = value;
-        }
+        set => _options[nameof(UseFullTypeName)] = value;
     }
 }

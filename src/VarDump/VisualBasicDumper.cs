@@ -45,7 +45,13 @@ public class VisualBasicDumper : IDumper
 
     private void DumpImpl(object obj, TextWriter textWriter)
     {
-        ICodeWriter codeWriter = new VBCodeWriter(textWriter, new CodeWriterOptions { UseFullTypeName = _options.UseTypeFullName });
+        var codeWriterOptions = new CodeWriterOptions
+        {
+            UseFullTypeName = _options.UseTypeFullName,
+            IndentString = _options.IndentString
+        };
+
+        ICodeWriter codeWriter = new VBCodeWriter(textWriter, codeWriterOptions);
 
         var objectVisitor = new ObjectVisitor(_options, codeWriter);
 

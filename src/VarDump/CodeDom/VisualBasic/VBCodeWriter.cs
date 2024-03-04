@@ -141,7 +141,7 @@ internal sealed class VBCodeWriter : ICodeWriter
                 //
                 // If current character is a high surrogate and the following 
                 // character is a low surrogate, don't break them. 
-                // Otherwise when we write the string to a file, we might lose 
+                // Otherwise, when we write the string to a file, we might lose 
                 // the characters.
                 // 
                 if (char.IsHighSurrogate(value[i])

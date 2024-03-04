@@ -45,7 +45,13 @@ public class CSharpDumper : IDumper
 
     private void DumpImpl(object obj, TextWriter textWriter)
     {
-        ICodeWriter codeWriter = new CSharpCodeWriter(textWriter, new CodeWriterOptions{ UseFullTypeName = _options.UseTypeFullName });
+        var codeWriterOptions = new CodeWriterOptions
+        {
+            UseFullTypeName = _options.UseTypeFullName,
+            IndentString = _options.IndentString
+        };
+
+        ICodeWriter codeWriter = new CSharpCodeWriter(textWriter, codeWriterOptions);
 
         var objectVisitor = new ObjectVisitor(_options, codeWriter);
 

@@ -96,11 +96,12 @@ Console.WriteLine(dictionary.Dump(DumpOptions.Default));
 ```
 
 ## Extensibility:
+
+### Light with ObjectDescriptorMiddleware:
 <p align="right"><a href="https://dotnetfiddle.net/hfrbo6">Run .NET fiddle</a></p>
 
 ```csharp
 using System;
-using System.Collections.Generic;
 using VarDump;
 using VarDump.Visitor;
 using VarDump.Visitor.Descriptors;
@@ -129,7 +130,7 @@ Console.WriteLine(vb);
 
 class FormattableStringMiddleware : IObjectDescriptorMiddleware
 {
-    public IEnumerable<IReflectionDescriptor> Describe(object @object, Type objectType, Func<IEnumerable<IReflectionDescriptor>> prev)
+    public ObjectDescriptionInfo Describe(object @object, Type objectType, Func<ObjectDescriptionInfo> prev)
     {
         if (@object is FormattableString fs)
         {
@@ -137,10 +138,72 @@ class FormattableStringMiddleware : IObjectDescriptorMiddleware
             {
                 fs.Format,
                 Arguments = fs.GetArguments()
-            });
+            }, objectType);
         }
 
         return prev();
+    }
+}
+```
+
+### Full feature with KnownObjectVisitor:
+<p align="right"><a href="https://dotnetfiddle.net/kScIyR">Run .NET fiddle</a></p>
+
+```csharp
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Runtime.CompilerServices;
+using VarDump;
+using VarDump.CodeDom.Compiler;
+using VarDump.Extensions;
+using VarDump.Visitor;
+using VarDump.Visitor.KnownTypes;
+
+// For more examples see https://github.com/ycherkes/VarDump/blob/main/test/VarDump.UnitTests/KnownTypesSpec.cs
+
+const string name = "World";
+FormattableString str = $"Hello, {name}";
+
+var dumpOptions = new DumpOptions
+{
+    ConfigureKnownTypes = (knownObjects, rootObjectVisitor, _, codeWriter) =>
+    {
+        var fsv = new FormattableStringVisitor(rootObjectVisitor, codeWriter);
+        knownObjects.Add(fsv.Id, fsv);
+    }
+};
+
+var dumper = new CSharpDumper(dumpOptions);
+var result = dumper.Dump(str);
+Console.WriteLine(result);
+
+return;
+
+class FormattableStringVisitor(IObjectVisitor rootObjectVisitor, ICodeWriter codeWriter) : IKnownObjectVisitor
+{
+    public string Id => "ServiceDescriptor";
+    public bool IsSuitableFor(object obj, Type objectType)
+    {
+        return obj is FormattableString;
+    }
+
+    public void Visit(object obj, Type objectType)
+    {
+        var formattableString = (FormattableString)obj;
+
+        IEnumerable<Action> argumentActions =
+        [
+            () => codeWriter.WritePrimitive(formattableString.Format)
+        ];
+
+        argumentActions = argumentActions.Concat(formattableString.GetArguments().Select(a => (Action)(() => rootObjectVisitor.Visit(a))));
+
+        codeWriter.WriteMethodInvoke(() =>
+            codeWriter.WriteMethodReference(
+                () => codeWriter.WriteTypeReference(typeof(FormattableStringFactory)),
+                nameof(FormattableStringFactory.Create)),
+            argumentActions);
     }
 }
 ```

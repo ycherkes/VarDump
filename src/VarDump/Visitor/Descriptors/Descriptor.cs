@@ -11,8 +11,13 @@ public static class Descriptor
 
     public static ObjectDescriptionInfo FromObject(object @object, Type declaredType)
     {
+        return FromObject(@object, new TypeReference(declaredType));
+    }
+
+    public static ObjectDescriptionInfo FromObject(object @object, TypeReference declaredType)
+    {
         var info = PropertiesDescriptor.Describe(@object, @object.GetType());
-        info.Type = new CodeDotnetTypeReference(declaredType);
+        info.Type = declaredType;
         return info;
     }
 }

@@ -1,17 +1,17 @@
 ﻿using System;
 using System.Globalization;
-using VarDump.CodeDom.Common;
 using VarDump.CodeDom.Compiler;
+using VarDump.Extensions;
 
 namespace VarDump.Visitor.KnownTypes;
 
 internal sealed class CultureInfoVisitor : IKnownObjectVisitor
 {
-    private readonly IDotnetCodeGenerator _codeGenerator;
+    private readonly ICodeWriter _codeWriter;
 
-    public CultureInfoVisitor(IDotnetCodeGenerator codeGenerator)
+    public CultureInfoVisitor(ICodeWriter codeWriter)
     {
-        _codeGenerator = codeGenerator;
+        _codeWriter = codeWriter;
     }
 
     public string Id => nameof(CultureInfo);
@@ -24,9 +24,9 @@ internal sealed class CultureInfoVisitor : IKnownObjectVisitor
     {
         var cultureInfo = (CultureInfo)obj;
 
-        _codeGenerator.GenerateObjectCreateAndInitialize(new CodeDotnetTypeReference(typeof(CultureInfo)),
+        _codeWriter.WriteObjectCreateAndInitialize(typeof(CultureInfo),
             [
-                () => _codeGenerator.GeneratePrimitive(cultureInfo.ToString())
+                () => _codeWriter.WritePrimitive(cultureInfo.ToString())
             ],
             []);
     }

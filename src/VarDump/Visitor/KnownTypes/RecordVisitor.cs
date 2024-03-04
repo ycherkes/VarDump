@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Linq;
 using System.Reflection;
-using VarDump.CodeDom.Common;
 using VarDump.CodeDom.Compiler;
+using VarDump.Extensions;
 using VarDump.Utils;
 
 namespace VarDump.Visitor.KnownTypes;
@@ -10,13 +10,13 @@ namespace VarDump.Visitor.KnownTypes;
 internal sealed class RecordVisitor : IKnownObjectVisitor
 {
     private readonly IObjectVisitor _rootObjectVisitor;
-    private readonly IDotnetCodeGenerator _codeGenerator;
+    private readonly ICodeWriter _codeWriter;
     private readonly bool _useNamedArgumentsForReferenceRecordTypes;
 
-    public RecordVisitor(IObjectVisitor rootObjectVisitor, IDotnetCodeGenerator codeGenerator, bool useNamedArgumentsForReferenceRecordTypes)
+    public RecordVisitor(IObjectVisitor rootObjectVisitor, ICodeWriter codeWriter, bool useNamedArgumentsForReferenceRecordTypes)
     {
         _rootObjectVisitor = rootObjectVisitor;
-        _codeGenerator = codeGenerator;
+        _codeWriter = codeWriter;
         _useNamedArgumentsForReferenceRecordTypes = useNamedArgumentsForReferenceRecordTypes;
     }
 
@@ -30,10 +30,10 @@ internal sealed class RecordVisitor : IKnownObjectVisitor
     {
         var properties = objectType.GetProperties(BindingFlags.Public | BindingFlags.Instance | BindingFlags.NonPublic).Where(p => p.CanWrite);
         var argumentValues = _useNamedArgumentsForReferenceRecordTypes
-            ? properties.Select(p => (Action)(() => _codeGenerator.GenerateNamedArgument(p.Name, () => _rootObjectVisitor.Visit(ReflectionUtils.GetValue(p, obj)))))
+            ? properties.Select(p => (Action)(() => _codeWriter.WriteNamedArgument(p.Name, () => _rootObjectVisitor.Visit(ReflectionUtils.GetValue(p, obj)))))
             : properties.Select(p => ReflectionUtils.GetValue(p, obj)).Select(value => (Action)(() => _rootObjectVisitor.Visit(value)));
 
-        _codeGenerator.GenerateObjectCreateAndInitialize(new CodeDotnetTypeReference(objectType),
+        _codeWriter.WriteObjectCreateAndInitialize(objectType,
             argumentValues,
             []);
     }

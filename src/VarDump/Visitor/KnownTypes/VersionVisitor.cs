@@ -1,16 +1,16 @@
 ﻿using System;
-using VarDump.CodeDom.Common;
 using VarDump.CodeDom.Compiler;
+using VarDump.Extensions;
 
 namespace VarDump.Visitor.KnownTypes;
 
 internal sealed class VersionVisitor : IKnownObjectVisitor
 {
-    private readonly IDotnetCodeGenerator _codeGenerator;
+    private readonly ICodeWriter _codeWriter;
 
-    public VersionVisitor(IDotnetCodeGenerator codeGenerator)
+    public VersionVisitor(ICodeWriter codeWriter)
     {
-        _codeGenerator = codeGenerator;
+        _codeWriter = codeWriter;
     }
 
     public string Id => nameof(Version);
@@ -23,9 +23,9 @@ internal sealed class VersionVisitor : IKnownObjectVisitor
     public void Visit(object obj, Type objectType)
     {
         var version  = (Version)obj;
-        _codeGenerator.GenerateObjectCreateAndInitialize(new CodeDotnetTypeReference(typeof(Version)), 
+        _codeWriter.WriteObjectCreateAndInitialize(typeof(Version), 
             [
-                () => _codeGenerator.GeneratePrimitive(version.ToString())
+                () => _codeWriter.WritePrimitive(version.ToString())
             ], []);
     }
 }

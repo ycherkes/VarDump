@@ -4,8 +4,8 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.CompilerServices;
-using VarDump.CodeDom.Common;
 using VarDump.CodeDom.Compiler;
+using VarDump.Extensions;
 using VarDump.UnitTests.TestModel;
 using VarDump.Visitor;
 using VarDump.Visitor.KnownTypes;
@@ -27,9 +27,9 @@ public class KnownTypesSpec
 
         var dumpOptions = DumpOptions.Default;
 
-        dumpOptions.ConfigureKnownTypes = (knownObjects, rootObjectVisitor, _, codeGenerator) =>
+        dumpOptions.ConfigureKnownTypes = (knownObjects, rootObjectVisitor, _, codeWriter) =>
         {
-            var sdv = new ServiceDescriptorVisitor(rootObjectVisitor, codeGenerator);
+            var sdv = new ServiceDescriptorVisitor(rootObjectVisitor, codeWriter);
             knownObjects.Add(sdv.Id, sdv);
         };
 
@@ -55,9 +55,9 @@ public class KnownTypesSpec
 
         var dumpOptions = DumpOptions.Default;
 
-        dumpOptions.ConfigureKnownTypes = (knownObjects, rootObjectVisitor, _, codeGenerator) =>
+        dumpOptions.ConfigureKnownTypes = (knownObjects, rootObjectVisitor, _, codeWriter) =>
         {
-            var sdv = new ServiceDescriptorVisitor(rootObjectVisitor, codeGenerator);
+            var sdv = new ServiceDescriptorVisitor(rootObjectVisitor, codeWriter);
             knownObjects.Add(sdv.Id, sdv);
         };
 
@@ -78,9 +78,9 @@ public class KnownTypesSpec
 
         var dumpOptions = DumpOptions.Default;
 
-        dumpOptions.ConfigureKnownTypes = (knownObjects, rootObjectVisitor, _, codeGenerator) =>
+        dumpOptions.ConfigureKnownTypes = (knownObjects, rootObjectVisitor, _, codeWriter) =>
         {
-            var sdv = new FormattableStringVisitor(rootObjectVisitor, codeGenerator);
+            var sdv = new FormattableStringVisitor(rootObjectVisitor, codeWriter);
             knownObjects.Add(sdv.Id, sdv);
         };
 
@@ -103,9 +103,9 @@ public class KnownTypesSpec
 
         var dumpOptions = DumpOptions.Default;
 
-        dumpOptions.ConfigureKnownTypes = (knownObjects, rootObjectVisitor, _, codeGenerator) =>
+        dumpOptions.ConfigureKnownTypes = (knownObjects, rootObjectVisitor, _, codeWriter) =>
         {
-            var sdv = new FormattableStringVisitor(rootObjectVisitor, codeGenerator);
+            var sdv = new FormattableStringVisitor(rootObjectVisitor, codeWriter);
             knownObjects.Add(sdv.Id, sdv);
         };
 
@@ -120,7 +120,7 @@ public class KnownTypesSpec
             """, result);
     }
 
-    private class ServiceDescriptorVisitor(IObjectVisitor rootObjectVisitor, IDotnetCodeGenerator codeGenerator) : IKnownObjectVisitor
+    private class ServiceDescriptorVisitor(IObjectVisitor rootObjectVisitor, ICodeWriter codeWriter) : IKnownObjectVisitor
     {
         public string Id => "ServiceDescriptor";
         public bool IsSuitableFor(object obj, Type objectType)
@@ -132,14 +132,14 @@ public class KnownTypesSpec
         {
             var serviceDescriptor = (ServiceDescriptor)obj;
 
-            var typeParameters = new List<CodeDotnetTypeReference>
+            var typeParameters = new List<Type>
             {
-                new(serviceDescriptor.ServiceType)
+                serviceDescriptor.ServiceType
             };
 
             if (serviceDescriptor.ImplementationType != null)
             {
-                typeParameters.Add(new CodeDotnetTypeReference(serviceDescriptor.ImplementationType));
+                typeParameters.Add(serviceDescriptor.ImplementationType);
             }
 
             var parameters = new List<Action>(1);
@@ -151,22 +151,21 @@ public class KnownTypesSpec
 
             if (serviceDescriptor.ImplementationFactory != null)
             {
-                var typeRef = new CodeDotnetTypeReference(
-                    serviceDescriptor.ImplementationType ?? serviceDescriptor.ServiceType);
+                var typeRef = serviceDescriptor.ImplementationType ?? serviceDescriptor.ServiceType;
 
-                parameters.Add(() => codeGenerator.GenerateLambdaExpression(() => codeGenerator.GenerateDefaultValue(typeRef), [ () => codeGenerator.GenerateVariableReference("serviceProvider")]));
+                parameters.Add(() => codeWriter.WriteLambdaExpression(() => codeWriter.WriteDefaultValue(typeRef), [ () => codeWriter.WriteVariableReference("serviceProvider")]));
                
             }
 
-            codeGenerator.GenerateMethodInvoke(() => 
-                codeGenerator.GenerateMethodReference(
-                    () => codeGenerator.GenerateTypeReference(new CodeDotnetTypeReference(typeof(ServiceDescriptor))),
+            codeWriter.WriteMethodInvoke(() => 
+                codeWriter.WriteMethodReference(
+                    () => codeWriter.WriteTypeReference(typeof(ServiceDescriptor)),
                     serviceDescriptor.Lifetime.ToString(), typeParameters.ToArray()
                     ), parameters);
         }
     }
 
-    private class FormattableStringVisitor(IObjectVisitor rootObjectVisitor, IDotnetCodeGenerator codeGenerator) : IKnownObjectVisitor
+    private class FormattableStringVisitor(IObjectVisitor rootObjectVisitor, ICodeWriter codeWriter) : IKnownObjectVisitor
     {
         public string Id => "ServiceDescriptor";
         public bool IsSuitableFor(object obj, Type objectType)
@@ -180,14 +179,14 @@ public class KnownTypesSpec
 
             IEnumerable<Action> argumentActions =
             [
-                () => codeGenerator.GeneratePrimitive(formattableString.Format)
+                () => codeWriter.WritePrimitive(formattableString.Format)
             ];
 
             argumentActions = argumentActions.Concat(formattableString.GetArguments().Select(a => (Action)(() => rootObjectVisitor.Visit(a))));
 
-            codeGenerator.GenerateMethodInvoke(() =>
-                codeGenerator.GenerateMethodReference(
-                    () => codeGenerator.GenerateTypeReference(new CodeDotnetTypeReference(typeof(FormattableStringFactory))),
+            codeWriter.WriteMethodInvoke(() =>
+                codeWriter.WriteMethodReference(
+                    () => codeWriter.WriteTypeReference(typeof(FormattableStringFactory)),
                     nameof(FormattableStringFactory.Create)),
                 argumentActions);
         }

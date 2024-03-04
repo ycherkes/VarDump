@@ -1,19 +1,19 @@
 ﻿using System;
 using System.Net;
-using VarDump.CodeDom.Common;
 using VarDump.CodeDom.Compiler;
+using VarDump.Extensions;
 
 namespace VarDump.Visitor.KnownTypes;
 
 internal sealed class IPEndpointVisitor : IKnownObjectVisitor
 {
     private readonly IObjectVisitor _rootObjectVisitor;
-    private readonly IDotnetCodeGenerator _codeGenerator;
+    private readonly ICodeWriter _codeWriter;
 
-    public IPEndpointVisitor(IObjectVisitor rootObjectVisitor, IDotnetCodeGenerator codeGenerator)
+    public IPEndpointVisitor(IObjectVisitor rootObjectVisitor, ICodeWriter codeWriter)
     {
         _rootObjectVisitor = rootObjectVisitor;
-        _codeGenerator = codeGenerator;
+        _codeWriter = codeWriter;
     }
 
     public string Id => nameof(IPEndPoint);
@@ -26,11 +26,11 @@ internal sealed class IPEndpointVisitor : IKnownObjectVisitor
     {
         var ipEndPoint = (IPEndPoint)obj;
 
-        _codeGenerator.GenerateObjectCreateAndInitialize(
-            new CodeDotnetTypeReference(typeof(IPEndPoint)),
+        _codeWriter.WriteObjectCreateAndInitialize(
+            typeof(IPEndPoint),
             [
                 () => _rootObjectVisitor.Visit(ipEndPoint.Address),
-                () => _codeGenerator.GeneratePrimitive(ipEndPoint.Port)
+                () => _codeWriter.WritePrimitive(ipEndPoint.Port)
             ],
             []);
     }

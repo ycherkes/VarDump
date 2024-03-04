@@ -15,7 +15,7 @@ namespace VarDump.Visitor;
 
 internal sealed class ObjectVisitor : IObjectVisitor
 {
-    private readonly IDotnetCodeGenerator _codeGenerator;
+    private readonly ICodeWriter _codeWriter;
     private readonly ICollection<string> _excludeTypes;
     private readonly bool _ignoreDefaultValues;
     private readonly bool _ignoreNullValues;
@@ -27,9 +27,9 @@ internal sealed class ObjectVisitor : IObjectVisitor
 
     private int _depth;
 
-    public ObjectVisitor(DumpOptions options, IDotnetCodeGenerator codeGenerator)
+    public ObjectVisitor(DumpOptions options, ICodeWriter codeWriter)
     {
-        _codeGenerator = codeGenerator;
+        _codeWriter = codeWriter;
         _maxDepth = options.MaxDepth;
         _ignoreDefaultValues = options.IgnoreDefaultValues;
         _ignoreNullValues = options.IgnoreNullValues;
@@ -54,39 +54,39 @@ internal sealed class ObjectVisitor : IObjectVisitor
 
         _knownTypes = new[]
         {
-            (IKnownObjectVisitor)new PrimitiveVisitor(codeGenerator),
-            new TimeSpanVisitor(codeGenerator, options.DateTimeInstantiation),
-            new DateTimeVisitor(codeGenerator, options.DateTimeInstantiation, options.DateKind),
-            new DateTimeOffsetVisitor(this, codeGenerator, options.DateTimeInstantiation),
-            new EnumVisitor(codeGenerator),
-            new GuidVisitor(codeGenerator),
-            new CultureInfoVisitor(codeGenerator),
-            new TypeVisitor(codeGenerator),
-            new IPAddressVisitor(codeGenerator),
-            new IPEndpointVisitor(this, codeGenerator),
-            new DnsEndPointVisitor(this, codeGenerator),
-            new VersionVisitor(codeGenerator),
-            new DateOnlyVisitor(codeGenerator, options.DateTimeInstantiation),
-            new TimeOnlyVisitor(codeGenerator, options.DateTimeInstantiation),
-            new RecordVisitor(this, codeGenerator, options.UseNamedArgumentsForReferenceRecordTypes),
-            new AnonymousTypeVisitor(this, anonymousObjectDescriptor, codeGenerator),
-            new KeyValuePairVisitor(this, codeGenerator),
-            new TupleVisitor(this, codeGenerator),
-            new ValueTupleVisitor(this, codeGenerator),
-            new UriVisitor(codeGenerator),
-            new GroupingVisitor(this, codeGenerator),
-            new DictionaryVisitor(this, codeGenerator, options.MaxCollectionSize),
-            new CollectionVisitor(this, codeGenerator, options.MaxCollectionSize),
+            (IKnownObjectVisitor)new PrimitiveVisitor(codeWriter),
+            new TimeSpanVisitor(codeWriter, options.DateTimeInstantiation),
+            new DateTimeVisitor(codeWriter, options.DateTimeInstantiation, options.DateKind),
+            new DateTimeOffsetVisitor(this, codeWriter, options.DateTimeInstantiation),
+            new EnumVisitor(codeWriter),
+            new GuidVisitor(codeWriter),
+            new CultureInfoVisitor(codeWriter),
+            new TypeVisitor(codeWriter),
+            new IPAddressVisitor(codeWriter),
+            new IPEndpointVisitor(this, codeWriter),
+            new DnsEndPointVisitor(this, codeWriter),
+            new VersionVisitor(codeWriter),
+            new DateOnlyVisitor(codeWriter, options.DateTimeInstantiation),
+            new TimeOnlyVisitor(codeWriter, options.DateTimeInstantiation),
+            new RecordVisitor(this, codeWriter, options.UseNamedArgumentsForReferenceRecordTypes),
+            new AnonymousTypeVisitor(this, anonymousObjectDescriptor, codeWriter),
+            new KeyValuePairVisitor(this, codeWriter),
+            new TupleVisitor(this, codeWriter),
+            new ValueTupleVisitor(this, codeWriter),
+            new UriVisitor(codeWriter),
+            new GroupingVisitor(this, codeWriter),
+            new DictionaryVisitor(this, codeWriter, options.MaxCollectionSize),
+            new CollectionVisitor(this, codeWriter, options.MaxCollectionSize),
         }.ToOrderedDictionary(v => v.Id);
 
-        options.ConfigureKnownTypes?.Invoke(_knownTypes, this, options, codeGenerator);
+        options.ConfigureKnownTypes?.Invoke(_knownTypes, this, options, codeWriter);
     }
 
     public void Visit(object @object)
     {
         if (IsMaxDepth())
         {
-            _codeGenerator.GenerateMaxDepthExpression(@object);
+            _codeWriter.WriteMaxDepthExpression(@object);
             return;
         }
 
@@ -116,7 +116,7 @@ internal sealed class ObjectVisitor : IObjectVisitor
     {
         if (IsVisited(o))
         {
-            _codeGenerator.GenerateCircularReferenceDetected();
+            _codeWriter.WriteCircularReferenceDetected();
             return;
         }
 
@@ -144,11 +144,11 @@ internal sealed class ObjectVisitor : IObjectVisitor
                                  (!_ignoreNullValues || _ignoreNullValues && pv.Value != null) &&
                                  (!_ignoreDefaultValues || !pv.Type.IsValueType || _ignoreDefaultValues &&
                                      ReflectionUtils.GetDefaultValue(pv.Type)?.Equals(pv.Value) != true))
-                    .Select(pv => (Action)(() => _codeGenerator.GenerateCodeAssign(
-                        () => _codeGenerator.GeneratePropertyReference(pv.Name, null),
+                    .Select(pv => (Action)(() => _codeWriter.WriteAssign(
+                        () => _codeWriter.WritePropertyReference(pv.Name, null),
                         () => Visit(pv.Value))));
 
-            _codeGenerator.GenerateObjectCreateAndInitialize(objectDescription.Type ?? new CodeDotnetTypeReference(objectType),
+            _codeWriter.WriteObjectCreateAndInitialize(objectDescription.Type ?? new TypeReference(objectType),
                 constructorParams,
                 initializeActions);
         }

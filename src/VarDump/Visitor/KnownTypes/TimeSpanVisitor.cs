@@ -4,17 +4,18 @@ using System.Globalization;
 using System.Linq;
 using VarDump.CodeDom.Common;
 using VarDump.CodeDom.Compiler;
+using VarDump.Extensions;
 
 namespace VarDump.Visitor.KnownTypes;
 
 internal sealed class TimeSpanVisitor : IKnownObjectVisitor
 {
-    private readonly IDotnetCodeGenerator _codeGenerator;
+    private readonly ICodeWriter _codeWriter;
     private readonly DateTimeInstantiation _dateTimeInstantiation;
 
-    public TimeSpanVisitor(IDotnetCodeGenerator codeGenerator, DateTimeInstantiation dateTimeInstantiation)
+    public TimeSpanVisitor(ICodeWriter codeWriter, DateTimeInstantiation dateTimeInstantiation)
     {
-        _codeGenerator = codeGenerator;
+        _codeWriter = codeWriter;
         _dateTimeInstantiation = dateTimeInstantiation;
     }
 
@@ -35,11 +36,9 @@ internal sealed class TimeSpanVisitor : IKnownObjectVisitor
             { TimeSpan.Zero, nameof(TimeSpan.Zero) }
         };
 
-        var timeSpanCodeTypeReference = new CodeDotnetTypeReference(typeof(TimeSpan));
-
         if (specialValuesDictionary.TryGetValue(timeSpan, out var name))
         {
-            _codeGenerator.GenerateFieldReference(name, () => _codeGenerator.GenerateTypeReference(new CodeDotnetTypeReference(objectType)));
+            _codeWriter.WriteFieldReference(name, () => _codeWriter.WriteTypeReference(objectType));
 
             return;
         }
@@ -57,34 +56,34 @@ internal sealed class TimeSpanVisitor : IKnownObjectVisitor
 
         if (nonZeroValues.Length == 1)
         {
-            _codeGenerator.GenerateMethodInvoke(() => _codeGenerator.GenerateMethodReference(
-                () => _codeGenerator.GenerateTypeReference(timeSpanCodeTypeReference), nonZeroValues[0].Key), 
-                [() => _codeGenerator.GeneratePrimitive(nonZeroValues[0].Value)]);
+            _codeWriter.WriteMethodInvoke(() => _codeWriter.WriteMethodReference(
+                () => _codeWriter.WriteTypeReference(objectType), nonZeroValues[0].Key), 
+                [() => _codeWriter.WritePrimitive(nonZeroValues[0].Value)]);
             
             return;
         }
 
         if (timeSpan.Ticks % TimeSpan.TicksPerMillisecond != 0)
         {
-            _codeGenerator.GenerateMethodInvoke(
-                () => _codeGenerator.GenerateMethodReference(
-                    () => _codeGenerator.GenerateTypeReference(timeSpanCodeTypeReference), nameof(TimeSpan.FromTicks)),
-                [() => _codeGenerator.GeneratePrimitive(timeSpan.Ticks)]);
+            _codeWriter.WriteMethodInvoke(
+                () => _codeWriter.WriteMethodReference(
+                    () => _codeWriter.WriteTypeReference(objectType), nameof(TimeSpan.FromTicks)),
+                [() => _codeWriter.WritePrimitive(timeSpan.Ticks)]);
 
             return;
         }
 
         if (_dateTimeInstantiation == DateTimeInstantiation.Parse)
         {
-            _codeGenerator.GenerateMethodInvoke(() => _codeGenerator.GenerateMethodReference(
-                    () => _codeGenerator.GenerateTypeReference(timeSpanCodeTypeReference), nameof(TimeSpan.ParseExact)),
+            _codeWriter.WriteMethodInvoke(() => _codeWriter.WriteMethodReference(
+                    () => _codeWriter.WriteTypeReference(objectType), nameof(TimeSpan.ParseExact)),
                 [
-                    () => _codeGenerator.GeneratePrimitive(timeSpan.ToString("c")),
-                    () => _codeGenerator.GeneratePrimitive("c"),
-                    () => _codeGenerator.GenerateFieldReference(nameof(CultureInfo.InvariantCulture),
-                        () => _codeGenerator.GenerateTypeReference(new CodeDotnetTypeReference(typeof(CultureInfo)))),
-                    () => _codeGenerator.GenerateFieldReference(nameof(TimeSpanStyles.None),
-                        () => _codeGenerator.GenerateTypeReference(new CodeDotnetTypeReference(typeof(TimeSpanStyles))))
+                    () => _codeWriter.WritePrimitive(timeSpan.ToString("c")),
+                    () => _codeWriter.WritePrimitive("c"),
+                    () => _codeWriter.WriteFieldReference(nameof(CultureInfo.InvariantCulture),
+                        () => _codeWriter.WriteTypeReference(typeof(CultureInfo))),
+                    () => _codeWriter.WriteFieldReference(nameof(TimeSpanStyles.None),
+                        () => _codeWriter.WriteTypeReference(typeof(TimeSpanStyles)))
                 ]);
 
             return;
@@ -92,21 +91,21 @@ internal sealed class TimeSpanVisitor : IKnownObjectVisitor
 
         if (timeSpan is { Days: 0, Milliseconds: 0 })
         {
-            _codeGenerator.GenerateObjectCreateAndInitialize(timeSpanCodeTypeReference, [GenerateHoursAction, GenerateMinutesAction, GenerateSecondsAction], []);
+            _codeWriter.WriteObjectCreateAndInitialize(objectType, [WriteHoursAction, WriteMinutesAction, WriteSecondsAction], []);
             return;
         }
 
         if (timeSpan.Milliseconds == 0)
         {
-            _codeGenerator.GenerateObjectCreateAndInitialize(timeSpanCodeTypeReference, [GenerateDaysAction, GenerateHoursAction, GenerateMinutesAction, GenerateSecondsAction], []);
+            _codeWriter.WriteObjectCreateAndInitialize(objectType, [WriteDaysAction, WriteHoursAction, WriteMinutesAction, WriteSecondsAction], []);
         }
 
-        _codeGenerator.GenerateObjectCreateAndInitialize(timeSpanCodeTypeReference, [GenerateDaysAction, GenerateHoursAction, GenerateMinutesAction, GenerateSecondsAction, GenerateMillisecondsAction], []);
+        _codeWriter.WriteObjectCreateAndInitialize(objectType, [WriteDaysAction, WriteHoursAction, WriteMinutesAction, WriteSecondsAction, WriteMillisecondsAction], []);
 
-        void GenerateSecondsAction() => _codeGenerator.GeneratePrimitive(timeSpan.Seconds);
-        void GenerateMinutesAction() => _codeGenerator.GeneratePrimitive(timeSpan.Minutes);
-        void GenerateHoursAction() => _codeGenerator.GeneratePrimitive(timeSpan.Hours);
-        void GenerateDaysAction() => _codeGenerator.GeneratePrimitive(timeSpan.Days);
-        void GenerateMillisecondsAction() => _codeGenerator.GeneratePrimitive(timeSpan.Milliseconds);
+        void WriteSecondsAction() => _codeWriter.WritePrimitive(timeSpan.Seconds);
+        void WriteMinutesAction() => _codeWriter.WritePrimitive(timeSpan.Minutes);
+        void WriteHoursAction() => _codeWriter.WritePrimitive(timeSpan.Hours);
+        void WriteDaysAction() => _codeWriter.WritePrimitive(timeSpan.Days);
+        void WriteMillisecondsAction() => _codeWriter.WritePrimitive(timeSpan.Milliseconds);
     }
 }

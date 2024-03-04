@@ -1,5 +1,4 @@
 ﻿using System;
-using VarDump.CodeDom.Common;
 using VarDump.CodeDom.Compiler;
 using VarDump.Extensions;
 using VarDump.Utils;
@@ -8,12 +7,12 @@ namespace VarDump.Visitor.KnownTypes;
 
 internal sealed class DateOnlyVisitor : IKnownObjectVisitor
 {
-    private readonly IDotnetCodeGenerator _codeGenerator;
+    private readonly ICodeWriter _codeWriter;
     private readonly DateTimeInstantiation _dateTimeInstantiation;
 
-    public DateOnlyVisitor(IDotnetCodeGenerator codeGenerator, DateTimeInstantiation dateTimeInstantiation)
+    public DateOnlyVisitor(ICodeWriter codeWriter, DateTimeInstantiation dateTimeInstantiation)
     {
-        _codeGenerator = codeGenerator;
+        _codeWriter = codeWriter;
         _dateTimeInstantiation = dateTimeInstantiation;
     }
 
@@ -25,25 +24,24 @@ internal sealed class DateOnlyVisitor : IKnownObjectVisitor
 
     public void Visit(object dateOnly, Type objectType)
     {
-        var dateOnlyCodeTypeReference = new CodeDotnetTypeReference(objectType);
         var dayNumber = (int?)objectType.GetProperty("DayNumber")?.GetValue(dateOnly);
 
         if (dayNumber == null)
         {
-            _codeGenerator.GenerateErrorDetected("Wrong DateOnly struct");
+            _codeWriter.WriteErrorDetected("Wrong DateOnly struct");
             return;
         }
 
         if (dayNumber == 3652058U)
         {
-            _codeGenerator.GenerateFieldReference(nameof(DateTime.MaxValue), () => _codeGenerator.GenerateTypeReference(dateOnlyCodeTypeReference));
+            _codeWriter.WriteFieldReference(nameof(DateTime.MaxValue), () => _codeWriter.WriteTypeReference(objectType));
 
             return;
         }
 
         if (dayNumber == 1)
         {
-            _codeGenerator.GenerateFieldReference(nameof(DateTime.MinValue), () => _codeGenerator.GenerateTypeReference(dateOnlyCodeTypeReference));
+            _codeWriter.WriteFieldReference(nameof(DateTime.MinValue), () => _codeWriter.WriteTypeReference(objectType));
 
             return;
         }
@@ -52,22 +50,22 @@ internal sealed class DateOnlyVisitor : IKnownObjectVisitor
 
         if (_dateTimeInstantiation == DateTimeInstantiation.Parse)
         {
-            _codeGenerator.GenerateMethodInvoke(
-                () => _codeGenerator.GenerateMethodReference(
-                    () => _codeGenerator.GenerateTypeReference(dateOnlyCodeTypeReference), nameof(DateTimeOffset.ParseExact)),
+            _codeWriter.WriteMethodInvoke(
+                () => _codeWriter.WriteMethodReference(
+                    () => _codeWriter.WriteTypeReference(objectType), nameof(DateTimeOffset.ParseExact)),
                 [
-                    () => _codeGenerator.GeneratePrimitive($"{dateTime:yyyy-MM-dd}"),
-                    () => _codeGenerator.GeneratePrimitive("O")
+                    () => _codeWriter.WritePrimitive($"{dateTime:yyyy-MM-dd}"),
+                    () => _codeWriter.WritePrimitive("O")
                 ]);
 
             return;
         }
 
-        _codeGenerator.GenerateObjectCreateAndInitialize(dateOnlyCodeTypeReference,
+        _codeWriter.WriteObjectCreateAndInitialize(objectType,
             [
-                () => _codeGenerator.GeneratePrimitive(dateTime.Year),
-                () => _codeGenerator.GeneratePrimitive(dateTime.Month),
-                () => _codeGenerator.GeneratePrimitive(dateTime.Day)
+                () => _codeWriter.WritePrimitive(dateTime.Year),
+                () => _codeWriter.WritePrimitive(dateTime.Month),
+                () => _codeWriter.WritePrimitive(dateTime.Day)
             ],
             []);
     }

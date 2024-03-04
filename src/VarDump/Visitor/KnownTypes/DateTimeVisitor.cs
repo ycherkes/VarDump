@@ -2,18 +2,19 @@
 using System.Globalization;
 using VarDump.CodeDom.Common;
 using VarDump.CodeDom.Compiler;
+using VarDump.Extensions;
 
 namespace VarDump.Visitor.KnownTypes;
 
 internal sealed class DateTimeVisitor : IKnownObjectVisitor
 {
-    private readonly IDotnetCodeGenerator _codeGenerator;
+    private readonly ICodeWriter _codeWriter;
     private readonly DateTimeInstantiation _dateTimeInstantiation;
     private readonly DateKind _dateKind;
 
-    public DateTimeVisitor(IDotnetCodeGenerator codeGenerator, DateTimeInstantiation dateTimeInstantiation, DateKind dateKind)
+    public DateTimeVisitor(ICodeWriter codeWriter, DateTimeInstantiation dateTimeInstantiation, DateKind dateKind)
     {
-        _codeGenerator = codeGenerator;
+        _codeWriter = codeWriter;
         _dateTimeInstantiation = dateTimeInstantiation;
         _dateKind = dateKind;
     }
@@ -27,17 +28,16 @@ internal sealed class DateTimeVisitor : IKnownObjectVisitor
     public void Visit(object obj, Type objectType)
     {
         var dateTime = (DateTime)obj;
-        var dateTimeCodeTypeReference = new CodeDotnetTypeReference(typeof(DateTime));
 
         if (dateTime == DateTime.MaxValue)
         {
-            _codeGenerator.GenerateFieldReference(nameof(DateTime.MaxValue), () => _codeGenerator.GenerateTypeReference(dateTimeCodeTypeReference));
+            _codeWriter.WriteFieldReference(nameof(DateTime.MaxValue), () => _codeWriter.WriteTypeReference(objectType));
             return;
         }
 
         if (dateTime == DateTime.MinValue)
         {
-            _codeGenerator.GenerateFieldReference(nameof(DateTime.MinValue), () => _codeGenerator.GenerateTypeReference(dateTimeCodeTypeReference));
+            _codeWriter.WriteFieldReference(nameof(DateTime.MinValue), () => _codeWriter.WriteTypeReference(objectType));
             return;
         }
 
@@ -48,16 +48,16 @@ internal sealed class DateTimeVisitor : IKnownObjectVisitor
 
         if (_dateTimeInstantiation == DateTimeInstantiation.Parse)
         {
-            _codeGenerator.GenerateMethodInvoke(
-                () => _codeGenerator.GenerateMethodReference(
-                    () => _codeGenerator.GenerateTypeReference(dateTimeCodeTypeReference), nameof(DateTime.ParseExact)),
+            _codeWriter.WriteMethodInvoke(
+                () => _codeWriter.WriteMethodReference(
+                    () => _codeWriter.WriteTypeReference(objectType), nameof(DateTime.ParseExact)),
                 [
-                    () => _codeGenerator.GeneratePrimitive(dateTime.ToString("O")),
-                    () => _codeGenerator.GeneratePrimitive("O"),
-                    () => _codeGenerator.GenerateFieldReference(nameof(CultureInfo.InvariantCulture),
-                        () => _codeGenerator.GenerateTypeReference(new CodeDotnetTypeReference(typeof(CultureInfo)))),
-                    () => _codeGenerator.GenerateFieldReference(nameof(DateTimeStyles.RoundtripKind),
-                        () => _codeGenerator.GenerateTypeReference(new CodeDotnetTypeReference(typeof(DateTimeStyles))))
+                    () => _codeWriter.WritePrimitive(dateTime.ToString("O")),
+                    () => _codeWriter.WritePrimitive("O"),
+                    () => _codeWriter.WriteFieldReference(nameof(CultureInfo.InvariantCulture),
+                        () => _codeWriter.WriteTypeReference(typeof(CultureInfo))),
+                    () => _codeWriter.WriteFieldReference(nameof(DateTimeStyles.RoundtripKind),
+                        () => _codeWriter.WriteTypeReference(typeof(DateTimeStyles)))
                 ]);
 
             return;
@@ -67,30 +67,30 @@ internal sealed class DateTimeVisitor : IKnownObjectVisitor
 
         if (lessThanMillisecondTicks == 0)
         {
-            GenerateObjectCreateAction();
+            WriteObjectCreateAction();
             return;
         }
 
-        _codeGenerator.GenerateMethodInvoke(() => _codeGenerator.GenerateMethodReference(GenerateObjectCreateAction, nameof(DateTime.AddTicks)), [() => _codeGenerator.GeneratePrimitive(lessThanMillisecondTicks)]);
+        _codeWriter.WriteMethodInvoke(() => _codeWriter.WriteMethodReference(WriteObjectCreateAction, nameof(DateTime.AddTicks)), [() => _codeWriter.WritePrimitive(lessThanMillisecondTicks)]);
 
-        void GenerateObjectCreateAction() => _codeGenerator.GenerateObjectCreateAndInitialize(dateTimeCodeTypeReference, 
+        void WriteObjectCreateAction() => _codeWriter.WriteObjectCreateAndInitialize(objectType, 
             [
-                GenerateYearAction, 
-                GenerateMontAction, 
-                GenerateDayAction, 
-                GenerateHourAction, 
-                GenerateMinuteAction, 
-                GenerateSecondAction, 
-                GenerateMillisecondAction, 
-                GenerateKindAction], 
+                WriteYearAction, 
+                WriteMontAction, 
+                WriteDayAction, 
+                WriteHourAction, 
+                WriteMinuteAction, 
+                WriteSecondAction, 
+                WriteMillisecondAction, 
+                WriteKindAction], 
             []);
-        void GenerateKindAction() => _codeGenerator.GenerateFieldReference(dateTime.Kind.ToString(), () => _codeGenerator.GenerateTypeReference(new CodeDotnetTypeReference(typeof(DateTimeKind))));
-        void GenerateYearAction() => _codeGenerator.GeneratePrimitive(dateTime.Year);
-        void GenerateMontAction() => _codeGenerator.GeneratePrimitive(dateTime.Month);
-        void GenerateDayAction() => _codeGenerator.GeneratePrimitive(dateTime.Day);
-        void GenerateHourAction() => _codeGenerator.GeneratePrimitive(dateTime.Hour);
-        void GenerateMinuteAction() => _codeGenerator.GeneratePrimitive(dateTime.Minute);
-        void GenerateSecondAction() => _codeGenerator.GeneratePrimitive(dateTime.Second);
-        void GenerateMillisecondAction() => _codeGenerator.GeneratePrimitive(dateTime.Millisecond);
+        void WriteKindAction() => _codeWriter.WriteFieldReference(dateTime.Kind.ToString(), () => _codeWriter.WriteTypeReference(typeof(DateTimeKind)));
+        void WriteYearAction() => _codeWriter.WritePrimitive(dateTime.Year);
+        void WriteMontAction() => _codeWriter.WritePrimitive(dateTime.Month);
+        void WriteDayAction() => _codeWriter.WritePrimitive(dateTime.Day);
+        void WriteHourAction() => _codeWriter.WritePrimitive(dateTime.Hour);
+        void WriteMinuteAction() => _codeWriter.WritePrimitive(dateTime.Minute);
+        void WriteSecondAction() => _codeWriter.WritePrimitive(dateTime.Second);
+        void WriteMillisecondAction() => _codeWriter.WritePrimitive(dateTime.Millisecond);
     }
 }

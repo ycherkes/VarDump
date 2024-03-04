@@ -1,5 +1,4 @@
 ﻿using System;
-using VarDump.CodeDom.Common;
 using VarDump.CodeDom.Compiler;
 using VarDump.Extensions;
 using VarDump.Utils;
@@ -8,12 +7,12 @@ namespace VarDump.Visitor.KnownTypes;
 
 internal sealed class TimeOnlyVisitor : IKnownObjectVisitor
 {
-    private readonly IDotnetCodeGenerator _codeGenerator;
+    private readonly ICodeWriter _codeWriter;
     private readonly DateTimeInstantiation _dateTimeInstantiation;
 
-    public TimeOnlyVisitor(IDotnetCodeGenerator codeGenerator, DateTimeInstantiation dateTimeInstantiation)
+    public TimeOnlyVisitor(ICodeWriter codeWriter, DateTimeInstantiation dateTimeInstantiation)
     {
-        _codeGenerator = codeGenerator;
+        _codeWriter = codeWriter;
         _dateTimeInstantiation = dateTimeInstantiation;
     }
 
@@ -25,25 +24,24 @@ internal sealed class TimeOnlyVisitor : IKnownObjectVisitor
 
     public void Visit(object timeOnly, Type objectType)
     {
-        var timeOnlyCodeTypeReference = new CodeDotnetTypeReference(objectType);
         var ticks = (long?)objectType.GetProperty("Ticks")?.GetValue(timeOnly);
 
         if (ticks == null)
         {
-            _codeGenerator.GenerateErrorDetected("Wrong TimeOnly struct");
+            _codeWriter.WriteErrorDetected("Wrong TimeOnly struct");
             return;
         }
 
         if (ticks == 863999999999)
         {
-            _codeGenerator.GenerateFieldReference(nameof(DateTime.MaxValue), () => _codeGenerator.GenerateTypeReference(timeOnlyCodeTypeReference));
+            _codeWriter.WriteFieldReference(nameof(DateTime.MaxValue), () => _codeWriter.WriteTypeReference(objectType));
 
             return;
         }
 
         if (ticks == 0)
         {
-            _codeGenerator.GenerateFieldReference(nameof(DateTime.MinValue), () => _codeGenerator.GenerateTypeReference(timeOnlyCodeTypeReference));
+            _codeWriter.WriteFieldReference(nameof(DateTime.MinValue), () => _codeWriter.WriteTypeReference(objectType));
 
             return;
         }
@@ -52,11 +50,11 @@ internal sealed class TimeOnlyVisitor : IKnownObjectVisitor
 
         if (timeSpan.Ticks % TimeSpan.TicksPerMillisecond != 0)
         {
-            _codeGenerator.GenerateMethodInvoke(
-                () => _codeGenerator.GenerateMethodReference(
-                    () => _codeGenerator.GenerateTypeReference(timeOnlyCodeTypeReference), nameof(TimeSpan.FromTicks)),
+            _codeWriter.WriteMethodInvoke(
+                () => _codeWriter.WriteMethodReference(
+                    () => _codeWriter.WriteTypeReference(objectType), nameof(TimeSpan.FromTicks)),
                 [
-                    () => _codeGenerator.GeneratePrimitive(ticks.Value)
+                    () => _codeWriter.WritePrimitive(ticks.Value)
                 ]);
 
             return;
@@ -64,23 +62,23 @@ internal sealed class TimeOnlyVisitor : IKnownObjectVisitor
 
         if (_dateTimeInstantiation == DateTimeInstantiation.Parse)
         {
-            _codeGenerator.GenerateMethodInvoke(
-                () => _codeGenerator.GenerateMethodReference(
-                    () => _codeGenerator.GenerateTypeReference(timeOnlyCodeTypeReference), nameof(DateTime.ParseExact)),
+            _codeWriter.WriteMethodInvoke(
+                () => _codeWriter.WriteMethodReference(
+                    () => _codeWriter.WriteTypeReference(objectType), nameof(DateTime.ParseExact)),
                 [
-                    () => _codeGenerator.GeneratePrimitive($"{timeSpan:c}"),
-                    () => _codeGenerator.GeneratePrimitive("O")
+                    () => _codeWriter.WritePrimitive($"{timeSpan:c}"),
+                    () => _codeWriter.WritePrimitive("O")
                 ]);
 
             return;
         }
 
-        _codeGenerator.GenerateObjectCreateAndInitialize(timeOnlyCodeTypeReference,
+        _codeWriter.WriteObjectCreateAndInitialize(objectType,
             [
-                () => _codeGenerator.GeneratePrimitive(timeSpan.Hours),
-                () => _codeGenerator.GeneratePrimitive(timeSpan.Minutes),
-                () => _codeGenerator.GeneratePrimitive(timeSpan.Seconds),
-                () => _codeGenerator.GeneratePrimitive(timeSpan.Milliseconds)
+                () => _codeWriter.WritePrimitive(timeSpan.Hours),
+                () => _codeWriter.WritePrimitive(timeSpan.Minutes),
+                () => _codeWriter.WritePrimitive(timeSpan.Seconds),
+                () => _codeWriter.WritePrimitive(timeSpan.Milliseconds)
             ],
             []);
     }

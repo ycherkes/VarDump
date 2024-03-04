@@ -7,7 +7,7 @@ using System.Collections.Specialized;
 
 namespace VarDump.CodeDom.Compiler
 {
-    public class CodeGeneratorOptions
+    public class CodeWriterOptions
     {
         private readonly IDictionary _options = new ListDictionary();
 

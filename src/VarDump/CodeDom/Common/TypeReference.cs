@@ -10,17 +10,12 @@ using System.Linq;
 
 namespace VarDump.CodeDom.Common;
 
-public class CodeDotnetTypeReference
+public class TypeReference
 {
     private string _baseType;
-    private List<CodeDotnetTypeReference> _typeArguments;
     private bool _needsFixup;
-
-    internal CodeDotnetTypeReference()
-    {
-    }
-
-    public CodeDotnetTypeReference(Type type)
+    private List<TypeReference> _typeArguments;
+    public TypeReference(Type type)
     {
         if (type == null)
         {
@@ -30,7 +25,7 @@ public class CodeDotnetTypeReference
         if (type.IsArray)
         {
             ArrayRank = type.GetArrayRank();
-            ArrayElementType = new CodeDotnetTypeReference(type.GetElementType());
+            ArrayElementType = new TypeReference(type.GetElementType());
             _baseType = null;
         }
         else
@@ -41,44 +36,74 @@ public class CodeDotnetTypeReference
         }
     }
 
-    public CodeDotnetTypeReference(string typeName)
+    public TypeReference(string typeName)
     {
         Initialize(typeName);
     }
 
-    private void InitializeFromType(Type type)
+    public TypeReference(string typeName, params TypeReference[] typeArguments) : this(typeName)
     {
-        _baseType = type.Name;
-        if (!type.IsGenericParameter)
+        if (typeArguments is { Length: > 0 })
         {
-            Type currentType = type;
-            while (currentType.IsNested)
-            {
-                currentType = currentType.DeclaringType;
-                _baseType = currentType.Name + "+" + _baseType;
-            }
-
-            if (!string.IsNullOrEmpty(type.Namespace))
-            {
-                _baseType = type.Namespace + "." + _baseType;
-            }
-        }
-
-        // pick up the type arguments from an instantiated generic type but not an open one    
-        if (type.IsGenericType && !type.ContainsGenericParameters)
-        {
-            TypeArguments.AddRange(type.GetGenericArguments().Select(x => new CodeDotnetTypeReference(x)));
-        }
-        else if (!type.IsGenericTypeDefinition)
-        {
-            // if the user handed us a non-generic type, but later
-            // appends generic type arguments, we'll pretend
-            // it's a generic type for their sake - this is good for
-            // them if they pass in System.Nullable class when they
-            // meant the System.Nullable<T> value type.
-            _needsFixup = true;
+            TypeArguments.AddRange(typeArguments);
         }
     }
+
+    public TypeReference(TypeReference arrayType, int rank)
+    {
+        _baseType = null;
+        ArrayRank = rank;
+        ArrayElementType = arrayType;
+    }
+
+    internal TypeReference()
+    {
+    }
+
+    public TypeReference ArrayElementType { get; set; }
+
+    public int ArrayRank { get; set; }
+
+    public string BaseType
+    {
+        get
+        {
+            if (ArrayRank > 0 && ArrayElementType != null)
+            {
+                return ArrayElementType.BaseType;
+            }
+
+            if (string.IsNullOrEmpty(_baseType))
+            {
+                return string.Empty;
+            }
+
+            string returnType = _baseType;
+            return _needsFixup && TypeArguments.Count > 0 ?
+                returnType + '`' + TypeArguments.Count.ToString(CultureInfo.InvariantCulture) :
+                returnType;
+        }
+        set
+        {
+            _baseType = value;
+            Initialize(_baseType);
+        }
+    }
+
+    public List<TypeReference> TypeArguments
+    {
+        get
+        {
+            if (ArrayRank > 0 && ArrayElementType != null)
+            {
+                return ArrayElementType.TypeArguments;
+            }
+
+            return _typeArguments ??= [];
+        }
+    }
+
+    internal int NestedArrayDepth => ArrayElementType == null ? 0 : 1 + ArrayElementType.NestedArrayDepth;
 
     private void Initialize(string typeName)
     {
@@ -90,7 +115,7 @@ public class CodeDotnetTypeReference
             ArrayElementType = null;
             return;
         }
-        if (this is CodeEmptyTypeReference)
+        if (this is EmptyTypeReference)
         {
             _baseType = typeName;
             ArrayRank = 0;
@@ -132,7 +157,7 @@ public class CodeDotnetTypeReference
 
         // Try find generic type arguments
         current = end;
-        var typeArgumentList = new List<CodeDotnetTypeReference>();
+        var typeArgumentList = new List<TypeReference>();
         var subTypeNames = new Stack<string>();
         if (current > 0 && typeName[current--] == ']')
         {
@@ -184,7 +209,7 @@ public class CodeDotnetTypeReference
                 while (subTypeNames.Count > 0)
                 {
                     string name = RipOffAssemblyInformationFromTypeName(subTypeNames.Pop());
-                    typeArgumentList.Add(new CodeDotnetTypeReference(name));
+                    typeArgumentList.Add(new TypeReference(name));
                 }
                 end = current - 1;
             }
@@ -199,13 +224,13 @@ public class CodeDotnetTypeReference
 
         if (q.Count > 0)
         {
-            CodeDotnetTypeReference type = new CodeDotnetTypeReference(typeName.Substring(0, end + 1));
+            TypeReference type = new TypeReference(typeName.Substring(0, end + 1));
 
             type.TypeArguments.AddRange(typeArgumentList);
 
             while (q.Count > 1)
             {
-                type = new CodeDotnetTypeReference(type, q.Dequeue());
+                type = new TypeReference(type, q.Dequeue());
             }
 
             // we don't need to create a new CodeTypeReference for the last one.
@@ -232,66 +257,39 @@ public class CodeDotnetTypeReference
         }
     }
 
-    public CodeDotnetTypeReference(string typeName, params CodeDotnetTypeReference[] typeArguments) : this(typeName)
+    private void InitializeFromType(Type type)
     {
-        if (typeArguments is { Length: > 0 })
+        _baseType = type.Name;
+        if (!type.IsGenericParameter)
         {
-            TypeArguments.AddRange(typeArguments);
-        }
-    }
-
-    public CodeDotnetTypeReference(CodeDotnetTypeReference arrayType, int rank)
-    {
-        _baseType = null;
-        ArrayRank = rank;
-        ArrayElementType = arrayType;
-    }
-
-    public CodeDotnetTypeReference ArrayElementType { get; set; }
-
-    public int ArrayRank { get; set; }
-
-    internal int NestedArrayDepth => ArrayElementType == null ? 0 : 1 + ArrayElementType.NestedArrayDepth;
-
-    public string BaseType
-    {
-        get
-        {
-            if (ArrayRank > 0 && ArrayElementType != null)
+            Type currentType = type;
+            while (currentType.IsNested)
             {
-                return ArrayElementType.BaseType;
+                currentType = currentType.DeclaringType;
+                _baseType = currentType.Name + "+" + _baseType;
             }
 
-            if (string.IsNullOrEmpty(_baseType))
+            if (!string.IsNullOrEmpty(type.Namespace))
             {
-                return string.Empty;
+                _baseType = type.Namespace + "." + _baseType;
             }
-
-            string returnType = _baseType;
-            return _needsFixup && TypeArguments.Count > 0 ?
-                returnType + '`' + TypeArguments.Count.ToString(CultureInfo.InvariantCulture) :
-                returnType;
         }
-        set
+
+        // pick up the type arguments from an instantiated generic type but not an open one    
+        if (type.IsGenericType && !type.ContainsGenericParameters)
         {
-            _baseType = value;
-            Initialize(_baseType);
+            TypeArguments.AddRange(type.GetGenericArguments().Select(x => new TypeReference(x)));
+        }
+        else if (!type.IsGenericTypeDefinition)
+        {
+            // if the user handed us a non-generic type, but later
+            // appends generic type arguments, we'll pretend
+            // it's a generic type for their sake - this is good for
+            // them if they pass in System.Nullable class when they
+            // meant the System.Nullable<T> value type.
+            _needsFixup = true;
         }
     }
-
-    public List<CodeDotnetTypeReference> TypeArguments
-    {
-        get
-        {
-            if (ArrayRank > 0 && ArrayElementType != null)
-            {
-                return ArrayElementType.TypeArguments;
-            }
-
-            return _typeArguments ??= [];
-        }
-    }
-
     //
     // The string for generic type argument might contain assembly information and square bracket pair.
     // There might be leading spaces in front the type name.

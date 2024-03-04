@@ -45,13 +45,13 @@ public class VisualBasicDumper : IDumper
 
     private void DumpImpl(object obj, TextWriter textWriter)
     {
-        IDotnetCodeGenerator codeGenerator = new VBCodeGenerator(textWriter, new CodeGeneratorOptions { UseFullTypeName = _options.UseTypeFullName });
+        ICodeWriter codeWriter = new VBCodeWriter(textWriter, new CodeWriterOptions { UseFullTypeName = _options.UseTypeFullName });
 
-        var objectVisitor = new ObjectVisitor(_options, codeGenerator);
+        var objectVisitor = new ObjectVisitor(_options, codeWriter);
 
         if (_options.GenerateVariableInitializer)
         {
-            codeGenerator.GenerateVariableDeclarationStatement(new CodeImplicitlyTypedTypeReference(),
+            codeWriter.WriteVariableDeclarationStatement(new VarTypeReference(),
                 obj != null ? ReflectionUtils.ComposeVisualBasicVariableName(obj.GetType()) : "nullValue", () => objectVisitor.Visit(obj));
         }
         else

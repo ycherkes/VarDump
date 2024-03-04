@@ -1,15 +1,15 @@
 ﻿using System;
-using VarDump.CodeDom.Common;
 using VarDump.CodeDom.Compiler;
+using VarDump.Extensions;
 
 namespace VarDump.Visitor.KnownTypes;
 
 internal sealed class TypeVisitor : IKnownObjectVisitor
 {
-    private readonly IDotnetCodeGenerator _codeGenerator;
-    public TypeVisitor(IDotnetCodeGenerator codeGenerator)
+    private readonly ICodeWriter _codeWriter;
+    public TypeVisitor(ICodeWriter codeWriter)
     {
-        _codeGenerator = codeGenerator;
+        _codeWriter = codeWriter;
     }
 
     public string Id => nameof(Type);
@@ -21,8 +21,6 @@ internal sealed class TypeVisitor : IKnownObjectVisitor
 
     public void Visit(object obj, Type objectType)
     {
-        var type = (Type)obj;
-        
-        _codeGenerator.GenerateTypeOf(new CodeDotnetTypeReference(type));
+       _codeWriter.WriteTypeOf((Type)obj);
     }
 }

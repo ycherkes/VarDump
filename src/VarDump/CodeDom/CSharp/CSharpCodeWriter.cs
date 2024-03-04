@@ -14,10 +14,10 @@ using VarDump.CodeDom.Resources;
 
 namespace VarDump.CodeDom.CSharp;
 
-internal sealed class CSharpCodeGenerator : IDotnetCodeGenerator
+internal sealed class CSharpCodeWriter : ICodeWriter
 {
     private readonly ExposedTabStringIndentedTextWriter _output;
-    private readonly CodeGeneratorOptions _options;
+    private readonly CodeWriterOptions _options;
     private const int MaxLineLength = int.MaxValue;
 
     public int Indent
@@ -30,9 +30,9 @@ internal sealed class CSharpCodeGenerator : IDotnetCodeGenerator
 
     public TextWriter Output => _output;
 
-    public CSharpCodeGenerator(TextWriter w, CodeGeneratorOptions o)
+    public CSharpCodeWriter(TextWriter w, CodeWriterOptions o)
     {
-       _options = o ?? new CodeGeneratorOptions();
+       _options = o ?? new CodeWriterOptions();
        _output = new ExposedTabStringIndentedTextWriter(w, _options.IndentString);
     }
     
@@ -141,9 +141,9 @@ internal sealed class CSharpCodeGenerator : IDotnetCodeGenerator
 
     private void OutputIdentifier(string ident) => Output.Write(CreateEscapedIdentifier(ident));
 
-    public void OutputType(CodeDotnetTypeReference typeRef) => Output.Write(GetTypeOutput(typeRef));
+    public void OutputType(TypeReference typeRef) => Output.Write(GetTypeOutput(typeRef));
 
-    public void GenerateArrayCreate(CodeDotnetTypeReference typeReference, IEnumerable<Action> generateInitializers, int size=0)
+    public void WriteArrayCreate(TypeReference typeReference, IEnumerable<Action> generateInitializers, int size=0)
     {
         Output.Write("new ");
 
@@ -174,7 +174,7 @@ internal sealed class CSharpCodeGenerator : IDotnetCodeGenerator
         }
     }
 
-    public void GenerateCodeArrayDimension(IEnumerable<Action> initializers)
+    public void WriteArrayDimension(IEnumerable<Action> initializers)
     {
         Output.Write("{");
         Output.WriteLine();
@@ -183,7 +183,7 @@ internal sealed class CSharpCodeGenerator : IDotnetCodeGenerator
         Output.Write("}");
     }
 
-    public void GenerateCast(CodeDotnetTypeReference typeReference, Action generateAction)
+    public void WriteCast(TypeReference typeReference, Action generateAction)
     {
         Output.Write("(");
         OutputType(typeReference);
@@ -191,21 +191,21 @@ internal sealed class CSharpCodeGenerator : IDotnetCodeGenerator
         generateAction();
     }
 
-   public void GenerateCodeAssign(Action left, Action right)
+   public void WriteAssign(Action left, Action right)
     {
         left();
         Output.Write(" = ");
         right();
     }
 
-    public void GenerateDefaultValue(CodeDotnetTypeReference typeRef)
+    public void WriteDefaultValue(TypeReference typeRef)
     {
         Output.Write("default(");
         OutputType(typeRef);
         Output.Write(')');
     }
 
-    public void GenerateFieldReference(string fieldName, Action generateTargetObjectAction)
+    public void WriteFieldReference(string fieldName, Action generateTargetObjectAction)
     {
         if (generateTargetObjectAction != null)
         {
@@ -215,10 +215,10 @@ internal sealed class CSharpCodeGenerator : IDotnetCodeGenerator
         OutputIdentifier(fieldName);
     }
 
-    public void GenerateVariableReference(string variableName) =>
+    public void WriteVariableReference(string variableName) =>
         OutputIdentifier(variableName);
 
-    public void GenerateMethodInvoke(Action methodReferenceAction, IEnumerable<Action> parametersActions)
+    public void WriteMethodInvoke(Action methodReferenceAction, IEnumerable<Action> parametersActions)
     {
         methodReferenceAction();
         Output.Write('(');
@@ -226,7 +226,7 @@ internal sealed class CSharpCodeGenerator : IDotnetCodeGenerator
         Output.Write(')');
     }
 
-    public void GenerateMethodReference(Action targetObject, string methodName, params CodeDotnetTypeReference[] typeParameters)
+    public void WriteMethodReference(Action targetObject, string methodName, params TypeReference[] typeParameters)
     {
         if (targetObject != null)
         {
@@ -241,7 +241,7 @@ internal sealed class CSharpCodeGenerator : IDotnetCodeGenerator
         }
     }
 
-    public void GenerateObjectCreateAndInitialize(CodeDotnetTypeReference type, IEnumerable<Action> generateParametersActions, IEnumerable<Action> generateInitializeActions)
+    public void WriteObjectCreateAndInitialize(TypeReference type, IEnumerable<Action> generateParametersActions, IEnumerable<Action> generateInitializeActions)
     {
         Output.Write("new ");
         OutputType(type);
@@ -274,91 +274,91 @@ internal sealed class CSharpCodeGenerator : IDotnetCodeGenerator
         Output.Write("}");
     }
 
-    public void GenerateValueTupleCreate(IEnumerable<Action> actions)
+    public void WriteValueTupleCreate(IEnumerable<Action> actions)
     {
         Output.Write('(');
         OutputActions(actions, newlineBetweenItems: false);
         Output.Write(')');
     }
 
-    public void GeneratePrimitive(object obj)
+    public void WritePrimitive(object obj)
     {
-        if (obj is char)
+        if (obj is char c)
         {
-            GeneratePrimitiveChar((char)obj);
+            WritePrimitiveChar(c);
         }
-        else if (obj is sbyte)
+        else if (obj is sbyte @sbyte)
         {
             // C# has no literal marker for types smaller than Int32                
-            Output.Write(((sbyte)obj).ToString(CultureInfo.InvariantCulture));
+            Output.Write(@sbyte.ToString(CultureInfo.InvariantCulture));
         }
-        else if (obj is ushort)
+        else if (obj is ushort @ushort)
         {
             // C# has no literal marker for types smaller than Int32, and you will
             // get a conversion error if you use "u" here.
-            Output.Write(((ushort)obj).ToString(CultureInfo.InvariantCulture));
+            Output.Write(@ushort.ToString(CultureInfo.InvariantCulture));
         }
-        else if (obj is uint)
+        else if (obj is uint u)
         {
-            Output.Write(((uint)obj).ToString(CultureInfo.InvariantCulture));
+            Output.Write(u.ToString(CultureInfo.InvariantCulture));
             Output.Write('u');
         }
-        else if (obj is ulong)
+        else if (obj is ulong @ulong)
         {
-            Output.Write(((ulong)obj).ToString(CultureInfo.InvariantCulture));
+            Output.Write(@ulong.ToString(CultureInfo.InvariantCulture));
             Output.Write("ul");
         }
         else
         {
-            GeneratePrimitiveExpressionBase(obj);
+            WritePrimitiveExpressionBase(obj);
         }
     }
 
-    private void GeneratePrimitiveExpressionBase(object obj)
+    private void WritePrimitiveExpressionBase(object obj)
     {
         if (obj == null)
         {
             Output.Write(NullToken);
         }
-        else if (obj is string)
+        else if (obj is string s)
         {
-            Output.Write(QuoteSnippetString((string)obj));
+            Output.Write(QuoteSnippetString(s));
         }
         else if (obj is char)
         {
             Output.Write("'" + obj + "'");
         }
-        else if (obj is byte)
+        else if (obj is byte b)
         {
-            Output.Write(((byte)obj).ToString(CultureInfo.InvariantCulture));
+            Output.Write(b.ToString(CultureInfo.InvariantCulture));
         }
-        else if (obj is short)
+        else if (obj is short s1)
         {
-            Output.Write(((short)obj).ToString(CultureInfo.InvariantCulture));
+            Output.Write(s1.ToString(CultureInfo.InvariantCulture));
         }
-        else if (obj is int)
+        else if (obj is int i)
         {
-            Output.Write(((int)obj).ToString(CultureInfo.InvariantCulture));
+            Output.Write(i.ToString(CultureInfo.InvariantCulture));
         }
-        else if (obj is long)
+        else if (obj is long l)
         {
-            Output.Write(((long)obj).ToString(CultureInfo.InvariantCulture));
+            Output.Write(l.ToString(CultureInfo.InvariantCulture));
         }
-        else if (obj is float)
+        else if (obj is float f)
         {
-            GenerateSingleFloatValue((float)obj);
+            WriteSingleFloatValue(f);
         }
-        else if (obj is double)
+        else if (obj is double d)
         {
-            GenerateDoubleValue((double)obj);
+            WriteDoubleValue(d);
         }
-        else if (obj is decimal)
+        else if (obj is decimal @decimal)
         {
-            GenerateDecimalValue((decimal)obj);
+            WriteDecimalValue(@decimal);
         }
-        else if (obj is bool)
+        else if (obj is bool b1)
         {
-            if ((bool)obj)
+            if (b1)
             {
                 Output.Write("true");
             }
@@ -369,11 +369,11 @@ internal sealed class CSharpCodeGenerator : IDotnetCodeGenerator
         }
         else
         {
-            throw new ArgumentException(SR.Format(SR.InvalidPrimitiveType, obj.GetType().ToString()));
+            throw new ArgumentException(string.Format(SR.InvalidPrimitiveType, obj.GetType()));
         }
     }
 
-    private void GeneratePrimitiveChar(char c)
+    private void WritePrimitiveChar(char c)
     {
         Output.Write('\'');
         switch (c)
@@ -434,7 +434,7 @@ internal sealed class CSharpCodeGenerator : IDotnetCodeGenerator
         }
     }
 
-    public void GenerateComment(string comment, bool noNewLine)
+    public void WriteComment(string comment, bool noNewLine)
     {
         const string commentLineStart = "//";
         Output.Write(commentLineStart);
@@ -478,7 +478,7 @@ internal sealed class CSharpCodeGenerator : IDotnetCodeGenerator
         }
     }
 
-    public void GenerateVariableDeclarationStatement(CodeDotnetTypeReference typeReference, string variableName, Action initAction)
+    public void WriteVariableDeclarationStatement(TypeReference typeReference, string variableName, Action initAction)
     {
         OutputTypeNamePair(typeReference, variableName);
         if (initAction != null)
@@ -489,14 +489,14 @@ internal sealed class CSharpCodeGenerator : IDotnetCodeGenerator
         Output.WriteLine(';');
     }
 
-    public void GenerateNamedArgument(string argumentName, Action generateValue)
+    public void WriteNamedArgument(string argumentName, Action generateValue)
     {
         Output.Write(argumentName);
         Output.Write(": ");
         generateValue();
     }
 
-    public void GenerateFlagsBinaryOperator(IEnumerable<Action> generateOperandActions)
+    public void WriteFlagsBinaryOperator(IEnumerable<Action> generateOperandActions)
     {
         bool isFirst = true;
 
@@ -517,12 +517,12 @@ internal sealed class CSharpCodeGenerator : IDotnetCodeGenerator
         }
     }
 
-    public void GenerateSeparator()
+    public void WriteSeparator()
     {
         Output.Write(", ");
     }
 
-    public void GenerateCodeImplicitKeyValuePairCreate(Action generateKeyAction, Action generateValueAction)
+    public void WriteImplicitKeyValuePairCreate(Action generateKeyAction, Action generateValueAction)
     {
         Output.WriteLine('{');
         OutputActions([generateKeyAction, generateValueAction], newlineBetweenItems: true);
@@ -530,7 +530,7 @@ internal sealed class CSharpCodeGenerator : IDotnetCodeGenerator
         Output.Write('}');
     }
 
-    public void GenerateLambdaExpression(Action generateLambda, Action[] generateParameters)
+    public void WriteLambdaExpression(Action generateLambda, Action[] generateParameters)
     {
         if (generateParameters.Length != 1)
         {
@@ -558,7 +558,7 @@ internal sealed class CSharpCodeGenerator : IDotnetCodeGenerator
         generateLambda();
     }
 
-    public void GenerateSingleFloatValue(float s)
+    public void WriteSingleFloatValue(float s)
     {
         if (float.IsNaN(s))
         {
@@ -579,7 +579,7 @@ internal sealed class CSharpCodeGenerator : IDotnetCodeGenerator
         }
     }
 
-    public void GenerateDoubleValue(double d)
+    public void WriteDoubleValue(double d)
     {
         if (double.IsNaN(d))
         {
@@ -601,7 +601,7 @@ internal sealed class CSharpCodeGenerator : IDotnetCodeGenerator
         }
     }
 
-    public void GenerateDecimalValue(decimal d)
+    public void WriteDecimalValue(decimal d)
     {
         Output.Write(d.ToString(CultureInfo.InvariantCulture));
         Output.Write('m');
@@ -612,7 +612,7 @@ internal sealed class CSharpCodeGenerator : IDotnetCodeGenerator
         Output.Write('|');
     }
 
-    public void GeneratePropertyReference(string propertyName, Action targetObjectAction)
+    public void WritePropertyReference(string propertyName, Action targetObjectAction)
     {
         if (targetObjectAction != null)
         {
@@ -622,10 +622,10 @@ internal sealed class CSharpCodeGenerator : IDotnetCodeGenerator
         OutputIdentifier(propertyName);
     }
 
-    public void GenerateTypeReference(CodeDotnetTypeReference typeReference) =>
+    public void WriteTypeReference(TypeReference typeReference) =>
         OutputType(typeReference);
 
-    public void GenerateTypeOf(CodeDotnetTypeReference typeReference)
+    public void WriteTypeOf(TypeReference typeReference)
     {
         Output.Write("typeof(");
         OutputType(typeReference);
@@ -663,7 +663,7 @@ internal sealed class CSharpCodeGenerator : IDotnetCodeGenerator
         Indent--;
     }
 
-    private void OutputTypeNamePair(CodeDotnetTypeReference typeRef, string name)
+    private void OutputTypeNamePair(TypeReference typeRef, string name)
     {
         OutputType(typeRef);
         Output.Write(' ');
@@ -707,7 +707,7 @@ internal sealed class CSharpCodeGenerator : IDotnetCodeGenerator
     }
 
     // returns the type name without any array declaration.
-    private string GetBaseTypeOutput(CodeDotnetTypeReference typeRef, bool preferBuiltInTypes = true)
+    private string GetBaseTypeOutput(TypeReference typeRef, bool preferBuiltInTypes = true)
     {
         string s = typeRef.BaseType;
 
@@ -718,12 +718,12 @@ internal sealed class CSharpCodeGenerator : IDotnetCodeGenerator
 
         if (preferBuiltInTypes)
         {
-            if (typeRef is CodeAnonymousTypeReference)
+            if (typeRef is AnonymousTypeReference)
             {
                 return string.Empty;
             }
 
-            if (typeRef is CodeImplicitlyTypedTypeReference)
+            if (typeRef is VarTypeReference)
             {
                 return "var";
             }
@@ -826,7 +826,7 @@ internal sealed class CSharpCodeGenerator : IDotnetCodeGenerator
         return sb.ToString();
     }
 
-    private string GetTypeArgumentsOutput(CodeDotnetTypeReference[] typeArguments)
+    private string GetTypeArgumentsOutput(TypeReference[] typeArguments)
     {
         typeArguments ??= [];
         var sb = new StringBuilder(128);
@@ -834,7 +834,7 @@ internal sealed class CSharpCodeGenerator : IDotnetCodeGenerator
         return sb.ToString();
     }
 
-    private void GetTypeArgumentsOutput(IReadOnlyList<CodeDotnetTypeReference> typeArguments, int start, int length, StringBuilder sb)
+    private void GetTypeArgumentsOutput(IReadOnlyList<TypeReference> typeArguments, int start, int length, StringBuilder sb)
     {
         typeArguments ??= [];
         sb.Append('<');
@@ -858,11 +858,11 @@ internal sealed class CSharpCodeGenerator : IDotnetCodeGenerator
         sb.Append('>');
     }
 
-    public string GetTypeOutput(CodeDotnetTypeReference typeRef)
+    public string GetTypeOutput(TypeReference typeRef)
     {
         string s = string.Empty;
 
-        CodeDotnetTypeReference baseTypeRef = typeRef;
+        TypeReference baseTypeRef = typeRef;
         while (baseTypeRef.ArrayElementType != null)
         {
             baseTypeRef = baseTypeRef.ArrayElementType;

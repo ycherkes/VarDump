@@ -2,6 +2,7 @@
 using System.Linq;
 using VarDump.CodeDom.Common;
 using VarDump.CodeDom.Compiler;
+using VarDump.Extensions;
 using VarDump.Utils;
 using VarDump.Visitor.Descriptors;
 
@@ -11,14 +12,14 @@ internal sealed class AnonymousTypeVisitor : IKnownObjectVisitor
 {
     private readonly IObjectVisitor _rootObjectVisitor;
     private readonly IObjectDescriptor _anonymousObjectDescriptor;
-    private readonly IDotnetCodeGenerator _codeGenerator;
+    private readonly ICodeWriter _codeWriter;
 
     public AnonymousTypeVisitor(IObjectVisitor rootObjectVisitor,
-        IObjectDescriptor anonymousObjectDescriptor, IDotnetCodeGenerator codeGenerator)
+        IObjectDescriptor anonymousObjectDescriptor, ICodeWriter codeWriter)
     {
         _rootObjectVisitor = rootObjectVisitor;
         _anonymousObjectDescriptor = anonymousObjectDescriptor;
-        _codeGenerator = codeGenerator;
+        _codeWriter = codeWriter;
     }
 
     public string Id => "Anonymous";
@@ -31,13 +32,13 @@ internal sealed class AnonymousTypeVisitor : IKnownObjectVisitor
     {
         var initializeActions = _anonymousObjectDescriptor.Describe(obj, objectType)
             .Members
-            .Select(pv => (Action)(() => _codeGenerator.GenerateCodeAssign(
-                () => _codeGenerator.GeneratePropertyReference(pv.Name, null),
+            .Select(pv => (Action)(() => _codeWriter.WriteAssign(
+                () => _codeWriter.WritePropertyReference(pv.Name, null),
                 () =>
                 {
                     if (pv.Type.IsNullableType() || pv.Value == null)
                     {
-                        _codeGenerator.GenerateCast(new CodeDotnetTypeReference(pv.Type), 
+                        _codeWriter.WriteCast(pv.Type, 
                             () => _rootObjectVisitor.Visit(pv.Value));
                     }
                     else
@@ -46,7 +47,7 @@ internal sealed class AnonymousTypeVisitor : IKnownObjectVisitor
                     }
                 })));
 
-        _codeGenerator.GenerateObjectCreateAndInitialize(new CodeAnonymousTypeReference(),
+        _codeWriter.WriteObjectCreateAndInitialize(new AnonymousTypeReference(),
             [],
             initializeActions);
     }

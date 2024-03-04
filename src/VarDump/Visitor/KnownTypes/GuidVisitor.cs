@@ -1,16 +1,16 @@
 ﻿using System;
-using VarDump.CodeDom.Common;
 using VarDump.CodeDom.Compiler;
+using VarDump.Extensions;
 
 namespace VarDump.Visitor.KnownTypes;
 
 internal sealed class GuidVisitor : IKnownObjectVisitor
 {
-    private readonly IDotnetCodeGenerator _codeGenerator;
+    private readonly ICodeWriter _codeWriter;
 
-    public GuidVisitor(IDotnetCodeGenerator codeGenerator)
+    public GuidVisitor(ICodeWriter codeWriter)
     {
-        _codeGenerator = codeGenerator;
+        _codeWriter = codeWriter;
     }
 
     public string Id => nameof(Guid);
@@ -23,10 +23,8 @@ internal sealed class GuidVisitor : IKnownObjectVisitor
     {
         var guid = (Guid)obj;
 
-        _codeGenerator.GenerateObjectCreateAndInitialize(new CodeDotnetTypeReference(typeof(Guid)),
-            [
-                () => _codeGenerator.GeneratePrimitive(guid.ToString("D"))
-            ], 
+        _codeWriter.WriteObjectCreateAndInitialize(objectType,
+            [() => _codeWriter.WritePrimitive(guid.ToString("D"))], 
             []);
     }
 }

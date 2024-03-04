@@ -3,7 +3,6 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using VarDump.CodeDom.Common;
 using VarDump.CodeDom.Compiler;
 using VarDump.Utils;
 
@@ -12,12 +11,12 @@ namespace VarDump.Visitor.KnownTypes;
 internal sealed class GroupingVisitor : IKnownObjectVisitor
 {
     private readonly IObjectVisitor _rootObjectVisitor;
-    private readonly IDotnetCodeGenerator _codeGenerator;
+    private readonly ICodeWriter _codeWriter;
 
-    public GroupingVisitor(IObjectVisitor rootObjectVisitor, IDotnetCodeGenerator codeGenerator)
+    public GroupingVisitor(IObjectVisitor rootObjectVisitor, ICodeWriter codeWriter)
     {
         _rootObjectVisitor = rootObjectVisitor;
-        _codeGenerator = codeGenerator;
+        _codeWriter = codeWriter;
     }
 
     public string Id => "Grouping";
@@ -28,22 +27,22 @@ internal sealed class GroupingVisitor : IKnownObjectVisitor
 
     public void Visit(object o, Type objectType)
     {
-        _codeGenerator.GenerateMethodInvoke(() => 
-                _codeGenerator.GenerateMethodReference(() => 
-                    _codeGenerator.GenerateMethodInvoke(() => 
-                            _codeGenerator.GenerateMethodReference(() => VisitGroupings(o), 
+        _codeWriter.WriteMethodInvoke(() => 
+                _codeWriter.WriteMethodReference(() => 
+                    _codeWriter.WriteMethodInvoke(() => 
+                            _codeWriter.WriteMethodReference(() => VisitGroupings(o), 
                             "GroupBy"),
                 [
-                    GenerateKeyLambdaExpression,
-                    GenerateValueLambdaExpression
+                    WriteKeyLambdaExpression,
+                    WriteValueLambdaExpression
                 ]), "Single"),
         []);
 
-        void GenerateVariableReference() => _codeGenerator.GenerateVariableReference("grp");
-        void GenerateKeyLambdaPropertyExpression() => _codeGenerator.GeneratePropertyReference("Key", GenerateVariableReference);
-        void GenerateKeyLambdaExpression() => _codeGenerator.GenerateLambdaExpression(GenerateKeyLambdaPropertyExpression, [GenerateVariableReference]);
-        void GenerateValueLambdaPropertyExpression() => _codeGenerator.GeneratePropertyReference("Element", GenerateVariableReference);
-        void GenerateValueLambdaExpression() => _codeGenerator.GenerateLambdaExpression(GenerateValueLambdaPropertyExpression, [GenerateVariableReference]);
+        void WriteVariableReference() => _codeWriter.WriteVariableReference("grp");
+        void WriteKeyLambdaPropertyExpression() => _codeWriter.WritePropertyReference("Key", WriteVariableReference);
+        void WriteKeyLambdaExpression() => _codeWriter.WriteLambdaExpression(WriteKeyLambdaPropertyExpression, [WriteVariableReference]);
+        void WriteValueLambdaPropertyExpression() => _codeWriter.WritePropertyReference("Element", WriteVariableReference);
+        void WriteValueLambdaExpression() => _codeWriter.WriteLambdaExpression(WriteValueLambdaPropertyExpression, [WriteVariableReference]);
     }
 
     private static KeyValuePair<object, IEnumerable> GetIGroupingValue(object o)

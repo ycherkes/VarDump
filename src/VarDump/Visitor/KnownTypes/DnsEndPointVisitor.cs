@@ -2,20 +2,20 @@
 using System.Collections.Generic;
 using System.Net;
 using System.Net.Sockets;
-using VarDump.CodeDom.Common;
 using VarDump.CodeDom.Compiler;
+using VarDump.Extensions;
 
 namespace VarDump.Visitor.KnownTypes;
 
 internal sealed class DnsEndPointVisitor : IKnownObjectVisitor
 {
     private readonly IObjectVisitor _rootObjectVisitor;
-    private readonly IDotnetCodeGenerator _codeGenerator;
+    private readonly ICodeWriter _codeWriter;
 
-    public DnsEndPointVisitor(IObjectVisitor rootObjectVisitor, IDotnetCodeGenerator codeGenerator)
+    public DnsEndPointVisitor(IObjectVisitor rootObjectVisitor, ICodeWriter codeWriter)
     {
         _rootObjectVisitor = rootObjectVisitor;
-        _codeGenerator = codeGenerator;
+        _codeWriter = codeWriter;
     }
 
     public string Id => nameof(DnsEndPoint);
@@ -28,12 +28,12 @@ internal sealed class DnsEndPointVisitor : IKnownObjectVisitor
     {
         var dnsEndPoint = (DnsEndPoint)obj;
 
-        _codeGenerator.GenerateObjectCreateAndInitialize(new CodeDotnetTypeReference(typeof(DnsEndPoint)), GetConstructorArguments(), []);
+        _codeWriter.WriteObjectCreateAndInitialize(typeof(DnsEndPoint), GetConstructorArguments(), []);
 
         IEnumerable<Action> GetConstructorArguments()
         {
-            yield return () => _codeGenerator.GeneratePrimitive(dnsEndPoint.Host);
-            yield return () => _codeGenerator.GeneratePrimitive(dnsEndPoint.Port);
+            yield return () => _codeWriter.WritePrimitive(dnsEndPoint.Host);
+            yield return () => _codeWriter.WritePrimitive(dnsEndPoint.Port);
             if (dnsEndPoint.AddressFamily != AddressFamily.Unspecified)
             {
                 yield return () => _rootObjectVisitor.Visit(dnsEndPoint.AddressFamily);

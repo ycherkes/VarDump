@@ -1,17 +1,17 @@
 ﻿using System;
 using System.Collections.Generic;
-using VarDump.CodeDom.Common;
 using VarDump.CodeDom.Compiler;
+using VarDump.Extensions;
 
 namespace VarDump.Visitor.KnownTypes;
 
 internal sealed class UriVisitor : IKnownObjectVisitor
 {
-    private readonly IDotnetCodeGenerator _codeGenerator;
+    private readonly ICodeWriter _codeWriter;
 
-    public UriVisitor(IDotnetCodeGenerator codeGenerator)
+    public UriVisitor(ICodeWriter codeWriter)
     {
-        _codeGenerator = codeGenerator;
+        _codeWriter = codeWriter;
     }
 
     public string Id => nameof(Uri);
@@ -24,14 +24,14 @@ internal sealed class UriVisitor : IKnownObjectVisitor
     {
         var uri = (Uri)obj;
 
-        _codeGenerator.GenerateObjectCreateAndInitialize(new CodeDotnetTypeReference(typeof(Uri)), GetConstructorArguments(), []);
+        _codeWriter.WriteObjectCreateAndInitialize(typeof(Uri), GetConstructorArguments(), []);
 
         IEnumerable<Action> GetConstructorArguments()
         {
-            yield return () => _codeGenerator.GeneratePrimitive(uri.OriginalString);
+            yield return () => _codeWriter.WritePrimitive(uri.OriginalString);
             if (!uri.IsAbsoluteUri)
             {
-                yield return () => _codeGenerator.GenerateFieldReference(nameof(UriKind.Relative), () => _codeGenerator.GenerateTypeReference(new CodeDotnetTypeReference(typeof(UriKind))));
+                yield return () => _codeWriter.WriteFieldReference(nameof(UriKind.Relative), () => _codeWriter.WriteTypeReference(typeof(UriKind)));
             }
         }
     }

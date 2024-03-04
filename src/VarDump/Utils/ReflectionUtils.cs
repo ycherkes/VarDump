@@ -29,8 +29,8 @@ internal static class ReflectionUtils
     public static string ComposeVisualBasicVariableName(Type type)
     {
         var result = ComposeVariableName(type, GetFormattedVisualBasicTypeName);
-
-        if (VBCodeGenerator.IsKeyword(result) || string.Equals(type.Name, result, StringComparison.OrdinalIgnoreCase))
+        //todo - extract VBCodeWriter.IsKeyword to VbHelpers - as it's in CSharpHelpers
+        if (VBCodeWriter.IsKeyword(result) || string.Equals(type.Name, result, StringComparison.OrdinalIgnoreCase))
         {
             result += "Value";
         }

@@ -29,7 +29,7 @@ internal class ObjectFieldsDescriptor : IObjectDescriptor
 
         var info = new ObjectDescriptionInfo
         {
-            Type = new CodeDotnetTypeReference(objectType),
+            Type = new TypeReference(objectType),
             Members = fields
         };
 

@@ -13,10 +13,10 @@ namespace VarDump.Visitor.KnownTypes;
 internal sealed class CollectionVisitor : IKnownObjectVisitor
 {
     private readonly IObjectVisitor _rootObjectVisitor;
-    private readonly IDotnetCodeGenerator _codeGenerator;
+    private readonly ICodeWriter _codeWriter;
     private readonly int _maxCollectionSize;
 
-    public CollectionVisitor(IObjectVisitor rootObjectVisitor, IDotnetCodeGenerator codeGenerator, int maxCollectionSize)
+    public CollectionVisitor(IObjectVisitor rootObjectVisitor, ICodeWriter codeWriter, int maxCollectionSize)
     {
         if (maxCollectionSize <= 0)
         {
@@ -25,7 +25,7 @@ internal sealed class CollectionVisitor : IKnownObjectVisitor
 
         _maxCollectionSize = maxCollectionSize;
         _rootObjectVisitor = rootObjectVisitor;
-        _codeGenerator = codeGenerator;
+        _codeWriter = codeWriter;
     }
 
     public string Id => "Collection";
@@ -40,7 +40,7 @@ internal sealed class CollectionVisitor : IKnownObjectVisitor
         IEnumerable collection = (IEnumerable)obj;
         if (_rootObjectVisitor.IsVisited(collection))
         {
-            _codeGenerator.GenerateCircularReferenceDetected();
+            _codeWriter.WriteCircularReferenceDetected();
             return;
         }
 
@@ -78,7 +78,7 @@ internal sealed class CollectionVisitor : IKnownObjectVisitor
 
         if (_maxCollectionSize < int.MaxValue)
         {
-            items = items.Take(_maxCollectionSize + 1).Replace(_maxCollectionSize, () => _codeGenerator.GenerateTooManyItems(_maxCollectionSize));
+            items = items.Take(_maxCollectionSize + 1).Replace(_maxCollectionSize, () => _codeWriter.WriteTooManyItems(_maxCollectionSize));
         }
 
         var isLookup = type.IsLookup();
@@ -89,8 +89,8 @@ internal sealed class CollectionVisitor : IKnownObjectVisitor
 
         if (type.IsArray)
         {
-           _codeGenerator.GenerateMethodInvoke(() =>
-                    _codeGenerator.GenerateMethodReference(GenerateLambda, "ToArray"), []);
+           _codeWriter.WriteMethodInvoke(() =>
+                    _codeWriter.WriteMethodReference(WriteLambda, "ToArray"), []);
 
            return;
 
@@ -98,30 +98,30 @@ internal sealed class CollectionVisitor : IKnownObjectVisitor
 
         if (collection is IList)
         {
-            _codeGenerator.GenerateMethodInvoke(() =>
-                _codeGenerator.GenerateMethodReference(GenerateLambda, "ToList"), []);
+            _codeWriter.WriteMethodInvoke(() =>
+                _codeWriter.WriteMethodReference(WriteLambda, "ToList"), []);
 
             return;
         }
 
-        GenerateLambda();
+        WriteLambda();
 
         return;
 
         
-        void GenerateLambda() => _codeGenerator.GenerateMethodInvoke(() =>
-                _codeGenerator.GenerateMethodReference(GenerateArrayCreate, methodName),
+        void WriteLambda() => _codeWriter.WriteMethodInvoke(() =>
+                _codeWriter.WriteMethodReference(WriteArrayCreate, methodName),
             [
-                GenerateKeyLambdaExpression,
-                GenerateValueLambdaExpression
+                WriteKeyLambdaExpression,
+                WriteValueLambdaExpression
             ]);
 
-        void GenerateArrayCreate() => _codeGenerator.GenerateArrayCreate(new CodeAnonymousTypeReference { ArrayRank = 1 }, items);
-        void GenerateVariableReference() => _codeGenerator.GenerateVariableReference("grp");
-        void GenerateKeyLambdaPropertyExpression() => _codeGenerator.GeneratePropertyReference("Key", GenerateVariableReference);
-        void GenerateKeyLambdaExpression() => _codeGenerator.GenerateLambdaExpression(GenerateKeyLambdaPropertyExpression, [GenerateVariableReference]);
-        void GenerateValueLambdaPropertyExpression() => _codeGenerator.GeneratePropertyReference("Element", GenerateVariableReference);
-        void GenerateValueLambdaExpression() => _codeGenerator.GenerateLambdaExpression(GenerateValueLambdaPropertyExpression, [GenerateVariableReference]);
+        void WriteArrayCreate() => _codeWriter.WriteArrayCreate(new AnonymousTypeReference { ArrayRank = 1 }, items);
+        void WriteVariableReference() => _codeWriter.WriteVariableReference("grp");
+        void WriteKeyLambdaPropertyExpression() => _codeWriter.WritePropertyReference("Key", WriteVariableReference);
+        void WriteKeyLambdaExpression() => _codeWriter.WriteLambdaExpression(WriteKeyLambdaPropertyExpression, [WriteVariableReference]);
+        void WriteValueLambdaPropertyExpression() => _codeWriter.WritePropertyReference("Element", WriteVariableReference);
+        void WriteValueLambdaExpression() => _codeWriter.WriteLambdaExpression(WriteValueLambdaPropertyExpression, [WriteVariableReference]);
     }
 
     private void VisitSimpleCollection(IEnumerable enumerable, Type elementType)
@@ -130,7 +130,7 @@ internal sealed class CollectionVisitor : IKnownObjectVisitor
 
         if (_maxCollectionSize < int.MaxValue)
         {
-            items = items.Take(_maxCollectionSize + 1).Replace(_maxCollectionSize, () => _codeGenerator.GenerateTooManyItems(_maxCollectionSize));
+            items = items.Take(_maxCollectionSize + 1).Replace(_maxCollectionSize, () => _codeWriter.WriteTooManyItems(_maxCollectionSize));
         }
 
         var type = enumerable.GetType();
@@ -145,18 +145,18 @@ internal sealed class CollectionVisitor : IKnownObjectVisitor
                 items = ChunkMultiDimensionalArrayExpression((Array)enumerable, items);
             }
 
-            var typeReference = new CodeDotnetTypeReference(isImmutableOrFrozen || !type.IsPublic ? elementType.MakeArrayType() : type);
+            var arrayType = isImmutableOrFrozen || !type.IsPublic ? elementType.MakeArrayType() : type;
 
-            void GenerateArrayCreate() => _codeGenerator.GenerateArrayCreate(typeReference, items);
+            void WriteArrayCreate() => _codeWriter.WriteArrayCreate(arrayType, items);
 
             if (isImmutableOrFrozen)
             {
-               _codeGenerator.GenerateMethodInvoke(() =>
-                    _codeGenerator.GenerateMethodReference(GenerateArrayCreate, $"To{type.GetImmutableOrFrozenTypeName()}"), []);
+               _codeWriter.WriteMethodInvoke(() =>
+                    _codeWriter.WriteMethodReference(WriteArrayCreate, $"To{type.GetImmutableOrFrozenTypeName()}"), []);
             }
             else
             {
-                GenerateArrayCreate();
+                WriteArrayCreate();
             }
 
             return;
@@ -165,16 +165,16 @@ internal sealed class CollectionVisitor : IKnownObjectVisitor
         if (type.IsReadonlyCollection())
         {
             var typeReference =
-                new CodeCollectionTypeReference(typeof(List<>).MakeGenericType(elementType));
+                new CollectionTypeReference(typeof(List<>).MakeGenericType(elementType));
 
-            _codeGenerator.GenerateMethodInvoke(() => _codeGenerator.GenerateMethodReference(() => 
-               _codeGenerator.GenerateObjectCreateAndInitialize(typeReference, [], items), "AsReadOnly"), []);
+            _codeWriter.WriteMethodInvoke(() => _codeWriter.WriteMethodReference(() => 
+               _codeWriter.WriteObjectCreateAndInitialize(typeReference, [], items), "AsReadOnly"), []);
 
             return;
         }
 
-        _codeGenerator.GenerateObjectCreateAndInitialize(
-            new CodeCollectionTypeReference(type), [], items);
+        _codeWriter.WriteObjectCreateAndInitialize(
+            new CollectionTypeReference(type), [], items);
     }
 
     private IEnumerable<Action> ChunkMultiDimensionalArrayExpression(Array array, IEnumerable<Action> enumerable)
@@ -191,7 +191,7 @@ internal sealed class CollectionVisitor : IKnownObjectVisitor
         for (var index = dimensions.Length - 1; index >= 0; index--)
         {
             var dimension = dimensions[index];
-            result = result.Chunk(dimension).Select(x => (Action) (()=> _codeGenerator.GenerateCodeArrayDimension(x)));
+            result = result.Chunk(dimension).Select(x => (Action) (()=> _codeWriter.WriteArrayDimension(x)));
         }
 
         return result;
@@ -203,14 +203,14 @@ internal sealed class CollectionVisitor : IKnownObjectVisitor
 
         if (_maxCollectionSize < int.MaxValue)
         {
-            items = items.Take(_maxCollectionSize + 1).Replace(_maxCollectionSize, () => _codeGenerator.GenerateTooManyItems(_maxCollectionSize));
+            items = items.Take(_maxCollectionSize + 1).Replace(_maxCollectionSize, () => _codeWriter.WriteTooManyItems(_maxCollectionSize));
         }
 
         var type = enumerable.GetType();
 
         var isImmutableOrFrozen = type.IsPublicImmutableOrFrozenCollection();
 
-        var typeReference = new CodeAnonymousTypeReference { ArrayRank = 1 };
+        var typeReference = new AnonymousTypeReference { ArrayRank = 1 };
 
         if (type.IsArray && ((Array)enumerable).Rank > 1)
         {
@@ -218,12 +218,12 @@ internal sealed class CollectionVisitor : IKnownObjectVisitor
             items = ChunkMultiDimensionalArrayExpression((Array)enumerable, items);
         }
 
-        Action createAction = () => _codeGenerator.GenerateArrayCreate(typeReference, items);
+        Action createAction = () => _codeWriter.WriteArrayCreate(typeReference, items);
 
         if (isImmutableOrFrozen || enumerable is IList && !type.IsArray)
         {
-            _codeGenerator.GenerateMethodInvoke(() =>
-                _codeGenerator.GenerateMethodReference(createAction, $"To{type.GetImmutableOrFrozenTypeName()}"), []);
+            _codeWriter.WriteMethodInvoke(() =>
+                _codeWriter.WriteMethodReference(createAction, $"To{type.GetImmutableOrFrozenTypeName()}"), []);
         }
         else
         {

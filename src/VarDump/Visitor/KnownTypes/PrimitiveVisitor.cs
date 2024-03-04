@@ -1,19 +1,19 @@
 ﻿using System;
 using System.Linq;
 using System.Reflection;
-using VarDump.CodeDom.Common;
 using VarDump.CodeDom.Compiler;
+using VarDump.Extensions;
 using VarDump.Utils;
 
 namespace VarDump.Visitor.KnownTypes;
 
 internal sealed class PrimitiveVisitor : IKnownObjectVisitor
 {
-    private readonly IDotnetCodeGenerator _codeGenerator;
+    private readonly ICodeWriter _codeWriter;
 
-    public PrimitiveVisitor(IDotnetCodeGenerator codeGenerator)
+    public PrimitiveVisitor(ICodeWriter codeWriter)
     {
-        _codeGenerator = codeGenerator;
+        _codeWriter = codeWriter;
     }
 
     public string Id => "Primitive";
@@ -27,7 +27,7 @@ internal sealed class PrimitiveVisitor : IKnownObjectVisitor
     {
         if (obj == null || ValueEquality(obj, 0) || obj is byte)
         {
-            _codeGenerator.GeneratePrimitive(obj);
+            _codeWriter.WritePrimitive(obj);
             return;
         }
 
@@ -45,11 +45,11 @@ internal sealed class PrimitiveVisitor : IKnownObjectVisitor
 
         if (specialValueName != null)
         {
-            _codeGenerator.GenerateFieldReference(specialValueName, () => _codeGenerator.GenerateTypeReference(new CodeDotnetTypeReference(objectType)));
+            _codeWriter.WriteFieldReference(specialValueName, () => _codeWriter.WriteTypeReference(objectType));
             return;
         }
 
-        _codeGenerator.GeneratePrimitive(obj);
+        _codeWriter.WritePrimitive(obj);
     }
 
     private static bool IsSpecialValueField(object @object, IReflect objectType, string fieldName)

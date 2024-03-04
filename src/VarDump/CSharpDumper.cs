@@ -45,13 +45,13 @@ public class CSharpDumper : IDumper
 
     private void DumpImpl(object obj, TextWriter textWriter)
     {
-        IDotnetCodeGenerator codeGenerator = new CSharpCodeGenerator(textWriter, new CodeGeneratorOptions{ UseFullTypeName = _options.UseTypeFullName });
+        ICodeWriter codeWriter = new CSharpCodeWriter(textWriter, new CodeWriterOptions{ UseFullTypeName = _options.UseTypeFullName });
 
-        var objectVisitor = new ObjectVisitor(_options, codeGenerator);
+        var objectVisitor = new ObjectVisitor(_options, codeWriter);
 
         if (_options.GenerateVariableInitializer)
         {
-            codeGenerator.GenerateVariableDeclarationStatement(new CodeImplicitlyTypedTypeReference(),
+            codeWriter.WriteVariableDeclarationStatement(new VarTypeReference(),
                 obj != null ? ReflectionUtils.ComposeCsharpVariableName(obj.GetType()) : "nullValue", () => objectVisitor.Visit(obj));
         }
         else

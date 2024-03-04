@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Linq;
-using VarDump.CodeDom.Common;
 using VarDump.CodeDom.Compiler;
+using VarDump.Extensions;
 using VarDump.Utils;
 
 namespace VarDump.Visitor.KnownTypes;
@@ -9,12 +9,12 @@ namespace VarDump.Visitor.KnownTypes;
 internal sealed class KeyValuePairVisitor : IKnownObjectVisitor
 {
     private readonly IObjectVisitor _rootObjectVisitor;
-    private readonly IDotnetCodeGenerator _codeGenerator;
+    private readonly ICodeWriter _codeWriter;
 
-    public KeyValuePairVisitor(IObjectVisitor rootObjectVisitor, IDotnetCodeGenerator codeGenerator)
+    public KeyValuePairVisitor(IObjectVisitor rootObjectVisitor, ICodeWriter codeWriter)
     {
         _rootObjectVisitor = rootObjectVisitor;
-        _codeGenerator = codeGenerator;
+        _codeWriter = codeWriter;
     }
 
     public string Id => "KeyValuePair";
@@ -27,7 +27,7 @@ internal sealed class KeyValuePairVisitor : IKnownObjectVisitor
     {
         var propertyValues = objectType.GetProperties().Select(p => ReflectionUtils.GetValue(p, obj)).Select(v => (Action)(() => _rootObjectVisitor.Visit(v)));
 
-        _codeGenerator.GenerateObjectCreateAndInitialize(new CodeDotnetTypeReference(objectType),
+        _codeWriter.WriteObjectCreateAndInitialize(objectType,
             propertyValues,
             []);
     }

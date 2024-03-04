@@ -1,17 +1,17 @@
 ﻿using System;
 using System.Linq;
-using VarDump.CodeDom.Common;
 using VarDump.CodeDom.Compiler;
+using VarDump.Extensions;
 
 namespace VarDump.Visitor.KnownTypes;
 
 internal sealed class EnumVisitor : IKnownObjectVisitor
 {
-    private readonly IDotnetCodeGenerator _codeGenerator;
+    private readonly ICodeWriter _codeWriter;
 
-    public EnumVisitor(IDotnetCodeGenerator codeGenerator)
+    public EnumVisitor(ICodeWriter codeWriter)
     {
-        _codeGenerator = codeGenerator;
+        _codeWriter = codeWriter;
     }
 
     public string Id => nameof(Enum);
@@ -26,12 +26,12 @@ internal sealed class EnumVisitor : IKnownObjectVisitor
 
         if (values.Length == 1)
         {
-            _codeGenerator.GenerateFieldReference(values[0].Trim(), () => _codeGenerator.GenerateTypeReference(new CodeDotnetTypeReference(obj.GetType())));
+            _codeWriter.WriteFieldReference(values[0].Trim(), () => _codeWriter.WriteTypeReference(objectType));
             return;
         }
 
-        var actions = values.Select(v => (Action)(() => _codeGenerator.GenerateFieldReference(v.Trim(), () => _codeGenerator.GenerateTypeReference(new CodeDotnetTypeReference(obj.GetType())))));
+        var actions = values.Select(v => (Action)(() => _codeWriter.WriteFieldReference(v.Trim(), () => _codeWriter.WriteTypeReference(objectType))));
 
-        _codeGenerator.GenerateFlagsBinaryOperator(actions);
+        _codeWriter.WriteFlagsBinaryOperator(actions);
     }
 }

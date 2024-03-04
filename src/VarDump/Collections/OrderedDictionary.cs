@@ -7,9 +7,7 @@ namespace VarDump.Collections;
 
 // original version see https://github.com/jehugaleahsa/truncon.collections.OrderedDictionary
 
-public interface IOrderedDictionary<TKey, TValue> : IDictionary<TKey, TValue>, IList<KeyValuePair<TKey, TValue>>
-{
-}
+public interface IOrderedDictionary<TKey, TValue> : IDictionary<TKey, TValue>, IList<KeyValuePair<TKey, TValue>>;
 
 /// <summary>
 /// Represents a dictionary that tracks the order that items were added.
@@ -42,7 +40,7 @@ internal sealed class OrderedDictionary<TKey, TValue> : IOrderedDictionary<TKey,
     /// Initializes a new instance of an OrderedDictionary.
     /// </summary>
     /// <param name="capacity">The initial capacity of the dictionary.</param>
-    /// <exception cref="System.ArgumentOutOfRangeException">The capacity is less than zero.</exception>
+    /// <exception cref="ArgumentOutOfRangeException">The capacity is less than zero.</exception>
     public OrderedDictionary(int capacity)
         : this(capacity, null)
     {
@@ -74,8 +72,8 @@ internal sealed class OrderedDictionary<TKey, TValue> : IOrderedDictionary<TKey,
     /// </summary>
     /// <param name="key">The key to add to the dictionary.</param>
     /// <param name="value">The value to associated with the key.</param>
-    /// <exception cref="System.ArgumentException">The given key already exists in the dictionary.</exception>
-    /// <exception cref="System.ArgumentNullException">The key is null.</exception>
+    /// <exception cref="ArgumentException">The given key already exists in the dictionary.</exception>
+    /// <exception cref="ArgumentNullException">The key is null.</exception>
     public void Add(TKey key, TValue value)
     {
         _dictionary.Add(key, _values.Count);
@@ -90,9 +88,9 @@ internal sealed class OrderedDictionary<TKey, TValue> : IOrderedDictionary<TKey,
     /// <param name="index">The index to insert the key/value pair.</param>
     /// <param name="key">The key to insert.</param>
     /// <param name="value">The value to insert.</param>
-    /// <exception cref="System.ArgumentException">The given key already exists in the dictionary.</exception>
-    /// <exception cref="System.ArgumentNullException">The key is null.</exception>
-    /// <exception cref="System.ArgumentOutOfRangeException">The index is negative -or- larger than the size of the dictionary.</exception>
+    /// <exception cref="ArgumentException">The given key already exists in the dictionary.</exception>
+    /// <exception cref="ArgumentNullException">The key is null.</exception>
+    /// <exception cref="ArgumentOutOfRangeException">The index is negative -or- larger than the size of the dictionary.</exception>
     public void Insert(int index, TKey key, TValue value)
     {
         if (index < 0 || index > _values.Count)
@@ -115,7 +113,7 @@ internal sealed class OrderedDictionary<TKey, TValue> : IOrderedDictionary<TKey,
     /// </summary>
     /// <param name="key">The key to look for.</param>
     /// <returns>True if the key exists in the dictionary; otherwise, false.</returns>
-    /// <exception cref="System.ArgumentNullException">The key is null.</exception>
+    /// <exception cref="ArgumentNullException">The key is null.</exception>
     public bool ContainsKey(TKey key) => _dictionary.ContainsKey(key);
 
     /// <summary>
@@ -128,7 +126,7 @@ internal sealed class OrderedDictionary<TKey, TValue> : IOrderedDictionary<TKey,
     /// </summary>
     /// <param name="key">The key of the pair to remove.</param>
     /// <returns>True if the key was found and the pair removed; otherwise, false.</returns>
-    /// <exception cref="System.ArgumentNullException">The key is null.</exception>
+    /// <exception cref="ArgumentNullException">The key is null.</exception>
     public bool Remove(TKey key)
     {
         if (_dictionary.TryGetValue(key, out int index))
@@ -143,7 +141,7 @@ internal sealed class OrderedDictionary<TKey, TValue> : IOrderedDictionary<TKey,
     /// Removes the key/value pair at the given index.
     /// </summary>
     /// <param name="index">The index of the key/value pair to remove.</param>
-    /// <exception cref="System.ArgumentOutOfRangeException">The index is negative -or- larger than the size of the dictionary.</exception>
+    /// <exception cref="ArgumentOutOfRangeException">The index is negative -or- larger than the size of the dictionary.</exception>
     public void RemoveAt(int index)
     {
         var key = _keys[index];
@@ -165,7 +163,7 @@ internal sealed class OrderedDictionary<TKey, TValue> : IOrderedDictionary<TKey,
     /// <param name="key">The key to get the value for.</param>
     /// <param name="value">The value used to hold the results.</param>
     /// <returns>True if the key was found; otherwise, false.</returns>
-    /// <exception cref="System.ArgumentNullException">The key is null.</exception>
+    /// <exception cref="ArgumentNullException">The key is null.</exception>
     public bool TryGetValue(TKey key, out TValue value)
     {
         if (_dictionary.TryGetValue(key, out int index))
@@ -187,7 +185,7 @@ internal sealed class OrderedDictionary<TKey, TValue> : IOrderedDictionary<TKey,
     /// </summary>
     /// <param name="index">The index of the value to get.</param>
     /// <returns>The value at the given index.</returns>
-    /// <exception cref="System.ArgumentOutOfRangeException">The index is negative -or- beyond the length of the dictionary.</exception>
+    /// <exception cref="ArgumentOutOfRangeException">The index is negative -or- beyond the length of the dictionary.</exception>
     public TValue this[int index]
     {
         get => _values[index];
@@ -199,8 +197,8 @@ internal sealed class OrderedDictionary<TKey, TValue> : IOrderedDictionary<TKey,
     /// </summary>
     /// <param name="key">The key to get the associated value by or to associate with the value.</param>
     /// <returns>The value associated with the given key.</returns>
-    /// <exception cref="System.ArgumentNullException">The key is null.</exception>
-    /// <exception cref="System.Collections.Generic.KeyNotFoundException">The key is not in the dictionary.</exception>
+    /// <exception cref="ArgumentNullException">The key is null.</exception>
+    /// <exception cref="KeyNotFoundException">The key is not in the dictionary.</exception>
     public TValue this[TKey key]
     {
         get => _values[_dictionary[key]];
@@ -352,7 +350,7 @@ internal sealed class OrderedDictionary<TKey, TValue> : IOrderedDictionary<TKey,
         /// Initializes a new instance of a KeyCollection.
         /// </summary>
         /// <param name="dictionary">The OrderedDictionary whose keys to wrap.</param>
-        /// <exception cref="System.ArgumentNullException">The dictionary is null.</exception>
+        /// <exception cref="ArgumentNullException">The dictionary is null.</exception>
         internal KeyCollection(Dictionary<TKey, int> dictionary)
         {
             _dictionary = dictionary;
@@ -363,9 +361,9 @@ internal sealed class OrderedDictionary<TKey, TValue> : IOrderedDictionary<TKey,
         /// </summary>
         /// <param name="array">The array to copy the keys to.</param>
         /// <param name="arrayIndex">The index into the array to start copying the keys.</param>
-        /// <exception cref="System.ArgumentNullException">The array is null.</exception>
-        /// <exception cref="System.ArgumentOutOfRangeException">The arrayIndex is negative.</exception>
-        /// <exception cref="System.ArgumentException">The array, starting at the given index, is not large enough to contain all the keys.</exception>
+        /// <exception cref="ArgumentNullException">The array is null.</exception>
+        /// <exception cref="ArgumentOutOfRangeException">The arrayIndex is negative.</exception>
+        /// <exception cref="ArgumentException">The array, starting at the given index, is not large enough to contain all the keys.</exception>
         public void CopyTo(TKey[] array, int arrayIndex)
         {
             _dictionary.Keys.CopyTo(array, arrayIndex);
@@ -411,7 +409,7 @@ internal sealed class OrderedDictionary<TKey, TValue> : IOrderedDictionary<TKey,
         /// Initializes a new instance of a ValueCollection.
         /// </summary>
         /// <param name="values">The OrderedDictionary whose keys to wrap.</param>
-        /// <exception cref="System.ArgumentNullException">The dictionary is null.</exception>
+        /// <exception cref="ArgumentNullException">The dictionary is null.</exception>
         internal ValueCollection(List<TValue> values)
         {
             _values = values;
@@ -422,9 +420,9 @@ internal sealed class OrderedDictionary<TKey, TValue> : IOrderedDictionary<TKey,
         /// </summary>
         /// <param name="array">The array to copy the values to.</param>
         /// <param name="arrayIndex">The index into the array to start copying the values.</param>
-        /// <exception cref="System.ArgumentNullException">The array is null.</exception>
-        /// <exception cref="System.ArgumentOutOfRangeException">The arrayIndex is negative.</exception>
-        /// <exception cref="System.ArgumentException">The array, starting at the given index, is not large enough to contain all the values.</exception>
+        /// <exception cref="ArgumentNullException">The array is null.</exception>
+        /// <exception cref="ArgumentOutOfRangeException">The arrayIndex is negative.</exception>
+        /// <exception cref="ArgumentException">The array, starting at the given index, is not large enough to contain all the values.</exception>
         public void CopyTo(TValue[] array, int arrayIndex)
         {
             _values.CopyTo(array, arrayIndex);

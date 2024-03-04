@@ -5,15 +5,15 @@
 using System.Collections.Generic;
 using System.Globalization;
 
-namespace VarDump.CodeDom;
+namespace VarDump.CodeDom.CSharp;
 
 internal static class CSharpHelpers
 {
-    private static readonly HashSet<string> FixedStringLookup;
+    private static readonly HashSet<string> Lookup;
 
     static CSharpHelpers()
     {
-        FixedStringLookup = new HashSet<string>();
+        Lookup = new HashSet<string>();
         for (int i = 0; i < Keywords.Length; i++)
         {
             var values = Keywords[i];
@@ -21,7 +21,7 @@ internal static class CSharpHelpers
             {
                 for (int j = 0; j < values.Length; j++)
                 {
-                    FixedStringLookup.Add(values[j]);
+                    Lookup.Add(values[j]);
                 }
             }
         }
@@ -146,7 +146,7 @@ internal static class CSharpHelpers
 
     internal static bool IsKeyword(string value)
     {
-        return FixedStringLookup.Contains(value);
+        return Lookup.Contains(value);
     }
 
     internal static bool IsPrefixTwoUnderscore(string value)

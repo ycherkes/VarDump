@@ -4,8 +4,9 @@
 
 using System;
 using System.Collections.Generic;
+using VarDump.CodeDom.CSharp;
 
-namespace VarDump.CodeDom;
+namespace VarDump.CodeDom.VisualBasic;
 
 internal static class VBHelpers
 {

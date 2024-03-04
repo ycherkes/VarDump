@@ -2,9 +2,9 @@
 using System;
 using VarDump.CodeDom.Common;
 using VarDump.CodeDom.Compiler;
-using VarDump.Utils;
 using VarDump.Visitor;
 using System.Linq;
+using VarDump.Utils;
 
 namespace VarDump.Extensions;
 

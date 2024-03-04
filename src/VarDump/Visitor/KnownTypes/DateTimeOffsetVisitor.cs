@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Globalization;
-using VarDump.CodeDom.Common;
 using VarDump.CodeDom.Compiler;
 using VarDump.Extensions;
 

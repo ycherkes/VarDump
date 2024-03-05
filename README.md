@@ -216,7 +216,7 @@ For more examples see [Unit Tests](https://github.com/ycherkes/VarDump/tree/main
 
 | Repository  | License |
 | ------------- | ------------- |
-| [Heavily customized version](https://github.com/ycherkes/VarDump/tree/main/src/CodeDom) of [System.CodeDom](https://github.com/dotnet/runtime/tree/main/src/libraries/System.CodeDom)  | [![MIT](https://img.shields.io/github/license/dotnet/runtime?style=flat-square)](https://github.com/dotnet/runtime/blob/main/LICENSE.TXT)  |
+| [Heavily customized version](https://github.com/ycherkes/VarDump/tree/main/src/VarDump/CodeDom) of [System.CodeDom](https://github.com/dotnet/runtime/tree/main/src/libraries/System.CodeDom)  | [![MIT](https://img.shields.io/github/license/dotnet/runtime?style=flat-square)](https://github.com/dotnet/runtime/blob/main/LICENSE.TXT)  |
 
 **Privacy Notice:** No personal data is collected at all.
 

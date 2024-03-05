@@ -22,12 +22,12 @@ public class ObjectDescriptorMiddlewareSpec
             CardNumber = "12345678901234"
         };
 
-        var opts = new DumpOptions
+        var options = new DumpOptions
         {
-            Descriptors = { new CardNumberMaskerMiddleware() }
+            Descriptors = { new CardNumberMaskingMiddleware() }
         };
 
-        var dumper = new CSharpDumper(opts);
+        var dumper = new CSharpDumper(options);
 
         var result = dumper.Dump(cardInfo);
 
@@ -48,7 +48,7 @@ public class ObjectDescriptorMiddlewareSpec
         const string name = "World";
         FormattableString str = $"Hello, {name}";
 
-        var opts = new DumpOptions
+        var options = new DumpOptions
         {
             Descriptors =
             {
@@ -60,7 +60,7 @@ public class ObjectDescriptorMiddlewareSpec
             }
         };
 
-        var dumper = new CSharpDumper(opts);
+        var dumper = new CSharpDumper(options);
 
         var result = dumper.Dump(str);
 
@@ -83,13 +83,13 @@ public class ObjectDescriptorMiddlewareSpec
         {
         }
 
-        var opts = new DumpOptions
+        var options = new DumpOptions
         {
             Descriptors = { new MemberInfoMiddleware() },
             WritablePropertiesOnly = false
         };
 
-        var dumper = new CSharpDumper(opts);
+        var dumper = new CSharpDumper(options);
         var delegateObject = (Delegate)(EventHandler)EventHandler;
 
         var result = dumper.Dump(delegateObject);
@@ -136,7 +136,7 @@ public class ObjectDescriptorMiddlewareSpec
     [Fact]
     public void DumpDirectoryInfoCsharp()
     {
-        var opts = new DumpOptions
+        var options = new DumpOptions
         {
             Descriptors = { new FileSystemInfoMiddleware() },
             DateKind = DateKind.ConvertToUtc,
@@ -146,7 +146,7 @@ public class ObjectDescriptorMiddlewareSpec
 
         var directoryName = Guid.NewGuid().ToString();
 
-        var dumper = new CSharpDumper(opts);
+        var dumper = new CSharpDumper(options);
 
         var actualString = dumper.Dump(new DirectoryInfo(directoryName));
 
@@ -199,14 +199,14 @@ public class ObjectDescriptorMiddlewareSpec
     [Fact]
     public void DumpFileInfoCsharp()
     {
-        var opts = new DumpOptions
+        var options = new DumpOptions
         {
             Descriptors = { new FileInfoMiddleware() }
         };
 
         var fileName = $"{Guid.NewGuid()}.txt";
 
-        var dumper = new CSharpDumper(opts);
+        var dumper = new CSharpDumper(options);
 
         var actualString = dumper.Dump(new FileInfo(fileName));
 
@@ -219,14 +219,14 @@ public class ObjectDescriptorMiddlewareSpec
     [Fact]
     public void DumpDriveInfoCsharp()
     {
-        var opts = new DumpOptions
+        var options = new DumpOptions
         {
             Descriptors = { new DriveInfoMiddleware() }
         };
 
         var driveName = "C:";
 
-        var dumper = new CSharpDumper(opts);
+        var dumper = new CSharpDumper(options);
 
         var actualString = dumper.Dump(new DriveInfo(driveName));
 
@@ -243,13 +243,13 @@ public class ObjectDescriptorMiddlewareSpec
         {
         }
 
-        var opts = new DumpOptions
+        var options = new DumpOptions
         {
             Descriptors = { new MemberInfoMiddleware() },
             WritablePropertiesOnly = false
         };
 
-        var dumper = new VisualBasicDumper(opts);
+        var dumper = new VisualBasicDumper(options);
 
         var delegateObject = (Delegate)(EventHandler)EventHandler;
 
@@ -398,7 +398,7 @@ public class ObjectDescriptorMiddlewareSpec
         }
     }
 
-    private class CardNumberMaskerMiddleware : IObjectDescriptorMiddleware
+    private class CardNumberMaskingMiddleware : IObjectDescriptorMiddleware
     {
         public ObjectDescriptionInfo Describe(object @object, Type objectType, Func<ObjectDescriptionInfo> prev)
         {
@@ -433,11 +433,11 @@ public class ObjectDescriptorMiddlewareSpec
                     }
 
                     return new ReflectionDescriptor(maskedValue)
-                        {
-                            Name = memberDescriptor.Name,
-                            Type = memberDescriptor.Type,
-                            ReflectionType = memberDescriptor.ReflectionType
-                        };
+                    {
+                        Name = memberDescriptor.Name,
+                        Type = memberDescriptor.Type,
+                        ReflectionType = memberDescriptor.ReflectionType
+                    };
                 })
             };
         }

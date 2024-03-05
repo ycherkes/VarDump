@@ -5,17 +5,9 @@ using VarDump.Utils;
 
 namespace VarDump.Visitor.KnownTypes;
 
-internal sealed class DateOnlyVisitor : IKnownObjectVisitor
+internal sealed class DateOnlyVisitor(ICodeWriter codeWriter, DateTimeInstantiation dateTimeInstantiation)
+    : IKnownObjectVisitor
 {
-    private readonly ICodeWriter _codeWriter;
-    private readonly DateTimeInstantiation _dateTimeInstantiation;
-
-    public DateOnlyVisitor(ICodeWriter codeWriter, DateTimeInstantiation dateTimeInstantiation)
-    {
-        _codeWriter = codeWriter;
-        _dateTimeInstantiation = dateTimeInstantiation;
-    }
-
     public string Id => "DateOnly";
     public bool IsSuitableFor(object obj, Type objectType)
     {
@@ -28,45 +20,44 @@ internal sealed class DateOnlyVisitor : IKnownObjectVisitor
 
         if (dayNumber == null)
         {
-            _codeWriter.WriteErrorDetected("Wrong DateOnly struct");
+            codeWriter.WriteErrorDetected("Wrong DateOnly struct");
             return;
         }
 
         if (dayNumber == 3652058U)
         {
-            _codeWriter.WriteFieldReference(nameof(DateTime.MaxValue), () => _codeWriter.WriteTypeReference(objectType));
+            codeWriter.WriteFieldReference(nameof(DateTime.MaxValue), () => codeWriter.WriteType(objectType));
 
             return;
         }
 
         if (dayNumber == 1)
         {
-            _codeWriter.WriteFieldReference(nameof(DateTime.MinValue), () => _codeWriter.WriteTypeReference(objectType));
+            codeWriter.WriteFieldReference(nameof(DateTime.MinValue), () => codeWriter.WriteType(objectType));
 
             return;
         }
 
         var dateTime = new DateTime((long)dayNumber * 864000000000L);
 
-        if (_dateTimeInstantiation == DateTimeInstantiation.Parse)
+        if (dateTimeInstantiation == DateTimeInstantiation.Parse)
         {
-            _codeWriter.WriteMethodInvoke(
-                () => _codeWriter.WriteMethodReference(
-                    () => _codeWriter.WriteTypeReference(objectType), nameof(DateTimeOffset.ParseExact)),
+            codeWriter.WriteMethodInvoke(
+                () => codeWriter.WriteMethodReference(
+                    () => codeWriter.WriteType(objectType), nameof(DateTimeOffset.ParseExact)),
                 [
-                    () => _codeWriter.WritePrimitive($"{dateTime:yyyy-MM-dd}"),
-                    () => _codeWriter.WritePrimitive("O")
+                    () => codeWriter.WritePrimitive($"{dateTime:yyyy-MM-dd}"),
+                    () => codeWriter.WritePrimitive("O")
                 ]);
 
             return;
         }
 
-        _codeWriter.WriteObjectCreateAndInitialize(objectType,
+        codeWriter.WriteObjectCreate(objectType,
             [
-                () => _codeWriter.WritePrimitive(dateTime.Year),
-                () => _codeWriter.WritePrimitive(dateTime.Month),
-                () => _codeWriter.WritePrimitive(dateTime.Day)
-            ],
-            []);
+                () => codeWriter.WritePrimitive(dateTime.Year),
+                () => codeWriter.WritePrimitive(dateTime.Month),
+                () => codeWriter.WritePrimitive(dateTime.Day)
+            ]);
     }
 }

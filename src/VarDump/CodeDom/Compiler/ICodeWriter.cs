@@ -10,30 +10,32 @@ public interface ICodeWriter
     int Indent { get; set; }
     TextWriter Output { get; }
 
-    void WriteArrayCreate(TypeReference typeReference, IEnumerable<Action> generateInitializers, int size = 0);
-    void WriteCast(TypeReference typeReference, Action generateAction);
+    void WriteArrayCreate(CodeTypeInfo typeInfo, IEnumerable<Action> initializers, int size = 0);
+    void WriteCast(CodeTypeInfo typeInfo, Action action);
 
     void WriteArrayDimension(IEnumerable<Action> initializers);
     void WriteAssign(Action left, Action right);
 
-    void WriteImplicitKeyValuePairCreate(Action generateKeyAction, Action generateValueAction);
+    void WriteImplicitKeyValuePairCreate(Action keyAction, Action valueAction);
 
     void WriteComment(string comment, bool noNewLine);
 
-    void WriteDefaultValue(TypeReference typeRef);
+    void WriteDefaultValue(CodeTypeInfo typeInfo);
 
-    void WriteFieldReference(string fieldName, Action generateTargetObjectAction);
+    void WriteFieldReference(string fieldName, Action targetObjectAction);
 
-    void WriteFlagsBinaryOperator(IEnumerable<Action> generateOperandActions);
-    void WriteLambdaExpression(Action generateLambda, Action[] generateParameters);
+    void WriteFlagsBitwiseOrOperator(IEnumerable<Action> operandActions);
+    void WriteLambdaExpression(Action lambda, Action[] parameters);
 
     void WriteMethodInvoke(Action methodReferenceAction, IEnumerable<Action> parametersActions);
 
-    void WriteMethodReference(Action targetObject, string methodName, params TypeReference[] typeParameters);
+    void WriteMethodReference(Action targetObject, string methodName, params CodeTypeInfo[] typeParameters);
 
-    void WriteNamedArgument(string argumentName, Action generateValue);
+    void WriteNamedArgument(string argumentName, Action value);
 
-    void WriteObjectCreateAndInitialize(TypeReference type, IEnumerable<Action> generateParametersActions, IEnumerable<Action> generateInitializeActions);
+    void WriteObjectCreateAndInitialize(CodeTypeInfo typeInfo, IEnumerable<Action> parametersActions, IEnumerable<Action> initializeActions);
+
+    void WriteObjectCreate(CodeTypeInfo typeInfo, IEnumerable<Action> parametersActions);
 
     void WritePrimitive(object obj);
 
@@ -41,13 +43,13 @@ public interface ICodeWriter
 
     void WriteSeparator();
 
-    void WriteTypeOf(TypeReference typeReference);
+    void WriteTypeOf(CodeTypeInfo typeInfo);
 
-    void WriteTypeReference(TypeReference typeReference);
+    void WriteType(CodeTypeInfo typeInfo);
 
     void WriteValueTupleCreate(IEnumerable<Action> actions);
 
-    void WriteVariableDeclarationStatement(TypeReference typeReference, string variableName, Action initAction);
+    void WriteVariableDeclarationStatement(CodeTypeInfo typeInfo, string variableName, Action initAction);
 
     void WriteVariableReference(string variableName);
 }

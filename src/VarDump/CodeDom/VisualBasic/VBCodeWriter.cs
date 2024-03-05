@@ -37,18 +37,18 @@ internal sealed class VBCodeWriter : ICodeWriter
         _output = new ExposedTabStringIndentedTextWriter(w, _options.IndentString);
     }
 
-    public void WriteTypeReference(TypeReference typeReference) =>
-        OutputType(typeReference);
+    public void WriteType(CodeTypeInfo typeInfo) =>
+        OutputType(typeInfo);
 
-    public void WriteFlagsBinaryOperator(IEnumerable<Action> generateOperandActions)
+    public void WriteFlagsBitwiseOrOperator(IEnumerable<Action> operandActions)
     {
         bool isFirst = true;
 
-        foreach (var generateOperand in generateOperandActions)
+        foreach (var operand in operandActions)
         {
             if (isFirst)
             {
-                generateOperand();
+                operand();
                 isFirst = false;
             }
             else
@@ -56,7 +56,7 @@ internal sealed class VBCodeWriter : ICodeWriter
                 Output.Write(' ');
                 OutputBitwiseOrOperator();
                 Output.Write(' ');
-                generateOperand();
+                operand();
             }
         }
     }
@@ -176,11 +176,11 @@ internal sealed class VBCodeWriter : ICodeWriter
         b.Append(")");
     }
 
-    public void WriteNamedArgument(string argumentName, Action generateValue)
+    public void WriteNamedArgument(string argumentName, Action value)
     {
         Output.Write(argumentName);
         Output.Write(":=");
-        generateValue();
+        value();
     }
 
     public void WriteAssign(Action left, Action right)
@@ -190,9 +190,9 @@ internal sealed class VBCodeWriter : ICodeWriter
         right();
     }
 
-    public void WriteDefaultValue(TypeReference typeRef)
+    public void WriteDefaultValue(CodeTypeInfo typeInfo)
     {
-        Output.Write("CType(Nothing, " + GetTypeOutput(typeRef) + ")");
+        Output.Write("CType(Nothing, " + GetTypeOutput(typeInfo) + ")");
     }
 
     private void OutputBitwiseOrOperator()
@@ -205,41 +205,41 @@ internal sealed class VBCodeWriter : ICodeWriter
         Output.Write(CreateEscapedIdentifier(ident));
     }
 
-    public void OutputType(TypeReference typeRef)
+    public void OutputType(CodeTypeInfo typeInfo)
     {
-        Output.Write(GetTypeOutputWithoutArrayPostFix(typeRef));
+        Output.Write(GetTypeOutputWithoutArrayPostFix(typeInfo));
     }
 
 
-    private void OutputTypeNamePair(TypeReference typeRef, string name)
+    private void OutputTypeNamePair(CodeTypeInfo typeInfo, string name)
     {
         if (string.IsNullOrEmpty(name))
             name = "__exception";
 
         OutputIdentifier(name);
-        OutputArrayPostfix(typeRef);
-        if (!(typeRef is EmptyTypeReference))
+        OutputArrayPostfix(typeInfo);
+        if (!(typeInfo is CodeEmptyTypeInfo))
         {
             Output.Write(" As ");
-            OutputType(typeRef);
+            OutputType(typeInfo);
         }
     }
 
-    private string GetArrayPostfix(TypeReference typeRef)
+    private string GetArrayPostfix(CodeTypeInfo typeInfo)
     {
         string s = "";
-        if (typeRef.ArrayElementType != null)
+        if (typeInfo.ArrayElementType != null)
         {
             // Recurse up
-            s = GetArrayPostfix(typeRef.ArrayElementType);
+            s = GetArrayPostfix(typeInfo.ArrayElementType);
         }
 
-        if (typeRef.ArrayRank > 0)
+        if (typeInfo.ArrayRank > 0)
         {
-            char[] results = new char[typeRef.ArrayRank + 1];
+            char[] results = new char[typeInfo.ArrayRank + 1];
             results[0] = '(';
-            results[typeRef.ArrayRank] = ')';
-            for (int i = 1; i < typeRef.ArrayRank; i++)
+            results[typeInfo.ArrayRank] = ')';
+            for (int i = 1; i < typeInfo.ArrayRank; i++)
             {
                 results[i] = ',';
             }
@@ -249,11 +249,11 @@ internal sealed class VBCodeWriter : ICodeWriter
         return s;
     }
 
-    private void OutputArrayPostfix(TypeReference typeRef)
+    private void OutputArrayPostfix(CodeTypeInfo typeInfo)
     {
-        if (typeRef.ArrayRank > 0)
+        if (typeInfo.ArrayRank > 0)
         {
-            Output.Write(GetArrayPostfix(typeRef));
+            Output.Write(GetArrayPostfix(typeInfo));
         }
     }
 
@@ -342,20 +342,20 @@ internal sealed class VBCodeWriter : ICodeWriter
         }
     }
 
-    public void WriteArrayCreate(TypeReference typeReference, IEnumerable<Action> generateInitializers, int size = 0)
+    public void WriteArrayCreate(CodeTypeInfo typeInfo, IEnumerable<Action> initializers, int size = 0)
     {
-        if (!(typeReference is EmptyTypeReference))
+        if (!(typeInfo is CodeEmptyTypeInfo))
         {
             Output.Write("New ");
         }
 
-        using var initializersEnumerator = generateInitializers.GetEnumerator();
+        using var initializersEnumerator = initializers.GetEnumerator();
 
         if (initializersEnumerator.MoveNext())
         {
-            if (!(typeReference is EmptyTypeReference))
+            if (!(typeInfo is CodeEmptyTypeInfo))
             {
-                string typeName = GetTypeOutput(typeReference);
+                string typeName = GetTypeOutput(typeInfo);
                 Output.Write(typeName);
             }
 
@@ -367,7 +367,7 @@ internal sealed class VBCodeWriter : ICodeWriter
         }
         else
         {
-            string typeName = GetTypeOutput(typeReference);
+            string typeName = GetTypeOutput(typeInfo);
 
             int index = typeName.IndexOf('(');
             if (index == -1)
@@ -440,21 +440,21 @@ internal sealed class VBCodeWriter : ICodeWriter
         Output.Write("}");
     }
     
-    public void WriteCast(TypeReference typeReference, Action generateAction)
+    public void WriteCast(CodeTypeInfo typeInfo, Action action)
     {
         Output.Write("CType(");
-        generateAction();
+        action();
         Output.Write(", ");
-        OutputType(typeReference);
-        OutputArrayPostfix(typeReference);
+        OutputType(typeInfo);
+        OutputArrayPostfix(typeInfo);
         Output.Write(')');
     }
 
-    public void WriteFieldReference(string fieldName, Action generateTargetObjectAction)
+    public void WriteFieldReference(string fieldName, Action targetObjectAction)
     {
-        if (generateTargetObjectAction != null)
+        if (targetObjectAction != null)
         {
-            generateTargetObjectAction();
+            targetObjectAction();
             Output.Write('.');
         }
         OutputIdentifier(fieldName);
@@ -521,7 +521,7 @@ internal sealed class VBCodeWriter : ICodeWriter
         Output.Write(')');
     }
     
-    public void WriteMethodReference(Action targetObject, string methodName, params TypeReference[] typeParameters)
+    public void WriteMethodReference(Action targetObject, string methodName, params CodeTypeInfo[] typeParameters)
     {
         if (targetObject != null)
         {
@@ -536,13 +536,29 @@ internal sealed class VBCodeWriter : ICodeWriter
         }
     }
 
-    public void WriteObjectCreateAndInitialize(TypeReference type, IEnumerable<Action> generateParametersActions, IEnumerable<Action> generateInitializeActions)
+    public void WriteObjectCreate(CodeTypeInfo typeInfo, IEnumerable<Action> parametersActions)
     {
         Output.Write("New ");
-        OutputType(type);
+        OutputType(typeInfo);
 
-        using var parametersEnumerator = generateParametersActions.GetEnumerator();
-        using var initializeEnumerator = generateInitializeActions.GetEnumerator();
+        using var parametersEnumerator = parametersActions.GetEnumerator();
+
+        // always write out the () to disambiguate cases like "New System.Random().Next(x,y)"
+        Output.Write('(');
+        if (parametersEnumerator.MoveNext())
+        {
+            OutputActions(parametersEnumerator, newlineBetweenItems: false);
+        }
+        Output.Write(')');
+    }
+
+    public void WriteObjectCreateAndInitialize(CodeTypeInfo typeInfo, IEnumerable<Action> parametersActions, IEnumerable<Action> initializeActions)
+    {
+        Output.Write("New ");
+        OutputType(typeInfo);
+
+        using var parametersEnumerator = parametersActions.GetEnumerator();
+        using var initializeEnumerator = initializeActions.GetEnumerator();
 
         var parametersExist = parametersEnumerator.MoveNext();
         var initializeExist = initializeEnumerator.MoveNext();
@@ -563,10 +579,10 @@ internal sealed class VBCodeWriter : ICodeWriter
             return;
         }
 
-        Output.Write(type switch
+        Output.Write(typeInfo switch
         {
-            EmptyTypeReference => "With ",
-            CollectionTypeReference => " From ",
+            CodeEmptyTypeInfo => "With ",
+            CodeCollectionTypeInfo => " From ",
             _ => " With "
         });
         
@@ -583,10 +599,10 @@ internal sealed class VBCodeWriter : ICodeWriter
         Output.Write(')');
     }
 
-    public void WriteImplicitKeyValuePairCreate(Action generateKeyAction, Action generateValueAction)
+    public void WriteImplicitKeyValuePairCreate(Action keyAction, Action valueAction)
     {
         Output.WriteLine('{');
-        OutputActions([generateKeyAction, generateValueAction], newlineBetweenItems: true, false);
+        OutputActions([keyAction, valueAction], newlineBetweenItems: true, false);
         Output.WriteLine();
         Output.Write('}');
     }
@@ -596,12 +612,12 @@ internal sealed class VBCodeWriter : ICodeWriter
         Output.Write(", ");
     }
 
-    public void WriteLambdaExpression(Action generateLambda, Action[] generateParameters)
+    public void WriteLambdaExpression(Action lambda, Action[] parameters)
     {
         Output.Write("Function (");
         bool first = true;
 
-        foreach (Action current in generateParameters)
+        foreach (Action current in parameters)
         {
             if (first)
             {
@@ -616,7 +632,7 @@ internal sealed class VBCodeWriter : ICodeWriter
 
         Output.Write(')');
         Output.Write(" ");
-        generateLambda();
+        lambda();
     }
     
     public void WriteComment(string comment, bool noNewLine)
@@ -654,11 +670,11 @@ internal sealed class VBCodeWriter : ICodeWriter
         }
     }
 
-    public void WriteVariableDeclarationStatement(TypeReference typeReference, string variableName, Action initAction)
+    public void WriteVariableDeclarationStatement(CodeTypeInfo typeInfo, string variableName, Action initAction)
     {
         Output.Write("Dim ");
 
-        OutputTypeNamePair(typeReference, variableName);
+        OutputTypeNamePair(typeInfo, variableName);
 
         if (initAction != null)
         {
@@ -676,10 +692,10 @@ internal sealed class VBCodeWriter : ICodeWriter
         OutputIdentifier(propertyName);
     }
     
-    public void WriteTypeOf(TypeReference typeReference)
+    public void WriteTypeOf(CodeTypeInfo typeInfo)
     {
         Output.Write("GetType(");
-        Output.Write(GetTypeOutput(typeReference));
+        Output.Write(GetTypeOutput(typeInfo));
         Output.Write(')');
     }
 
@@ -703,18 +719,18 @@ internal sealed class VBCodeWriter : ICodeWriter
         return VBHelpers.CreateEscapedIdentifier(name);
     }
 
-    private string GetBaseTypeOutput(TypeReference typeRef, bool preferBuiltInTypes = true)
+    private string GetBaseTypeOutput(CodeTypeInfo typeInfo, bool preferBuiltInTypes = true)
     {
-        string s = typeRef.BaseType;
+        string s = typeInfo.BaseType;
 
-        if (s == "System.Nullable`1" && typeRef.TypeArguments.Count > 0)
+        if (s == "System.Nullable`1" && typeInfo.TypeArguments.Count > 0)
         {
-            return GetBaseTypeOutput(typeRef.TypeArguments[0]) + "?";
+            return GetBaseTypeOutput(typeInfo.TypeArguments[0]) + "?";
         }
 
         if (preferBuiltInTypes)
         {
-            if (typeRef is EmptyTypeReference)
+            if (typeInfo is CodeEmptyTypeInfo)
             {
                 return string.Empty;
             }
@@ -766,8 +782,8 @@ internal sealed class VBCodeWriter : ICodeWriter
         var sb = new StringBuilder(s.Length + 10);
 
         string baseType = _options.UseFullTypeName
-            ? typeRef.BaseType
-            : typeRef.BaseType.Split('.').Last().Split('+').Last();
+            ? typeInfo.BaseType
+            : typeInfo.BaseType.Split('.').Last().Split('+').Last();
 
         int lastIndex = 0;
         int currentTypeArgStart = 0;
@@ -793,7 +809,7 @@ internal sealed class VBCodeWriter : ICodeWriter
                         i++;
                     }
 
-                    GetTypeArgumentsOutput(typeRef.TypeArguments, currentTypeArgStart, numTypeArgs, sb);
+                    GetTypeArgumentsOutput(typeInfo.TypeArguments, currentTypeArgStart, numTypeArgs, sb);
                     currentTypeArgStart += numTypeArgs;
 
                     // Arity can be in the middle of a nested type name, so we might have a . or + after it. 
@@ -817,20 +833,20 @@ internal sealed class VBCodeWriter : ICodeWriter
         return sb.ToString();
     }
 
-    private string GetTypeOutputWithoutArrayPostFix(TypeReference typeRef)
+    private string GetTypeOutputWithoutArrayPostFix(CodeTypeInfo typeInfo)
     {
         StringBuilder sb = new StringBuilder();
 
-        while (typeRef.ArrayElementType != null)
+        while (typeInfo.ArrayElementType != null)
         {
-            typeRef = typeRef.ArrayElementType;
+            typeInfo = typeInfo.ArrayElementType;
         }
 
-        sb.Append(GetBaseTypeOutput(typeRef));
+        sb.Append(GetBaseTypeOutput(typeInfo));
         return sb.ToString();
     }
 
-    private string GetTypeArgumentsOutput(TypeReference[] typeArguments)
+    private string GetTypeArgumentsOutput(CodeTypeInfo[] typeArguments)
     {
         typeArguments ??= [];
         StringBuilder sb = new StringBuilder(128);
@@ -839,7 +855,7 @@ internal sealed class VBCodeWriter : ICodeWriter
     }
 
 
-    private void GetTypeArgumentsOutput(IReadOnlyList<TypeReference> typeArguments, int start, int length, StringBuilder sb)
+    private void GetTypeArgumentsOutput(IReadOnlyList<CodeTypeInfo> typeArguments, int start, int length, StringBuilder sb)
     {
         typeArguments ??= [];
         sb.Append("(Of ");
@@ -863,14 +879,14 @@ internal sealed class VBCodeWriter : ICodeWriter
         sb.Append(')');
     }
 
-    public string GetTypeOutput(TypeReference typeRef)
+    public string GetTypeOutput(CodeTypeInfo typeInfo)
     {
         string s = string.Empty;
-        s += GetTypeOutputWithoutArrayPostFix(typeRef);
+        s += GetTypeOutputWithoutArrayPostFix(typeInfo);
 
-        if (typeRef.ArrayRank > 0)
+        if (typeInfo.ArrayRank > 0)
         {
-            s += GetArrayPostfix(typeRef);
+            s += GetArrayPostfix(typeInfo);
         }
         return s;
     }

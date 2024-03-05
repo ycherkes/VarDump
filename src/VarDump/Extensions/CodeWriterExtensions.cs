@@ -1,9 +1,5 @@
-﻿using System.Collections.Generic;
-using System;
-using VarDump.CodeDom.Common;
-using VarDump.CodeDom.Compiler;
+﻿using VarDump.CodeDom.Compiler;
 using VarDump.Visitor;
-using System.Linq;
 using VarDump.Utils;
 
 namespace VarDump.Extensions;
@@ -42,42 +38,5 @@ public static class CodeWriterExtensions
 
         codeWriter.WriteSeparator();
         codeWriter.WriteComment("Max depth", true);
-    }
-
-    public static void WriteArrayCreate(this ICodeWriter codeWriter, Type type, IEnumerable<Action> generateInitializers, int size = 0)
-    {
-        codeWriter.WriteArrayCreate(new TypeReference(type), generateInitializers, size);
-    }
-
-    public static void WriteCast(this ICodeWriter codeWriter, Type type, Action generateAction)
-    {
-        codeWriter.WriteCast(new TypeReference(type), generateAction);
-    }
-
-    public static void WriteDefaultValue(this ICodeWriter codeWriter, Type type)
-    {
-        codeWriter.WriteDefaultValue(new TypeReference(type));
-    }
-
-    public static void WriteMethodReference(this ICodeWriter codeWriter, Action targetObject, string methodName,
-        params Type[] typeParameters)
-    {
-        codeWriter.WriteMethodReference(targetObject, methodName, typeParameters.Select(tp => new TypeReference(tp)).ToArray());
-    }
-
-    public static void WriteObjectCreateAndInitialize(this ICodeWriter codeWriter, Type type,
-        IEnumerable<Action> generateParametersActions, IEnumerable<Action> generateInitializeActions)
-    {
-        codeWriter.WriteObjectCreateAndInitialize(new TypeReference(type), generateParametersActions, generateInitializeActions);
-    }
-
-    public static void WriteTypeOf(this ICodeWriter codeWriter, Type type)
-    {
-        codeWriter.WriteTypeOf(new TypeReference(type));
-    }
-
-    public static void WriteTypeReference(this ICodeWriter codeWriter, Type type)
-    {
-        codeWriter.WriteTypeReference(new TypeReference(type));
     }
 }

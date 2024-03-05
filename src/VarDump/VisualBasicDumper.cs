@@ -57,7 +57,7 @@ public class VisualBasicDumper : IDumper
 
         if (_options.GenerateVariableInitializer)
         {
-            codeWriter.WriteVariableDeclarationStatement(new VarTypeReference(),
+            codeWriter.WriteVariableDeclarationStatement(new CodeVarTypeInfo(),
                 obj != null ? ReflectionUtils.ComposeVisualBasicVariableName(obj.GetType()) : "nullValue", () => objectVisitor.Visit(obj));
         }
         else

@@ -10,12 +10,12 @@ using System.Linq;
 
 namespace VarDump.CodeDom.Common;
 
-public class TypeReference
+public class CodeTypeInfo
 {
     private string _baseType;
     private bool _needsFixup;
-    private List<TypeReference> _typeArguments;
-    public TypeReference(Type type)
+    private List<CodeTypeInfo> _typeArguments;
+    public CodeTypeInfo(Type type)
     {
         if (type == null)
         {
@@ -25,7 +25,7 @@ public class TypeReference
         if (type.IsArray)
         {
             ArrayRank = type.GetArrayRank();
-            ArrayElementType = new TypeReference(type.GetElementType());
+            ArrayElementType = new CodeTypeInfo(type.GetElementType());
             _baseType = null;
         }
         else
@@ -36,12 +36,12 @@ public class TypeReference
         }
     }
 
-    public TypeReference(string typeName)
+    public CodeTypeInfo(string typeName)
     {
         Initialize(typeName);
     }
 
-    public TypeReference(string typeName, params TypeReference[] typeArguments) : this(typeName)
+    public CodeTypeInfo(string typeName, params CodeTypeInfo[] typeArguments) : this(typeName)
     {
         if (typeArguments is { Length: > 0 })
         {
@@ -49,18 +49,18 @@ public class TypeReference
         }
     }
 
-    public TypeReference(TypeReference arrayType, int rank)
+    public CodeTypeInfo(CodeTypeInfo arrayType, int rank)
     {
         _baseType = null;
         ArrayRank = rank;
         ArrayElementType = arrayType;
     }
 
-    internal TypeReference()
+    internal CodeTypeInfo()
     {
     }
 
-    public TypeReference ArrayElementType { get; set; }
+    public CodeTypeInfo ArrayElementType { get; set; }
 
     public int ArrayRank { get; set; }
 
@@ -90,7 +90,7 @@ public class TypeReference
         }
     }
 
-    public List<TypeReference> TypeArguments
+    public List<CodeTypeInfo> TypeArguments
     {
         get
         {
@@ -102,6 +102,8 @@ public class TypeReference
             return _typeArguments ??= [];
         }
     }
+
+    public static implicit operator CodeTypeInfo(Type type) => new(type);
 
     internal int NestedArrayDepth => ArrayElementType == null ? 0 : 1 + ArrayElementType.NestedArrayDepth;
 
@@ -115,7 +117,7 @@ public class TypeReference
             ArrayElementType = null;
             return;
         }
-        if (this is EmptyTypeReference)
+        if (this is CodeEmptyTypeInfo)
         {
             _baseType = typeName;
             ArrayRank = 0;
@@ -157,7 +159,7 @@ public class TypeReference
 
         // Try find generic type arguments
         current = end;
-        var typeArgumentList = new List<TypeReference>();
+        var typeArgumentList = new List<CodeTypeInfo>();
         var subTypeNames = new Stack<string>();
         if (current > 0 && typeName[current--] == ']')
         {
@@ -209,7 +211,7 @@ public class TypeReference
                 while (subTypeNames.Count > 0)
                 {
                     string name = RipOffAssemblyInformationFromTypeName(subTypeNames.Pop());
-                    typeArgumentList.Add(new TypeReference(name));
+                    typeArgumentList.Add(new CodeTypeInfo(name));
                 }
                 end = current - 1;
             }
@@ -224,16 +226,16 @@ public class TypeReference
 
         if (q.Count > 0)
         {
-            TypeReference type = new TypeReference(typeName.Substring(0, end + 1));
+            CodeTypeInfo type = new CodeTypeInfo(typeName.Substring(0, end + 1));
 
             type.TypeArguments.AddRange(typeArgumentList);
 
             while (q.Count > 1)
             {
-                type = new TypeReference(type, q.Dequeue());
+                type = new CodeTypeInfo(type, q.Dequeue());
             }
 
-            // we don't need to create a new CodeTypeReference for the last one.
+            // we don't need to create a new CodeTypeInfo for the last one.
             Debug.Assert(q.Count == 1, "We should have one and only one in the rank queue.");
             _baseType = null;
             ArrayRank = q.Dequeue();
@@ -278,7 +280,7 @@ public class TypeReference
         // pick up the type arguments from an instantiated generic type but not an open one    
         if (type.IsGenericType && !type.ContainsGenericParameters)
         {
-            TypeArguments.AddRange(type.GetGenericArguments().Select(x => new TypeReference(x)));
+            TypeArguments.AddRange(type.GetGenericArguments().Select(x => new CodeTypeInfo(x)));
         }
         else if (!type.IsGenericTypeDefinition)
         {

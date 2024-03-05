@@ -1,19 +1,11 @@
 ﻿using System;
 using System.Linq;
 using VarDump.CodeDom.Compiler;
-using VarDump.Extensions;
 
 namespace VarDump.Visitor.KnownTypes;
 
-internal sealed class EnumVisitor : IKnownObjectVisitor
+internal sealed class EnumVisitor(ICodeWriter codeWriter) : IKnownObjectVisitor
 {
-    private readonly ICodeWriter _codeWriter;
-
-    public EnumVisitor(ICodeWriter codeWriter)
-    {
-        _codeWriter = codeWriter;
-    }
-
     public string Id => nameof(Enum);
     public bool IsSuitableFor(object obj, Type objectType)
     {
@@ -26,12 +18,12 @@ internal sealed class EnumVisitor : IKnownObjectVisitor
 
         if (values.Length == 1)
         {
-            _codeWriter.WriteFieldReference(values[0].Trim(), () => _codeWriter.WriteTypeReference(objectType));
+            codeWriter.WriteFieldReference(values[0].Trim(), () => codeWriter.WriteType(objectType));
             return;
         }
 
-        var actions = values.Select(v => (Action)(() => _codeWriter.WriteFieldReference(v.Trim(), () => _codeWriter.WriteTypeReference(objectType))));
+        var actions = values.Select(v => (Action)(() => codeWriter.WriteFieldReference(v.Trim(), () => codeWriter.WriteType(objectType))));
 
-        _codeWriter.WriteFlagsBinaryOperator(actions);
+        codeWriter.WriteFlagsBitwiseOrOperator(actions);
     }
 }

@@ -201,7 +201,7 @@ class FormattableStringVisitor(IObjectVisitor rootObjectVisitor, ICodeWriter cod
 
         codeWriter.WriteMethodInvoke(() =>
             codeWriter.WriteMethodReference(
-                () => codeWriter.WriteTypeReference(typeof(FormattableStringFactory)),
+                () => codeWriter.WriteType(typeof(FormattableStringFactory)),
                 nameof(FormattableStringFactory.Create)),
             argumentActions);
     }

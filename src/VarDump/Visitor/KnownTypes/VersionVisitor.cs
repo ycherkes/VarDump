@@ -1,18 +1,10 @@
 ﻿using System;
 using VarDump.CodeDom.Compiler;
-using VarDump.Extensions;
 
 namespace VarDump.Visitor.KnownTypes;
 
-internal sealed class VersionVisitor : IKnownObjectVisitor
+internal sealed class VersionVisitor(ICodeWriter codeWriter) : IKnownObjectVisitor
 {
-    private readonly ICodeWriter _codeWriter;
-
-    public VersionVisitor(ICodeWriter codeWriter)
-    {
-        _codeWriter = codeWriter;
-    }
-
     public string Id => nameof(Version);
 
     public bool IsSuitableFor(object obj, Type objectType)
@@ -22,10 +14,6 @@ internal sealed class VersionVisitor : IKnownObjectVisitor
 
     public void Visit(object obj, Type objectType)
     {
-        var version  = (Version)obj;
-        _codeWriter.WriteObjectCreateAndInitialize(typeof(Version), 
-            [
-                () => _codeWriter.WritePrimitive(version.ToString())
-            ], []);
+        codeWriter.WriteObjectCreate(typeof(Version), [() => codeWriter.WritePrimitive(obj.ToString())]);
     }
 }

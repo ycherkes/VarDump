@@ -148,7 +148,7 @@ internal sealed class ObjectVisitor : IObjectVisitor
                         () => _codeWriter.WritePropertyReference(pv.Name, null),
                         () => Visit(pv.Value))));
 
-            _codeWriter.WriteObjectCreateAndInitialize(objectDescription.Type ?? new TypeReference(objectType),
+            _codeWriter.WriteObjectCreateAndInitialize(objectDescription.Type ?? new CodeTypeInfo(objectType),
                 constructorParams,
                 initializeActions);
         }

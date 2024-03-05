@@ -57,7 +57,7 @@ public class CSharpDumper : IDumper
 
         if (_options.GenerateVariableInitializer)
         {
-            codeWriter.WriteVariableDeclarationStatement(new VarTypeReference(),
+            codeWriter.WriteVariableDeclarationStatement(new CodeVarTypeInfo(),
                 obj != null ? ReflectionUtils.ComposeCsharpVariableName(obj.GetType()) : "nullValue", () => objectVisitor.Visit(obj));
         }
         else

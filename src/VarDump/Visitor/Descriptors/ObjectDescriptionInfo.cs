@@ -9,5 +9,5 @@ public sealed class ObjectDescriptionInfo
 
     public IEnumerable<IReflectionDescriptor> ConstructorParameters { get; set; } = [];
 
-    public TypeReference Type { get; set; }
+    public CodeTypeInfo Type { get; set; }
 }

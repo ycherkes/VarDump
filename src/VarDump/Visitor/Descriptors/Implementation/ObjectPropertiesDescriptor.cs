@@ -34,7 +34,7 @@ internal class ObjectPropertiesDescriptor : IObjectDescriptor
 
         var info = new ObjectDescriptionInfo
         {
-            Type = new TypeReference(objectType),
+            Type = new CodeTypeInfo(objectType),
             Members = properties
         };
 

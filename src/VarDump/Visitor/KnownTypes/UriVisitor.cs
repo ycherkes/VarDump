@@ -1,19 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 using VarDump.CodeDom.Compiler;
-using VarDump.Extensions;
 
 namespace VarDump.Visitor.KnownTypes;
 
-internal sealed class UriVisitor : IKnownObjectVisitor
+internal sealed class UriVisitor(ICodeWriter codeWriter) : IKnownObjectVisitor
 {
-    private readonly ICodeWriter _codeWriter;
-
-    public UriVisitor(ICodeWriter codeWriter)
-    {
-        _codeWriter = codeWriter;
-    }
-
     public string Id => nameof(Uri);
     public bool IsSuitableFor(object obj, Type objectType)
     {
@@ -24,14 +16,14 @@ internal sealed class UriVisitor : IKnownObjectVisitor
     {
         var uri = (Uri)obj;
 
-        _codeWriter.WriteObjectCreateAndInitialize(typeof(Uri), GetConstructorArguments(), []);
+        codeWriter.WriteObjectCreate(typeof(Uri), GetConstructorArguments());
 
         IEnumerable<Action> GetConstructorArguments()
         {
-            yield return () => _codeWriter.WritePrimitive(uri.OriginalString);
+            yield return () => codeWriter.WritePrimitive(uri.OriginalString);
             if (!uri.IsAbsoluteUri)
             {
-                yield return () => _codeWriter.WriteFieldReference(nameof(UriKind.Relative), () => _codeWriter.WriteTypeReference(typeof(UriKind)));
+                yield return () => codeWriter.WriteFieldReference(nameof(UriKind.Relative), () => codeWriter.WriteType(typeof(UriKind)));
             }
         }
     }

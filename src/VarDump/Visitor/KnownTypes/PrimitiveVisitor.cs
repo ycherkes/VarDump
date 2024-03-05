@@ -2,20 +2,12 @@
 using System.Linq;
 using System.Reflection;
 using VarDump.CodeDom.Compiler;
-using VarDump.Extensions;
 using VarDump.Utils;
 
 namespace VarDump.Visitor.KnownTypes;
 
-internal sealed class PrimitiveVisitor : IKnownObjectVisitor
+internal sealed class PrimitiveVisitor(ICodeWriter codeWriter) : IKnownObjectVisitor
 {
-    private readonly ICodeWriter _codeWriter;
-
-    public PrimitiveVisitor(ICodeWriter codeWriter)
-    {
-        _codeWriter = codeWriter;
-    }
-
     public string Id => "Primitive";
 
     public bool IsSuitableFor(object obj, Type objectType)
@@ -27,7 +19,7 @@ internal sealed class PrimitiveVisitor : IKnownObjectVisitor
     {
         if (obj == null || ValueEquality(obj, 0) || obj is byte)
         {
-            _codeWriter.WritePrimitive(obj);
+            codeWriter.WritePrimitive(obj);
             return;
         }
 
@@ -45,11 +37,11 @@ internal sealed class PrimitiveVisitor : IKnownObjectVisitor
 
         if (specialValueName != null)
         {
-            _codeWriter.WriteFieldReference(specialValueName, () => _codeWriter.WriteTypeReference(objectType));
+            codeWriter.WriteFieldReference(specialValueName, () => codeWriter.WriteType(objectType));
             return;
         }
 
-        _codeWriter.WritePrimitive(obj);
+        codeWriter.WritePrimitive(obj);
     }
 
     private static bool IsSpecialValueField(object @object, IReflect objectType, string fieldName)

@@ -85,7 +85,7 @@ internal sealed class DictionaryVisitor : IKnownObjectVisitor
 
             var dictionaryCreateAction = () =>
                 _codeWriter.WriteObjectCreateAndInitialize(
-                    new CollectionTypeReference(dictionaryType), [], items);
+                    new CodeCollectionTypeInfo(dictionaryType), [], items);
 
             _codeWriter.WriteMethodInvoke(() => _codeWriter.WriteMethodReference(dictionaryCreateAction, $"To{type.GetImmutableOrFrozenTypeName()}"), []);
 
@@ -93,7 +93,7 @@ internal sealed class DictionaryVisitor : IKnownObjectVisitor
         }
 
         _codeWriter.WriteObjectCreateAndInitialize(
-            new CollectionTypeReference(type), [], items);
+            new CodeCollectionTypeInfo(type), [], items);
     }
 
     private void VisitAnonymousDictionary(IEnumerable dictionary)
@@ -117,19 +117,19 @@ internal sealed class DictionaryVisitor : IKnownObjectVisitor
 
         _codeWriter.WriteMethodInvoke(() =>
                 _codeWriter.WriteMethodReference(
-                    () => _codeWriter.WriteArrayCreate(new AnonymousTypeReference { ArrayRank = 1 },
+                    () => _codeWriter.WriteArrayCreate(new CodeAnonymousTypeInfo { ArrayRank = 1 },
                         items),
                     methodName),
             [
-                WriteKeyLambdaExpression,
-                WriteValueLambdaExpression
+                WriteKeyLambda,
+                WriteValueLambda
             ]);
 
-        void WriteVariableReference() => _codeWriter.WriteVariableReference("kvp");
-        void WriteKeyLambdaPropertyExpression() => _codeWriter.WritePropertyReference(keyName, WriteVariableReference);
-        void WriteKeyLambdaExpression() => _codeWriter.WriteLambdaExpression(WriteKeyLambdaPropertyExpression, [WriteVariableReference]);
-        void WriteValueLambdaPropertyExpression() => _codeWriter.WritePropertyReference(valueName, WriteVariableReference);
-        void WriteValueLambdaExpression() => _codeWriter.WriteLambdaExpression(WriteValueLambdaPropertyExpression, [WriteVariableReference]);
+        void WriteVariable() => _codeWriter.WriteVariableReference("kvp");
+        void WriteKeyLambdaProperty() => _codeWriter.WritePropertyReference(keyName, WriteVariable);
+        void WriteKeyLambda() => _codeWriter.WriteLambdaExpression(WriteKeyLambdaProperty, [WriteVariable]);
+        void WriteValueLambdaProperty() => _codeWriter.WritePropertyReference(valueName, WriteVariable);
+        void WriteValueLambda() => _codeWriter.WriteLambdaExpression(WriteValueLambdaProperty, [WriteVariable]);
     }
 
     private void VisitKeyValuePairWriteImplicitly(object o)
@@ -144,7 +144,7 @@ internal sealed class DictionaryVisitor : IKnownObjectVisitor
         var objectType = o.GetType();
         var propertyValues = objectType.GetProperties().Select(p => ReflectionUtils.GetValue(p, o)).Take(2).ToArray();
         
-        _codeWriter.WriteObjectCreateAndInitialize(new AnonymousTypeReference(), [],
+        _codeWriter.WriteObjectCreateAndInitialize(new CodeAnonymousTypeInfo(), [],
             [
                 () => _codeWriter.WriteAssign(() => _codeWriter.WritePropertyReference(keyName, null), () => _rootObjectVisitor.Visit(propertyValues[0])),
                 () => _codeWriter.WriteAssign(() => _codeWriter.WritePropertyReference(valueName, null), () => _rootObjectVisitor.Visit(propertyValues[1])),

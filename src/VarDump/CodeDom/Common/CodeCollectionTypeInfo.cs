@@ -6,4 +6,4 @@ using System;
 
 namespace VarDump.CodeDom.Common;
 
-internal class CollectionTypeReference(Type type) : TypeReference(type);
+public class CodeCollectionTypeInfo(Type type) : CodeTypeInfo(type);

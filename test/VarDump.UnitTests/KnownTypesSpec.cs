@@ -3,9 +3,10 @@ using Microsoft.Extensions.DependencyInjection.Extensions;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using System.Runtime.CompilerServices;
+using VarDump.CodeDom.Common;
 using VarDump.CodeDom.Compiler;
-using VarDump.Extensions;
 using VarDump.UnitTests.TestModel;
 using VarDump.Visitor;
 using VarDump.Visitor.KnownTypes;
@@ -132,7 +133,7 @@ public class KnownTypesSpec
         {
             var serviceDescriptor = (ServiceDescriptor)obj;
 
-            var typeParameters = new List<Type>
+            var typeParameters = new List<CodeTypeInfo>
             {
                 serviceDescriptor.ServiceType
             };
@@ -151,15 +152,15 @@ public class KnownTypesSpec
 
             if (serviceDescriptor.ImplementationFactory != null)
             {
-                var typeRef = serviceDescriptor.ImplementationType ?? serviceDescriptor.ServiceType;
+                var typeInfo = serviceDescriptor.ImplementationType ?? serviceDescriptor.ServiceType;
 
-                parameters.Add(() => codeWriter.WriteLambdaExpression(() => codeWriter.WriteDefaultValue(typeRef), [ () => codeWriter.WriteVariableReference("serviceProvider")]));
+                parameters.Add(() => codeWriter.WriteLambdaExpression(() => codeWriter.WriteDefaultValue(typeInfo), [ () => codeWriter.WriteVariableReference("serviceProvider")]));
                
             }
 
             codeWriter.WriteMethodInvoke(() => 
                 codeWriter.WriteMethodReference(
-                    () => codeWriter.WriteTypeReference(typeof(ServiceDescriptor)),
+                    () => codeWriter.WriteType(typeof(ServiceDescriptor)),
                     serviceDescriptor.Lifetime.ToString(), typeParameters.ToArray()
                     ), parameters);
         }
@@ -186,7 +187,7 @@ public class KnownTypesSpec
 
             codeWriter.WriteMethodInvoke(() =>
                 codeWriter.WriteMethodReference(
-                    () => codeWriter.WriteTypeReference(typeof(FormattableStringFactory)),
+                    () => codeWriter.WriteType(typeof(FormattableStringFactory)),
                     nameof(FormattableStringFactory.Create)),
                 argumentActions);
         }

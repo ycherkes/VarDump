@@ -141,17 +141,17 @@ internal sealed class CSharpCodeWriter : ICodeWriter
 
     private void OutputIdentifier(string ident) => Output.Write(CreateEscapedIdentifier(ident));
 
-    public void OutputType(TypeReference typeRef) => Output.Write(GetTypeOutput(typeRef));
+    public void OutputType(CodeTypeInfo typeInfo) => Output.Write(GetTypeOutput(typeInfo));
 
-    public void WriteArrayCreate(TypeReference typeReference, IEnumerable<Action> generateInitializers, int size=0)
+    public void WriteArrayCreate(CodeTypeInfo typeInfo, IEnumerable<Action> initializers, int size=0)
     {
         Output.Write("new ");
 
-        using var initializersEnumerator = generateInitializers.GetEnumerator();
+        using var initializersEnumerator = initializers.GetEnumerator();
 
         if (initializersEnumerator.MoveNext())
         {
-            OutputType(typeReference);
+            OutputType(typeInfo);
             Output.WriteLine("");
             Output.WriteLine("{");
             OutputActions(initializersEnumerator, newlineBetweenItems: true);
@@ -160,13 +160,13 @@ internal sealed class CSharpCodeWriter : ICodeWriter
         }
         else
         {
-            Output.Write(GetBaseTypeOutput(typeReference));
+            Output.Write(GetBaseTypeOutput(typeInfo));
 
             Output.Write('[');
             Output.Write(size);
             Output.Write(']');
 
-            int nestedArrayDepth = typeReference.NestedArrayDepth;
+            int nestedArrayDepth = typeInfo.NestedArrayDepth;
             for (int i = 0; i < nestedArrayDepth - 1; i++)
             {
                 Output.Write("[]");
@@ -183,12 +183,12 @@ internal sealed class CSharpCodeWriter : ICodeWriter
         Output.Write("}");
     }
 
-    public void WriteCast(TypeReference typeReference, Action generateAction)
+    public void WriteCast(CodeTypeInfo typeInfo, Action action)
     {
         Output.Write("(");
-        OutputType(typeReference);
+        OutputType(typeInfo);
         Output.Write(")");
-        generateAction();
+        action();
     }
 
    public void WriteAssign(Action left, Action right)
@@ -198,18 +198,18 @@ internal sealed class CSharpCodeWriter : ICodeWriter
         right();
     }
 
-    public void WriteDefaultValue(TypeReference typeRef)
+    public void WriteDefaultValue(CodeTypeInfo typeInfo)
     {
         Output.Write("default(");
-        OutputType(typeRef);
+        OutputType(typeInfo);
         Output.Write(')');
     }
 
-    public void WriteFieldReference(string fieldName, Action generateTargetObjectAction)
+    public void WriteFieldReference(string fieldName, Action targetObjectAction)
     {
-        if (generateTargetObjectAction != null)
+        if (targetObjectAction != null)
         {
-            generateTargetObjectAction();
+            targetObjectAction();
             Output.Write('.');
         }
         OutputIdentifier(fieldName);
@@ -226,7 +226,7 @@ internal sealed class CSharpCodeWriter : ICodeWriter
         Output.Write(')');
     }
 
-    public void WriteMethodReference(Action targetObject, string methodName, params TypeReference[] typeParameters)
+    public void WriteMethodReference(Action targetObject, string methodName, params CodeTypeInfo[] typeParameters)
     {
         if (targetObject != null)
         {
@@ -241,13 +241,28 @@ internal sealed class CSharpCodeWriter : ICodeWriter
         }
     }
 
-    public void WriteObjectCreateAndInitialize(TypeReference type, IEnumerable<Action> generateParametersActions, IEnumerable<Action> generateInitializeActions)
+    public void WriteObjectCreate(CodeTypeInfo typeInfo, IEnumerable<Action> parametersActions)
     {
         Output.Write("new ");
-        OutputType(type);
+        OutputType(typeInfo);
 
-        using var parametersEnumerator = generateParametersActions.GetEnumerator();
-        using var initializeEnumerator = generateInitializeActions.GetEnumerator();
+        using var parametersEnumerator = parametersActions.GetEnumerator();
+
+        Output.Write('(');
+        if (parametersEnumerator.MoveNext())
+        {
+            OutputActions(parametersEnumerator, newlineBetweenItems: false);
+        }
+        Output.Write(')');
+    }
+
+    public void WriteObjectCreateAndInitialize(CodeTypeInfo typeInfo, IEnumerable<Action> parametersActions, IEnumerable<Action> initializeActions)
+    {
+        Output.Write("new ");
+        OutputType(typeInfo);
+
+        using var parametersEnumerator = parametersActions.GetEnumerator();
+        using var initializeEnumerator = initializeActions.GetEnumerator();
 
         var parametersExist = parametersEnumerator.MoveNext();
         var initializeExist = initializeEnumerator.MoveNext();
@@ -478,9 +493,9 @@ internal sealed class CSharpCodeWriter : ICodeWriter
         }
     }
 
-    public void WriteVariableDeclarationStatement(TypeReference typeReference, string variableName, Action initAction)
+    public void WriteVariableDeclarationStatement(CodeTypeInfo typeInfo, string variableName, Action initAction)
     {
-        OutputTypeNamePair(typeReference, variableName);
+        OutputTypeNamePair(typeInfo, variableName);
         if (initAction != null)
         {
             Output.Write(" = ");
@@ -489,22 +504,22 @@ internal sealed class CSharpCodeWriter : ICodeWriter
         Output.WriteLine(';');
     }
 
-    public void WriteNamedArgument(string argumentName, Action generateValue)
+    public void WriteNamedArgument(string argumentName, Action value)
     {
         Output.Write(argumentName);
         Output.Write(": ");
-        generateValue();
+        value();
     }
 
-    public void WriteFlagsBinaryOperator(IEnumerable<Action> generateOperandActions)
+    public void WriteFlagsBitwiseOrOperator(IEnumerable<Action> operandActions)
     {
         bool isFirst = true;
 
-        foreach (var generateOperand in generateOperandActions)
+        foreach (var operand in operandActions)
         {
             if (isFirst)
             {
-                generateOperand();
+                operand();
                 isFirst = false;
             }
             else
@@ -512,7 +527,7 @@ internal sealed class CSharpCodeWriter : ICodeWriter
                 Output.Write(' ');
                 OutputBitwiseOrOperator();
                 Output.Write(' ');
-                generateOperand();
+                operand();
             }
         }
     }
@@ -522,22 +537,22 @@ internal sealed class CSharpCodeWriter : ICodeWriter
         Output.Write(", ");
     }
 
-    public void WriteImplicitKeyValuePairCreate(Action generateKeyAction, Action generateValueAction)
+    public void WriteImplicitKeyValuePairCreate(Action keyAction, Action valueAction)
     {
         Output.WriteLine('{');
-        OutputActions([generateKeyAction, generateValueAction], newlineBetweenItems: true);
+        OutputActions([keyAction, valueAction], newlineBetweenItems: true);
         Output.WriteLine();
         Output.Write('}');
     }
 
-    public void WriteLambdaExpression(Action generateLambda, Action[] generateParameters)
+    public void WriteLambdaExpression(Action lambda, Action[] parameters)
     {
-        if (generateParameters.Length != 1)
+        if (parameters.Length != 1)
         {
             Output.Write('(');
         }
         bool first = true;
-        foreach (var current in generateParameters)
+        foreach (var current in parameters)
         {
             if (first)
             {
@@ -550,12 +565,12 @@ internal sealed class CSharpCodeWriter : ICodeWriter
             current();
         }
 
-        if (generateParameters.Length != 1)
+        if (parameters.Length != 1)
         {
             Output.Write(')');
         }
         Output.Write(" => ");
-        generateLambda();
+        lambda();
     }
 
     public void WriteSingleFloatValue(float s)
@@ -622,13 +637,13 @@ internal sealed class CSharpCodeWriter : ICodeWriter
         OutputIdentifier(propertyName);
     }
 
-    public void WriteTypeReference(TypeReference typeReference) =>
-        OutputType(typeReference);
+    public void WriteType(CodeTypeInfo typeInfo) =>
+        OutputType(typeInfo);
 
-    public void WriteTypeOf(TypeReference typeReference)
+    public void WriteTypeOf(CodeTypeInfo typeInfo)
     {
         Output.Write("typeof(");
-        OutputType(typeReference);
+        OutputType(typeInfo);
         Output.Write(')');
     }
 
@@ -663,9 +678,9 @@ internal sealed class CSharpCodeWriter : ICodeWriter
         Indent--;
     }
 
-    private void OutputTypeNamePair(TypeReference typeRef, string name)
+    private void OutputTypeNamePair(CodeTypeInfo typeInfo, string name)
     {
-        OutputType(typeRef);
+        OutputType(typeInfo);
         Output.Write(' ');
         OutputIdentifier(name);
     }
@@ -707,23 +722,23 @@ internal sealed class CSharpCodeWriter : ICodeWriter
     }
 
     // returns the type name without any array declaration.
-    private string GetBaseTypeOutput(TypeReference typeRef, bool preferBuiltInTypes = true)
+    private string GetBaseTypeOutput(CodeTypeInfo typeInfo, bool preferBuiltInTypes = true)
     {
-        string s = typeRef.BaseType;
+        string s = typeInfo.BaseType;
 
-        if (s == "System.Nullable`1" && typeRef.TypeArguments.Count > 0)
+        if (s == "System.Nullable`1" && typeInfo.TypeArguments.Count > 0)
         {
-            return GetBaseTypeOutput(typeRef.TypeArguments[0]) + "?";
+            return GetBaseTypeOutput(typeInfo.TypeArguments[0]) + "?";
         }
 
         if (preferBuiltInTypes)
         {
-            if (typeRef is AnonymousTypeReference)
+            if (typeInfo is CodeAnonymousTypeInfo)
             {
                 return string.Empty;
             }
 
-            if (typeRef is VarTypeReference)
+            if (typeInfo is CodeVarTypeInfo)
             {
                 return "var";
             }
@@ -777,8 +792,8 @@ internal sealed class CSharpCodeWriter : ICodeWriter
         var sb = new StringBuilder(s.Length + 10);
 
         string baseType = _options.UseFullTypeName
-            ? typeRef.BaseType
-            : typeRef.BaseType.Split('.').Last().Split('+').Last();
+            ? typeInfo.BaseType
+            : typeInfo.BaseType.Split('.').Last().Split('+').Last();
 
         int lastIndex = 0;
         int currentTypeArgStart = 0;
@@ -804,7 +819,7 @@ internal sealed class CSharpCodeWriter : ICodeWriter
                         i++;
                     }
 
-                    GetTypeArgumentsOutput(typeRef.TypeArguments, currentTypeArgStart, numTypeArgs, sb);
+                    GetTypeArgumentsOutput(typeInfo.TypeArguments, currentTypeArgStart, numTypeArgs, sb);
                     currentTypeArgStart += numTypeArgs;
 
                     // Arity can be in the middle of a nested type name, so we might have a . or + after it. 
@@ -826,7 +841,7 @@ internal sealed class CSharpCodeWriter : ICodeWriter
         return sb.ToString();
     }
 
-    private string GetTypeArgumentsOutput(TypeReference[] typeArguments)
+    private string GetTypeArgumentsOutput(CodeTypeInfo[] typeArguments)
     {
         typeArguments ??= [];
         var sb = new StringBuilder(128);
@@ -834,7 +849,7 @@ internal sealed class CSharpCodeWriter : ICodeWriter
         return sb.ToString();
     }
 
-    private void GetTypeArgumentsOutput(IReadOnlyList<TypeReference> typeArguments, int start, int length, StringBuilder sb)
+    private void GetTypeArgumentsOutput(IReadOnlyList<CodeTypeInfo> typeArguments, int start, int length, StringBuilder sb)
     {
         typeArguments ??= [];
         sb.Append('<');
@@ -858,28 +873,28 @@ internal sealed class CSharpCodeWriter : ICodeWriter
         sb.Append('>');
     }
 
-    public string GetTypeOutput(TypeReference typeRef)
+    public string GetTypeOutput(CodeTypeInfo typeInfo)
     {
         string s = string.Empty;
 
-        TypeReference baseTypeRef = typeRef;
-        while (baseTypeRef.ArrayElementType != null)
+        CodeTypeInfo baseTypeInfo = typeInfo;
+        while (baseTypeInfo.ArrayElementType != null)
         {
-            baseTypeRef = baseTypeRef.ArrayElementType;
+            baseTypeInfo = baseTypeInfo.ArrayElementType;
         }
-        s += GetBaseTypeOutput(baseTypeRef);
+        s += GetBaseTypeOutput(baseTypeInfo);
 
-        while (typeRef != null && typeRef.ArrayRank > 0)
+        while (typeInfo != null && typeInfo.ArrayRank > 0)
         {
-            char[] results = new char[typeRef.ArrayRank + 1];
+            char[] results = new char[typeInfo.ArrayRank + 1];
             results[0] = '[';
-            results[typeRef.ArrayRank] = ']';
-            for (int i = 1; i < typeRef.ArrayRank; i++)
+            results[typeInfo.ArrayRank] = ']';
+            for (int i = 1; i < typeInfo.ArrayRank; i++)
             {
                 results[i] = ',';
             }
             s += new string(results);
-            typeRef = typeRef.ArrayElementType;
+            typeInfo = typeInfo.ArrayElementType;
         }
 
         return s;

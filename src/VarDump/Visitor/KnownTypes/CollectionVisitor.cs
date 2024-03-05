@@ -116,7 +116,7 @@ internal sealed class CollectionVisitor : IKnownObjectVisitor
                 WriteValueLambdaExpression
             ]);
 
-        void WriteArrayCreate() => _codeWriter.WriteArrayCreate(new AnonymousTypeReference { ArrayRank = 1 }, items);
+        void WriteArrayCreate() => _codeWriter.WriteArrayCreate(new CodeAnonymousTypeInfo { ArrayRank = 1 }, items);
         void WriteVariableReference() => _codeWriter.WriteVariableReference("grp");
         void WriteKeyLambdaPropertyExpression() => _codeWriter.WritePropertyReference("Key", WriteVariableReference);
         void WriteKeyLambdaExpression() => _codeWriter.WriteLambdaExpression(WriteKeyLambdaPropertyExpression, [WriteVariableReference]);
@@ -164,17 +164,17 @@ internal sealed class CollectionVisitor : IKnownObjectVisitor
 
         if (type.IsReadonlyCollection())
         {
-            var typeReference =
-                new CollectionTypeReference(typeof(List<>).MakeGenericType(elementType));
+            var typeInfo =
+                new CodeCollectionTypeInfo(typeof(List<>).MakeGenericType(elementType));
 
             _codeWriter.WriteMethodInvoke(() => _codeWriter.WriteMethodReference(() => 
-               _codeWriter.WriteObjectCreateAndInitialize(typeReference, [], items), "AsReadOnly"), []);
+               _codeWriter.WriteObjectCreateAndInitialize(typeInfo, [], items), "AsReadOnly"), []);
 
             return;
         }
 
         _codeWriter.WriteObjectCreateAndInitialize(
-            new CollectionTypeReference(type), [], items);
+            new CodeCollectionTypeInfo(type), [], items);
     }
 
     private IEnumerable<Action> ChunkMultiDimensionalArrayExpression(Array array, IEnumerable<Action> enumerable)
@@ -210,15 +210,15 @@ internal sealed class CollectionVisitor : IKnownObjectVisitor
 
         var isImmutableOrFrozen = type.IsPublicImmutableOrFrozenCollection();
 
-        var typeReference = new AnonymousTypeReference { ArrayRank = 1 };
+        var typeInfo = new CodeAnonymousTypeInfo { ArrayRank = 1 };
 
         if (type.IsArray && ((Array)enumerable).Rank > 1)
         {
-            typeReference.ArrayRank = ((Array)enumerable).Rank;
+            typeInfo.ArrayRank = ((Array)enumerable).Rank;
             items = ChunkMultiDimensionalArrayExpression((Array)enumerable, items);
         }
 
-        Action createAction = () => _codeWriter.WriteArrayCreate(typeReference, items);
+        Action createAction = () => _codeWriter.WriteArrayCreate(typeInfo, items);
 
         if (isImmutableOrFrozen || enumerable is IList && !type.IsArray)
         {

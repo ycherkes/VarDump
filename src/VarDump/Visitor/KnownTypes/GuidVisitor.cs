@@ -1,18 +1,10 @@
 ﻿using System;
 using VarDump.CodeDom.Compiler;
-using VarDump.Extensions;
 
 namespace VarDump.Visitor.KnownTypes;
 
-internal sealed class GuidVisitor : IKnownObjectVisitor
+internal sealed class GuidVisitor(ICodeWriter codeWriter) : IKnownObjectVisitor
 {
-    private readonly ICodeWriter _codeWriter;
-
-    public GuidVisitor(ICodeWriter codeWriter)
-    {
-        _codeWriter = codeWriter;
-    }
-
     public string Id => nameof(Guid);
     public bool IsSuitableFor(object obj, Type objectType)
     {
@@ -23,8 +15,6 @@ internal sealed class GuidVisitor : IKnownObjectVisitor
     {
         var guid = (Guid)obj;
 
-        _codeWriter.WriteObjectCreateAndInitialize(objectType,
-            [() => _codeWriter.WritePrimitive(guid.ToString("D"))], 
-            []);
+        codeWriter.WriteObjectCreate(objectType, [() => codeWriter.WritePrimitive(guid.ToString("D"))]);
     }
 }

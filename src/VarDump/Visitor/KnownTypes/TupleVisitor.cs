@@ -6,17 +6,8 @@ using VarDump.Utils;
 
 namespace VarDump.Visitor.KnownTypes;
 
-internal sealed class TupleVisitor : IKnownObjectVisitor
+internal sealed class TupleVisitor(IObjectVisitor rootObjectVisitor, ICodeWriter codeWriter) : IKnownObjectVisitor
 {
-    private readonly IObjectVisitor _rootObjectVisitor;
-    private readonly ICodeWriter _codeWriter;
-
-    public TupleVisitor(IObjectVisitor rootObjectVisitor, ICodeWriter codeWriter)
-    {
-        _rootObjectVisitor = rootObjectVisitor;
-        _codeWriter = codeWriter;
-    }
-
     public string Id => "Tuple";
     public bool IsSuitableFor(object obj, Type objectType)
     {
@@ -25,25 +16,23 @@ internal sealed class TupleVisitor : IKnownObjectVisitor
 
     public void Visit(object o, Type objectType)
     {
-        if (_rootObjectVisitor.IsVisited(o))
+        if (rootObjectVisitor.IsVisited(o))
         {
-            _codeWriter.WriteCircularReferenceDetected();
+            codeWriter.WriteCircularReferenceDetected();
             return;
         }
 
-        _rootObjectVisitor.PushVisited(o);
+        rootObjectVisitor.PushVisited(o);
 
         try
         {
-            var propertyValues = objectType.GetProperties().Select(p => ReflectionUtils.GetValue(p, o)).Select(v => (Action)(() => _rootObjectVisitor.Visit(v)));
+            var propertyValues = objectType.GetProperties().Select(p => ReflectionUtils.GetValue(p, o)).Select(v => (Action)(() => rootObjectVisitor.Visit(v)));
 
-            _codeWriter.WriteObjectCreateAndInitialize(objectType,
-                propertyValues,
-                []);
+            codeWriter.WriteObjectCreate(objectType, propertyValues);
         }
         finally
         {
-            _rootObjectVisitor.PopVisited();
+            rootObjectVisitor.PopVisited();
         }
     }
 }

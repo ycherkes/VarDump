@@ -5,17 +5,9 @@ using VarDump.Utils;
 
 namespace VarDump.Visitor.KnownTypes;
 
-internal sealed class TimeOnlyVisitor : IKnownObjectVisitor
+internal sealed class TimeOnlyVisitor(ICodeWriter codeWriter, DateTimeInstantiation dateTimeInstantiation)
+    : IKnownObjectVisitor
 {
-    private readonly ICodeWriter _codeWriter;
-    private readonly DateTimeInstantiation _dateTimeInstantiation;
-
-    public TimeOnlyVisitor(ICodeWriter codeWriter, DateTimeInstantiation dateTimeInstantiation)
-    {
-        _codeWriter = codeWriter;
-        _dateTimeInstantiation = dateTimeInstantiation;
-    }
-
     public string Id => "TimeOnly";
     public bool IsSuitableFor(object obj, Type objectType)
     {
@@ -28,20 +20,20 @@ internal sealed class TimeOnlyVisitor : IKnownObjectVisitor
 
         if (ticks == null)
         {
-            _codeWriter.WriteErrorDetected("Wrong TimeOnly struct");
+            codeWriter.WriteErrorDetected("Wrong TimeOnly struct");
             return;
         }
 
         if (ticks == 863999999999)
         {
-            _codeWriter.WriteFieldReference(nameof(DateTime.MaxValue), () => _codeWriter.WriteTypeReference(objectType));
+            codeWriter.WriteFieldReference(nameof(DateTime.MaxValue), () => codeWriter.WriteType(objectType));
 
             return;
         }
 
         if (ticks == 0)
         {
-            _codeWriter.WriteFieldReference(nameof(DateTime.MinValue), () => _codeWriter.WriteTypeReference(objectType));
+            codeWriter.WriteFieldReference(nameof(DateTime.MinValue), () => codeWriter.WriteType(objectType));
 
             return;
         }
@@ -50,36 +42,35 @@ internal sealed class TimeOnlyVisitor : IKnownObjectVisitor
 
         if (timeSpan.Ticks % TimeSpan.TicksPerMillisecond != 0)
         {
-            _codeWriter.WriteMethodInvoke(
-                () => _codeWriter.WriteMethodReference(
-                    () => _codeWriter.WriteTypeReference(objectType), nameof(TimeSpan.FromTicks)),
+            codeWriter.WriteMethodInvoke(
+                () => codeWriter.WriteMethodReference(
+                    () => codeWriter.WriteType(objectType), nameof(TimeSpan.FromTicks)),
                 [
-                    () => _codeWriter.WritePrimitive(ticks.Value)
+                    () => codeWriter.WritePrimitive(ticks.Value)
                 ]);
 
             return;
         }
 
-        if (_dateTimeInstantiation == DateTimeInstantiation.Parse)
+        if (dateTimeInstantiation == DateTimeInstantiation.Parse)
         {
-            _codeWriter.WriteMethodInvoke(
-                () => _codeWriter.WriteMethodReference(
-                    () => _codeWriter.WriteTypeReference(objectType), nameof(DateTime.ParseExact)),
+            codeWriter.WriteMethodInvoke(
+                () => codeWriter.WriteMethodReference(
+                    () => codeWriter.WriteType(objectType), nameof(DateTime.ParseExact)),
                 [
-                    () => _codeWriter.WritePrimitive($"{timeSpan:c}"),
-                    () => _codeWriter.WritePrimitive("O")
+                    () => codeWriter.WritePrimitive($"{timeSpan:c}"),
+                    () => codeWriter.WritePrimitive("O")
                 ]);
 
             return;
         }
 
-        _codeWriter.WriteObjectCreateAndInitialize(objectType,
+        codeWriter.WriteObjectCreate(objectType,
             [
-                () => _codeWriter.WritePrimitive(timeSpan.Hours),
-                () => _codeWriter.WritePrimitive(timeSpan.Minutes),
-                () => _codeWriter.WritePrimitive(timeSpan.Seconds),
-                () => _codeWriter.WritePrimitive(timeSpan.Milliseconds)
-            ],
-            []);
+                () => codeWriter.WritePrimitive(timeSpan.Hours),
+                () => codeWriter.WritePrimitive(timeSpan.Minutes),
+                () => codeWriter.WritePrimitive(timeSpan.Seconds),
+                () => codeWriter.WritePrimitive(timeSpan.Milliseconds)
+            ]);
     }
 }

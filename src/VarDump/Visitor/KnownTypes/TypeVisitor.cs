@@ -1,17 +1,10 @@
 ﻿using System;
 using VarDump.CodeDom.Compiler;
-using VarDump.Extensions;
 
 namespace VarDump.Visitor.KnownTypes;
 
-internal sealed class TypeVisitor : IKnownObjectVisitor
+internal sealed class TypeVisitor(ICodeWriter codeWriter) : IKnownObjectVisitor
 {
-    private readonly ICodeWriter _codeWriter;
-    public TypeVisitor(ICodeWriter codeWriter)
-    {
-        _codeWriter = codeWriter;
-    }
-
     public string Id => nameof(Type);
 
     public bool IsSuitableFor(object obj, Type objectType)
@@ -21,6 +14,6 @@ internal sealed class TypeVisitor : IKnownObjectVisitor
 
     public void Visit(object obj, Type objectType)
     {
-       _codeWriter.WriteTypeOf((Type)obj);
+       codeWriter.WriteTypeOf((Type)obj);
     }
 }

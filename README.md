@@ -102,25 +102,29 @@ Console.WriteLine(dictionary.Dump(DumpOptions.Default));
 
 ```csharp
 using System;
+using System.Linq;
 using VarDump;
 using VarDump.Visitor;
 using VarDump.Visitor.Descriptors;
 
 // For more examples see https://github.com/ycherkes/VarDump/blob/main/test/VarDump.UnitTests/ObjectDescriptorMiddlewareSpec.cs
 
-const string name = "World";
-FormattableString formattableString = $"Hello, {name}";
+var cardInfo = new
+{
+    CardOwner = "BRUCE LEE",
+    CardNumber = "12345678901234"
+};
 
 var dumpOptions = new DumpOptions
 {
-    Descriptors = { new FormattableStringMiddleware() }
+    Descriptors = { new CardNumberMaskingMiddleware() }
 };
 
 var csDumper = new CSharpDumper(dumpOptions);
-var cs = csDumper.Dump(formattableString);
+var cs = csDumper.Dump(cardInfo);
 
 var vbDumper = new VisualBasicDumper(dumpOptions);
-var vb = vbDumper.Dump(formattableString);
+var vb = vbDumper.Dump(cardInfo);
 
 // C# string
 Console.WriteLine(cs);
@@ -128,20 +132,48 @@ Console.WriteLine(cs);
 // VB string
 Console.WriteLine(vb);
 
-class FormattableStringMiddleware : IObjectDescriptorMiddleware
+class CardNumberMaskingMiddleware : IObjectDescriptorMiddleware
 {
     public ObjectDescriptionInfo Describe(object @object, Type objectType, Func<ObjectDescriptionInfo> prev)
     {
-        if (@object is FormattableString fs)
-        {
-            return Descriptor.FromObject(new
-            {
-                fs.Format,
-                Arguments = fs.GetArguments()
-            }, objectType);
-        }
+        var objectDescription = prev();
 
-        return prev();
+        return new ObjectDescriptionInfo
+        {
+            Type = objectDescription.Type,
+            ConstructorParameters = objectDescription.ConstructorParameters,
+            Members = objectDescription.Members.Select(memberDescriptor =>
+            {
+                if (memberDescriptor.Type != typeof(string) || 
+                    !string.Equals(memberDescriptor.Name, "cardnumber", StringComparison.OrdinalIgnoreCase))
+                {
+                    return memberDescriptor;
+                }
+
+                var stringValue = (string)memberDescriptor.Value;
+
+                string maskedValue;
+
+                if (!string.IsNullOrWhiteSpace(stringValue))
+                {
+                    maskedValue = stringValue.Length - 4 > 0
+                        ? string.Concat(new string('*', stringValue.Length - 4),
+                            stringValue.Substring(stringValue.Length - Math.Min(4, stringValue.Length)))
+                        : stringValue;
+                }
+                else
+                {
+                    maskedValue = stringValue;
+                }
+
+                return new ReflectionDescriptor(maskedValue)
+                    {
+                        Name = memberDescriptor.Name,
+                        Type = memberDescriptor.Type,
+                        ReflectionType = memberDescriptor.ReflectionType
+                    };
+            })
+        };
     }
 }
 ```
@@ -156,7 +188,6 @@ using System.Linq;
 using System.Runtime.CompilerServices;
 using VarDump;
 using VarDump.CodeDom.Compiler;
-using VarDump.Extensions;
 using VarDump.Visitor;
 using VarDump.Visitor.KnownTypes;
 

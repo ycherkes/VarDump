@@ -14,6 +14,35 @@ namespace VarDump.UnitTests;
 public class ObjectDescriptorMiddlewareSpec
 {
     [Fact]
+    public void DumpObjectMaskCardNumberCsharp()
+    {
+        var cardInfo = new
+        {
+            CardOwner = "BRUCE LEE",
+            CardNumber = "12345678901234"
+        };
+
+        var opts = new DumpOptions
+        {
+            Descriptors = { new CardNumberMaskerMiddleware() }
+        };
+
+        var dumper = new CSharpDumper(opts);
+
+        var result = dumper.Dump(cardInfo);
+
+        Assert.Equal(
+            """
+            var anonymousType = new 
+            {
+                CardOwner = "BRUCE LEE",
+                CardNumber = "**********1234"
+            };
+            
+            """, result);
+    }
+
+    [Fact]
     public void DumpFormattableStringCsharp()
     {
         const string name = "World";
@@ -366,6 +395,51 @@ public class ObjectDescriptorMiddlewareSpec
             }
 
             return prev();
+        }
+    }
+
+    private class CardNumberMaskerMiddleware : IObjectDescriptorMiddleware
+    {
+        public ObjectDescriptionInfo Describe(object @object, Type objectType, Func<ObjectDescriptionInfo> prev)
+        {
+            var objectDescription = prev();
+
+            return new ObjectDescriptionInfo
+            {
+                Type = objectDescription.Type,
+                ConstructorParameters = objectDescription.ConstructorParameters,
+                Members = objectDescription.Members.Select(memberDescriptor =>
+                {
+                    if (memberDescriptor.Type != typeof(string) || 
+                        !string.Equals(memberDescriptor.Name, "cardnumber", StringComparison.OrdinalIgnoreCase))
+                    {
+                        return memberDescriptor;
+                    }
+
+                    var stringValue = (string)memberDescriptor.Value;
+
+                    string maskedValue;
+
+                    if (!string.IsNullOrWhiteSpace(stringValue))
+                    {
+                        maskedValue = stringValue.Length - 4 > 0
+                            ? string.Concat(new string('*', stringValue.Length - 4),
+                                stringValue.Substring(stringValue.Length - Math.Min(4, stringValue.Length)))
+                            : stringValue;
+                    }
+                    else
+                    {
+                        maskedValue = stringValue;
+                    }
+
+                    return new ReflectionDescriptor(maskedValue)
+                        {
+                            Name = memberDescriptor.Name,
+                            Type = memberDescriptor.Type,
+                            ReflectionType = memberDescriptor.ReflectionType
+                        };
+                })
+            };
         }
     }
 }

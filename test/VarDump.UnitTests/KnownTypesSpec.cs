@@ -3,7 +3,6 @@ using Microsoft.Extensions.DependencyInjection.Extensions;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Reflection;
 using System.Runtime.CompilerServices;
 using VarDump.CodeDom.Common;
 using VarDump.CodeDom.Compiler;
@@ -81,8 +80,8 @@ public class KnownTypesSpec
 
         dumpOptions.ConfigureKnownTypes = (knownObjects, rootObjectVisitor, _, codeWriter) =>
         {
-            var sdv = new FormattableStringVisitor(rootObjectVisitor, codeWriter);
-            knownObjects.Add(sdv.Id, sdv);
+            var fsv = new FormattableStringVisitor(rootObjectVisitor, codeWriter);
+            knownObjects.Add(fsv.Id, fsv);
         };
 
         var dumper = new CSharpDumper(dumpOptions);
@@ -106,8 +105,8 @@ public class KnownTypesSpec
 
         dumpOptions.ConfigureKnownTypes = (knownObjects, rootObjectVisitor, _, codeWriter) =>
         {
-            var sdv = new FormattableStringVisitor(rootObjectVisitor, codeWriter);
-            knownObjects.Add(sdv.Id, sdv);
+            var fsv = new FormattableStringVisitor(rootObjectVisitor, codeWriter);
+            knownObjects.Add(fsv.Id, fsv);
         };
 
         var dumper = new VisualBasicDumper(dumpOptions);

@@ -16,10 +16,14 @@ public class ObjectDescriptorMiddlewareSpec
     [Fact]
     public void DumpObjectMaskCardNumberCsharp()
     {
-        var cardInfo = new
+        var obj = new
         {
-            CardOwner = "BRUCE LEE",
-            CardNumber = "12345678901234"
+            FullName = "BRUCE LEE",
+            CardNumber = "4953089013607",
+            OtherInfo = new
+            {
+                CardNumber = "5201294442453002",
+            }
         };
 
         var options = new DumpOptions
@@ -29,14 +33,18 @@ public class ObjectDescriptorMiddlewareSpec
 
         var dumper = new CSharpDumper(options);
 
-        var result = dumper.Dump(cardInfo);
+        var result = dumper.Dump(obj);
 
         Assert.Equal(
             """
             var anonymousType = new 
             {
-                CardOwner = "BRUCE LEE",
-                CardNumber = "**********1234"
+                FullName = "BRUCE LEE",
+                CardNumber = "*********3607",
+                OtherInfo = new 
+                {
+                    CardNumber = "************3002"
+                }
             };
             
             """, result);
@@ -402,43 +410,44 @@ public class ObjectDescriptorMiddlewareSpec
     {
         public ObjectDescriptionInfo Describe(object @object, Type objectType, Func<ObjectDescriptionInfo> prev)
         {
-            var objectDescription = prev();
+            var objectInfo = prev();
 
             return new ObjectDescriptionInfo
             {
-                Type = objectDescription.Type,
-                ConstructorParameters = objectDescription.ConstructorParameters,
-                Members = objectDescription.Members.Select(memberDescriptor =>
-                {
-                    if (memberDescriptor.Type != typeof(string) || 
-                        !string.Equals(memberDescriptor.Name, "cardnumber", StringComparison.OrdinalIgnoreCase))
-                    {
-                        return memberDescriptor;
-                    }
+                Type = objectInfo.Type,
+                ConstructorParameters = objectInfo.ConstructorParameters,
+                Members = objectInfo.Members.Select(ReplaceCardNumberDescriptor)
+            };
+        }
 
-                    var stringValue = (string)memberDescriptor.Value;
+        private static IReflectionDescriptor ReplaceCardNumberDescriptor(IReflectionDescriptor memberDescriptor)
+        {
+            if (memberDescriptor.Type != typeof(string) 
+                || !string.Equals(memberDescriptor.Name, "cardnumber", StringComparison.OrdinalIgnoreCase))
+            {
+                return memberDescriptor;
+            }
 
-                    string maskedValue;
+            var stringValue = (string)memberDescriptor.Value;
 
-                    if (!string.IsNullOrWhiteSpace(stringValue))
-                    {
-                        maskedValue = stringValue.Length - 4 > 0
-                            ? string.Concat(new string('*', stringValue.Length - 4),
-                                stringValue.Substring(stringValue.Length - Math.Min(4, stringValue.Length)))
-                            : stringValue;
-                    }
-                    else
-                    {
-                        maskedValue = stringValue;
-                    }
+            string maskedValue;
 
-                    return new ReflectionDescriptor(maskedValue)
-                    {
-                        Name = memberDescriptor.Name,
-                        Type = memberDescriptor.Type,
-                        ReflectionType = memberDescriptor.ReflectionType
-                    };
-                })
+            if (!string.IsNullOrWhiteSpace(stringValue))
+            {
+                maskedValue = stringValue.Length - 4 > 0
+                    ? new string('*', stringValue.Length - 4) + stringValue.Substring(stringValue.Length - 4)
+                    : stringValue;
+            }
+            else
+            {
+                maskedValue = stringValue;
+            }
+
+            return new ReflectionDescriptor(maskedValue)
+            {
+                Name = memberDescriptor.Name, 
+                Type = memberDescriptor.Type, 
+                ReflectionType = memberDescriptor.ReflectionType
             };
         }
     }

@@ -109,10 +109,14 @@ using VarDump.Visitor.Descriptors;
 
 // For more examples see https://github.com/ycherkes/VarDump/blob/main/test/VarDump.UnitTests/ObjectDescriptorMiddlewareSpec.cs
 
-var cardInfo = new
+var obj = new
 {
-    CardOwner = "BRUCE LEE",
-    CardNumber = "12345678901234"
+    FullName = "BRUCE LEE",
+    CardNumber = "4953089013607",
+    OtherInfo = new 
+    {
+        CardNumber = "5201294442453002",
+    }
 };
 
 var dumpOptions = new DumpOptions
@@ -121,10 +125,10 @@ var dumpOptions = new DumpOptions
 };
 
 var csDumper = new CSharpDumper(dumpOptions);
-var cs = csDumper.Dump(cardInfo);
+var cs = csDumper.Dump(obj);
 
 var vbDumper = new VisualBasicDumper(dumpOptions);
-var vb = vbDumper.Dump(cardInfo);
+var vb = vbDumper.Dump(obj);
 
 // C# string
 Console.WriteLine(cs);
@@ -136,43 +140,44 @@ class CardNumberMaskingMiddleware : IObjectDescriptorMiddleware
 {
     public ObjectDescriptionInfo Describe(object @object, Type objectType, Func<ObjectDescriptionInfo> prev)
     {
-        var objectDescription = prev();
+        var objectInfo = prev();
 
         return new ObjectDescriptionInfo
         {
-            Type = objectDescription.Type,
-            ConstructorParameters = objectDescription.ConstructorParameters,
-            Members = objectDescription.Members.Select(memberDescriptor =>
-            {
-                if (memberDescriptor.Type != typeof(string) || 
-                    !string.Equals(memberDescriptor.Name, "cardnumber", StringComparison.OrdinalIgnoreCase))
-                {
-                    return memberDescriptor;
-                }
+            Type = objectInfo.Type,
+            ConstructorParameters = objectInfo.ConstructorParameters,
+            Members = objectInfo.Members.Select(ReplaceCardNumberDescriptor)
+        };
+    }
 
-                var stringValue = (string)memberDescriptor.Value;
+    private static IReflectionDescriptor ReplaceCardNumberDescriptor(IReflectionDescriptor memberDescriptor)
+    {
+        if (memberDescriptor.Type != typeof(string) 
+            || !string.Equals(memberDescriptor.Name, "cardnumber", StringComparison.OrdinalIgnoreCase))
+        {
+            return memberDescriptor;
+        }
 
-                string maskedValue;
+        var stringValue = (string)memberDescriptor.Value;
 
-                if (!string.IsNullOrWhiteSpace(stringValue))
-                {
-                    maskedValue = stringValue.Length - 4 > 0
-                        ? string.Concat(new string('*', stringValue.Length - 4),
-                            stringValue.Substring(stringValue.Length - Math.Min(4, stringValue.Length)))
-                        : stringValue;
-                }
-                else
-                {
-                    maskedValue = stringValue;
-                }
+        string maskedValue;
 
-                return new ReflectionDescriptor(maskedValue)
-                    {
-                        Name = memberDescriptor.Name,
-                        Type = memberDescriptor.Type,
-                        ReflectionType = memberDescriptor.ReflectionType
-                    };
-            })
+        if (!string.IsNullOrWhiteSpace(stringValue))
+        {
+            maskedValue = stringValue.Length - 4 > 0
+                ? new string('*', stringValue.Length - 4) + stringValue.Substring(stringValue.Length - 4)
+                : stringValue;
+        }
+        else
+        {
+            maskedValue = stringValue;
+        }
+
+        return new ReflectionDescriptor(maskedValue)
+        {
+            Name = memberDescriptor.Name, 
+            Type = memberDescriptor.Type, 
+            ReflectionType = memberDescriptor.ReflectionType
         };
     }
 }

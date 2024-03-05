@@ -175,7 +175,7 @@ class CardNumberMaskingMiddleware : IObjectDescriptorMiddleware
 }
 ```
 
-### Full feature with KnownObjectVisitor:
+### Fullweight with KnownObjectVisitor:
 <p align="right"><a href="https://dotnetfiddle.net/kScIyR">Run .NET fiddle</a></p>
 
 ```csharp

@@ -97,7 +97,7 @@ Console.WriteLine(dictionary.Dump(DumpOptions.Default));
 
 ## Extensibility:
 
-### Light with ObjectDescriptorMiddleware:
+### Lightweight with middleware:
 <p align="right"><a href="https://dotnetfiddle.net/hfrbo6">Run .NET fiddle</a></p>
 
 ```csharp

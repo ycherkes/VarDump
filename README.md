@@ -153,25 +153,17 @@ class CardNumberMaskingMiddleware : IObjectDescriptorMiddleware
     private static IReflectionDescriptor ReplaceCardNumberDescriptor(IReflectionDescriptor memberDescriptor)
     {
         if (memberDescriptor.Type != typeof(string) 
-            || !string.Equals(memberDescriptor.Name, "cardnumber", StringComparison.OrdinalIgnoreCase))
+            || !string.Equals(memberDescriptor.Name, "cardnumber", StringComparison.OrdinalIgnoreCase)
+            || string.IsNullOrWhiteSpace((string)memberDescriptor.Value))
         {
             return memberDescriptor;
         }
 
         var stringValue = (string)memberDescriptor.Value;
 
-        string maskedValue;
-
-        if (!string.IsNullOrWhiteSpace(stringValue))
-        {
-            maskedValue = stringValue.Length - 4 > 0
+        var maskedValue = stringValue.Length - 4 > 0
                 ? new string('*', stringValue.Length - 4) + stringValue.Substring(stringValue.Length - 4)
                 : stringValue;
-        }
-        else
-        {
-            maskedValue = stringValue;
-        }
 
         return new ReflectionDescriptor(maskedValue)
         {

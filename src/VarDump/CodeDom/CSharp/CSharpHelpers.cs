@@ -38,6 +38,37 @@ internal static class CSharpHelpers
         return name;
     }
 
+    public static bool IsValidIdentifier(string value)
+    {
+        // identifiers must be 1 char or longer
+        //
+        if (string.IsNullOrEmpty(value))
+        {
+            return false;
+        }
+
+        if (value.Length > 512)
+        {
+            return false;
+        }
+
+        // identifiers cannot be a keyword, unless they are escaped with an '@'
+        //
+        if (value[0] != '@')
+        {
+            if (CSharpHelpers.IsKeyword(value))
+            {
+                return false;
+            }
+        }
+        else
+        {
+            value = value.Substring(1);
+        }
+
+        return CSharpHelpers.IsValidTypeNameOrIdentifier(value, false);
+    }
+
     private static readonly string[][] Keywords = [
         null,           // 1 character
         [  // 2 characters

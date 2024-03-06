@@ -29,8 +29,8 @@ internal static class ReflectionUtils
     public static string ComposeVisualBasicVariableName(Type type)
     {
         var result = ComposeVariableName(type, GetFormattedVisualBasicTypeName);
-        //todo - extract VBCodeWriter.IsKeyword to VbHelpers - as it's in CSharpHelpers
-        if (VBCodeWriter.IsKeyword(result) || string.Equals(type.Name, result, StringComparison.OrdinalIgnoreCase))
+
+        if (VBHelpers.IsKeyword(result) || string.Equals(type.Name, result, StringComparison.OrdinalIgnoreCase))
         {
             result += "Value";
         }
@@ -368,14 +368,14 @@ internal static class ReflectionUtils
 
     public static bool IsGrouping(this Type type)
     {
-        var hasIGrouping = type.GetInterfaces().Concat(new[] { type }).FirstOrDefault(x => x.IsGenericType && x.GetGenericTypeDefinition() == typeof(IGrouping<,>)) != null;
+        var hasIGrouping = type.GetInterfaces().Concat([type]).FirstOrDefault(x => x.IsGenericType && x.GetGenericTypeDefinition() == typeof(IGrouping<,>)) != null;
 
         return hasIGrouping;
     }
 
     public static bool IsLookup(this Type type)
     {
-        var hasILookup = type.GetInterfaces().Concat(new[] { type }).FirstOrDefault(x => x.IsGenericType && x.GetGenericTypeDefinition() == typeof(ILookup<,>)) != null;
+        var hasILookup = type.GetInterfaces().Concat([type]).FirstOrDefault(x => x.IsGenericType && x.GetGenericTypeDefinition() == typeof(ILookup<,>)) != null;
 
         return hasILookup;
     }

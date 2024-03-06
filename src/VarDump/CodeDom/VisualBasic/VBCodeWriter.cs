@@ -202,7 +202,7 @@ internal sealed class VBCodeWriter : ICodeWriter
 
     private void OutputIdentifier(string ident)
     {
-        Output.Write(CreateEscapedIdentifier(ident));
+        Output.Write(VBHelpers.CreateEscapedIdentifier(ident));
     }
 
     public void OutputType(CodeTypeInfo typeInfo)
@@ -699,26 +699,6 @@ internal sealed class VBCodeWriter : ICodeWriter
         Output.Write(')');
     }
 
-    public static bool IsKeyword(string value)
-    {
-        return VBHelpers.IsKeyword(value);
-    }
-
-    public bool IsValidIdentifier(string value)
-    {
-        return VBHelpers.IsValidIdentifier(value);
-    }
-
-    public string CreateValidIdentifier(string name)
-    {
-        return VBHelpers.CreateValidIdentifier(name);
-    }
-
-    public string CreateEscapedIdentifier(string name)
-    {
-        return VBHelpers.CreateEscapedIdentifier(name);
-    }
-
     private string GetBaseTypeOutput(CodeTypeInfo typeInfo, bool preferBuiltInTypes = true)
     {
         string s = typeInfo.BaseType;
@@ -793,14 +773,14 @@ internal sealed class VBCodeWriter : ICodeWriter
             {
                 case '+':
                 case '.':
-                    sb.Append(CreateEscapedIdentifier(baseType.Substring(lastIndex, i - lastIndex)));
+                    sb.Append(VBHelpers.CreateEscapedIdentifier(baseType.Substring(lastIndex, i - lastIndex)));
                     sb.Append('.');
                     i++;
                     lastIndex = i;
                     break;
 
                 case '`':
-                    sb.Append(CreateEscapedIdentifier(baseType.Substring(lastIndex, i - lastIndex)));
+                    sb.Append(VBHelpers.CreateEscapedIdentifier(baseType.Substring(lastIndex, i - lastIndex)));
                     i++;    // skip the '
                     int numTypeArgs = 0;
                     while (i < baseType.Length && baseType[i] >= '0' && baseType[i] <= '9')
@@ -827,7 +807,7 @@ internal sealed class VBCodeWriter : ICodeWriter
 
         if (lastIndex < baseType.Length)
         {
-            sb.Append(CreateEscapedIdentifier(baseType.Substring(lastIndex)));
+            sb.Append(VBHelpers.CreateEscapedIdentifier(baseType.Substring(lastIndex)));
         }
 
         return sb.ToString();

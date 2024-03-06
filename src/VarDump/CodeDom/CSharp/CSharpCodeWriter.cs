@@ -139,7 +139,7 @@ internal sealed class CSharpCodeWriter : ICodeWriter
 
     public void ContinueOnNewLine(string st) => Output.WriteLine(st);
 
-    private void OutputIdentifier(string ident) => Output.Write(CreateEscapedIdentifier(ident));
+    private void OutputIdentifier(string ident) => Output.Write(CSharpHelpers.CreateEscapedIdentifier(ident));
 
     public void OutputType(CodeTypeInfo typeInfo) => Output.Write(GetTypeOutput(typeInfo));
 
@@ -685,42 +685,6 @@ internal sealed class CSharpCodeWriter : ICodeWriter
         OutputIdentifier(name);
     }
 
-    public bool IsValidIdentifier(string value)
-    {
-        // identifiers must be 1 char or longer
-        //
-        if (string.IsNullOrEmpty(value))
-        {
-            return false;
-        }
-
-        if (value.Length > 512)
-        {
-            return false;
-        }
-
-        // identifiers cannot be a keyword, unless they are escaped with an '@'
-        //
-        if (value[0] != '@')
-        {
-            if (CSharpHelpers.IsKeyword(value))
-            {
-                return false;
-            }
-        }
-        else
-        {
-            value = value.Substring(1);
-        }
-
-        return CSharpHelpers.IsValidTypeNameOrIdentifier(value, false);
-    }
-
-    public string CreateEscapedIdentifier(string name)
-    {
-        return CSharpHelpers.CreateEscapedIdentifier(name);
-    }
-
     // returns the type name without any array declaration.
     private string GetBaseTypeOutput(CodeTypeInfo typeInfo, bool preferBuiltInTypes = true)
     {
@@ -803,14 +767,14 @@ internal sealed class CSharpCodeWriter : ICodeWriter
             {
                 case '+':
                 case '.':
-                    sb.Append(CreateEscapedIdentifier(baseType.Substring(lastIndex, i - lastIndex)));
+                    sb.Append(CSharpHelpers.CreateEscapedIdentifier(baseType.Substring(lastIndex, i - lastIndex)));
                     sb.Append('.');
                     i++;
                     lastIndex = i;
                     break;
 
                 case '`':
-                    sb.Append(CreateEscapedIdentifier(baseType.Substring(lastIndex, i - lastIndex)));
+                    sb.Append(CSharpHelpers.CreateEscapedIdentifier(baseType.Substring(lastIndex, i - lastIndex)));
                     i++;    // skip the '
                     int numTypeArgs = 0;
                     while (i < baseType.Length && baseType[i] >= '0' && baseType[i] <= '9')
@@ -836,7 +800,7 @@ internal sealed class CSharpCodeWriter : ICodeWriter
         }
 
         if (lastIndex < baseType.Length)
-            sb.Append(CreateEscapedIdentifier(baseType.Substring(lastIndex)));
+            sb.Append(CSharpHelpers.CreateEscapedIdentifier(baseType.Substring(lastIndex)));
 
         return sb.ToString();
     }

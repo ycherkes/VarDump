@@ -29,7 +29,7 @@ public class ObjectDescriptorMiddlewareSpec
 
         var options = new DumpOptions
         {
-            Descriptors = { new CardNumberSkippingMiddleware() }
+            Descriptors = { new CardNumberRemovingMiddleware() }
         };
 
         var dumper = new CSharpDumper(options);
@@ -443,7 +443,7 @@ public class ObjectDescriptorMiddlewareSpec
         }
     }
 
-    private class CardNumberSkippingMiddleware : IObjectDescriptorMiddleware
+    private class CardNumberRemovingMiddleware : IObjectDescriptorMiddleware
     {
         public IObjectDescription GetObjectDescription(object @object, Type objectType, Func<IObjectDescription> prev)
         {

@@ -3,13 +3,13 @@ using System.Linq;
 using VarDump.CodeDom.Common;
 using VarDump.CodeDom.Compiler;
 using VarDump.Utils;
-using VarDump.Visitor.Descriptors;
+using VarDump.Visitor.Describers;
 
 namespace VarDump.Visitor.KnownTypes;
 
 internal sealed class AnonymousTypeVisitor(
     IObjectVisitor rootObjectVisitor,
-    IObjectDescriptor anonymousObjectDescriptor,
+    IObjectDescriber anonymousObjectDescriber,
     ICodeWriter codeWriter)
     : IKnownObjectVisitor
 {
@@ -21,7 +21,7 @@ internal sealed class AnonymousTypeVisitor(
 
     public void Visit(object obj, Type objectType)
     {
-        var initializeActions = anonymousObjectDescriptor.Describe(obj, objectType)
+        var initializeActions = anonymousObjectDescriber.DescribeObject(obj, objectType)
             .Members
             .Select(pv => (Action)(() => codeWriter.WriteAssign(
                 () => codeWriter.WritePropertyReference(pv.Name, null),

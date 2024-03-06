@@ -1,13 +1,11 @@
 ﻿using System.Collections.Generic;
 using VarDump.CodeDom.Common;
 
-namespace VarDump.Visitor.Descriptors;
+namespace VarDump.Visitor.Describers;
 
-public sealed class ObjectDescriptionInfo
+public sealed partial class ObjectDescriptor
 {
-    public IEnumerable<IReflectionDescriptor> Members { get; set; } = [];
-
     public IEnumerable<IReflectionDescriptor> ConstructorParameters { get; set; } = [];
-
+    public IEnumerable<IReflectionDescriptor> Members { get; set; } = [];
     public CodeTypeInfo Type { get; set; }
 }

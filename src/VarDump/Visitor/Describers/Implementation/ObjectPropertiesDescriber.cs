@@ -5,12 +5,12 @@ using VarDump.CodeDom.Common;
 using VarDump.Extensions;
 using VarDump.Utils;
 
-namespace VarDump.Visitor.Descriptors.Implementation;
+namespace VarDump.Visitor.Describers.Implementation;
 
-internal class ObjectPropertiesDescriptor(BindingFlags getPropertiesBindingFlags, bool writablePropertiesOnly)
-    : IObjectDescriptor
+internal class ObjectPropertiesDescriber(BindingFlags getPropertiesBindingFlags, bool writablePropertiesOnly)
+    : IObjectDescriber
 {
-    public ObjectDescriptionInfo Describe(object @object, Type objectType)
+    public ObjectDescriptor DescribeObject(object @object, Type objectType)
     {
         var properties = EnumerableExtensions.AsEnumerable(() => objectType
             .GetProperties(getPropertiesBindingFlags))
@@ -24,12 +24,10 @@ internal class ObjectPropertiesDescriptor(BindingFlags getPropertiesBindingFlags
                 ReflectionType = ReflectionType.Property
             });
 
-        var info = new ObjectDescriptionInfo
+        return new ObjectDescriptor
         {
             Type = new CodeTypeInfo(objectType),
             Members = properties
         };
-
-        return info;
     }
 }

@@ -25,4 +25,3 @@ internal static class ObjectDescriptorExtensions
         return new DelegateToObjectDescriptor(describe);
     }
 }
-

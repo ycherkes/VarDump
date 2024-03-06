@@ -7,19 +7,12 @@ using VarDump.Utils;
 
 namespace VarDump.Visitor.Descriptors.Implementation;
 
-internal class ObjectFieldsDescriptor : IObjectDescriptor
+internal class ObjectFieldsDescriptor(BindingFlags getFieldsBindingFlags) : IObjectDescriptor
 {
-    private readonly BindingFlags _getFieldsBindingFlags;
-
-    public ObjectFieldsDescriptor(BindingFlags getFieldsBindingFlags)
-    {
-        _getFieldsBindingFlags = getFieldsBindingFlags;
-    }
-
     public ObjectDescriptionInfo Describe(object @object, Type objectType)
     {
         var fields = EnumerableExtensions.AsEnumerable(() => objectType
-                .GetFields(_getFieldsBindingFlags))
+                .GetFields(getFieldsBindingFlags))
             .Select(f => new ReflectionDescriptor(() => ReflectionUtils.GetValue(f, @object))
             {
                 Name = f.Name,

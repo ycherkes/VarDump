@@ -3,21 +3,12 @@ using System.Linq;
 
 namespace VarDump.Visitor.Descriptors.Implementation;
 
-internal class ConcatenatedObjectDescriptor : IObjectDescriptor
+internal class ConcatenatedObjectDescriptor(IObjectDescriptor first, IObjectDescriptor second) : IObjectDescriptor
 {
-    private readonly IObjectDescriptor _first;
-    private readonly IObjectDescriptor _second;
-
-    public ConcatenatedObjectDescriptor(IObjectDescriptor first, IObjectDescriptor second)
-    {
-        _first = first;
-        _second = second;
-    }
-
     public ObjectDescriptionInfo Describe(object @object, Type objectType)
     {
-        var firstInfo = _first.Describe(@object, objectType);
-        var secondInfo = _second.Describe(@object, objectType);
+        var firstInfo = first.Describe(@object, objectType);
+        var secondInfo = second.Describe(@object, objectType);
 
         return new ObjectDescriptionInfo
         {

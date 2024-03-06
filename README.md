@@ -97,7 +97,7 @@ Console.WriteLine(dictionary.Dump(DumpOptions.Default));
 
 ## Extensibility:
 
-### Lightweight with middleware:
+### With middleware:
 <p align="right"><a href="https://dotnetfiddle.net/hfrbo6">Run .NET fiddle</a></p>
 
 ```csharp
@@ -175,7 +175,7 @@ class CardNumberMaskingMiddleware : IObjectDescriptorMiddleware
 }
 ```
 
-### Fullweight with KnownObjectVisitor:
+### With KnownObjectVisitor:
 <p align="right"><a href="https://dotnetfiddle.net/kScIyR">Run .NET fiddle</a></p>
 
 ```csharp

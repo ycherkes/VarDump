@@ -14,6 +14,43 @@ namespace VarDump.UnitTests;
 public class ObjectDescriptorMiddlewareSpec
 {
     [Fact]
+    public void DumpObjectSkipWritingCardNumberCsharp()
+    {
+        var obj = new
+        {
+            FullName = "BRUCE LEE",
+            CardNumber = "4953089013607",
+            OtherInfo = new
+            {
+                FullName = "BRUCE LEE",
+                CardNumber = "5201294442453002",
+            }
+        };
+
+        var options = new DumpOptions
+        {
+            Descriptors = { new CardNumberSkippingMiddleware() }
+        };
+
+        var dumper = new CSharpDumper(options);
+
+        var result = dumper.Dump(obj);
+
+        Assert.Equal(
+            """
+            var anonymousType = new 
+            {
+                FullName = "BRUCE LEE",
+                OtherInfo = new 
+                {
+                    FullName = "BRUCE LEE"
+                }
+            };
+            
+            """, result);
+    }
+
+    [Fact]
     public void DumpObjectMaskCardNumberCsharp()
     {
         var obj = new
@@ -403,6 +440,21 @@ public class ObjectDescriptorMiddlewareSpec
             }
 
             return prev();
+        }
+    }
+
+    private class CardNumberSkippingMiddleware : IObjectDescriptorMiddleware
+    {
+        public ObjectDescriptionInfo Describe(object @object, Type objectType, Func<ObjectDescriptionInfo> prev)
+        {
+            var objectInfo = prev();
+
+            return new ObjectDescriptionInfo
+            {
+                Type = objectInfo.Type,
+                ConstructorParameters = objectInfo.ConstructorParameters,
+                Members = objectInfo.Members.Where(memberDescriptor => !string.Equals(memberDescriptor.Name, "cardnumber", StringComparison.OrdinalIgnoreCase))
+            };
         }
     }
 

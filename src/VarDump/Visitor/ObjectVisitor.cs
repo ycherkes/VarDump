@@ -139,7 +139,7 @@ internal sealed class ObjectVisitor : IObjectVisitor
                     .Where(mc => mc.ReflectionType == ReflectionType.ConstructorParameter)
                     .Select(cp => (Action)(() => Visit(cp.Value)));
 
-            var initializeActions = members
+            var initializers = members
                     .Where(pv => !_excludeTypes.Contains(pv.Type.FullName) &&
                                  (!_ignoreNullValues || _ignoreNullValues && pv.Value != null) &&
                                  (!_ignoreDefaultValues || !pv.Type.IsValueType || _ignoreDefaultValues &&
@@ -150,7 +150,7 @@ internal sealed class ObjectVisitor : IObjectVisitor
 
             _codeWriter.WriteObjectCreateAndInitialize(objectDescription.Type ?? new CodeTypeInfo(objectType),
                 constructorParams,
-                initializeActions);
+                initializers);
         }
         finally
         {

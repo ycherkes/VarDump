@@ -138,40 +138,40 @@ Console.WriteLine(vb);
 
 class CardNumberMaskingMiddleware : IObjectDescriptorMiddleware
 {
-    public ObjectDescriptionInfo Describe(object @object, Type objectType, Func<ObjectDescriptionInfo> prev)
-    {
-        var objectInfo = prev();
+	public IObjectDescription GetObjectDescription(object @object, Type objectType, Func<IObjectDescription> prev)
+	{
+		var objectDescription = prev();
 
-        return new ObjectDescriptionInfo
-        {
-            Type = objectInfo.Type,
-            ConstructorParameters = objectInfo.ConstructorParameters,
-            Members = objectInfo.Members.Select(ReplaceCardNumberDescriptor)
-        };
-    }
+		return new ObjectDescription
+		{
+			Type = objectDescription.Type,
+			ConstructorParameters = objectDescription.ConstructorParameters,
+			Members = objectDescription.Members.Select(ReplaceCardNumberDescriptor)
+		};
+	}
 
-    private static IReflectionDescriptor ReplaceCardNumberDescriptor(IReflectionDescriptor memberDescriptor)
-    {
-        if (memberDescriptor.Type != typeof(string) 
-            || !string.Equals(memberDescriptor.Name, "cardnumber", StringComparison.OrdinalIgnoreCase)
-            || string.IsNullOrWhiteSpace((string)memberDescriptor.Value))
-        {
-            return memberDescriptor;
-        }
+	private static IReflectionDescription ReplaceCardNumberDescriptor(IReflectionDescription memberDescription)
+	{
+		if (memberDescription.Type != typeof(string) 
+			|| !string.Equals(memberDescription.Name, "cardnumber", StringComparison.OrdinalIgnoreCase) 
+			|| string.IsNullOrWhiteSpace((string)memberDescription.Value))
+		{
+			return memberDescription;
+		}
 
-        var stringValue = (string)memberDescriptor.Value;
+		var stringValue = (string)memberDescription.Value;
 
-        var maskedValue = stringValue.Length - 4 > 0
-                ? new string('*', stringValue.Length - 4) + stringValue.Substring(stringValue.Length - 4)
-                : stringValue;
+		var maskedValue = stringValue.Length - 4 > 0
+				? new string('*', stringValue.Length - 4) + stringValue.Substring(stringValue.Length - 4)
+				: stringValue;
 
-        return new ReflectionDescriptor(maskedValue)
-        {
-            Name = memberDescriptor.Name, 
-            Type = memberDescriptor.Type, 
-            ReflectionType = memberDescriptor.ReflectionType
-        };
-    }
+		return new ReflectionDescription(maskedValue)
+		{
+			Name = memberDescription.Name, 
+			Type = memberDescription.Type, 
+			ReflectionType = memberDescription.ReflectionType
+		};
+	}
 }
 ```
 

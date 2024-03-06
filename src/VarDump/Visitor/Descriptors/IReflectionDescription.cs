@@ -1,8 +1,8 @@
 ﻿using System;
 
-namespace VarDump.Visitor.Describers;
+namespace VarDump.Visitor.Descriptors;
 
-public interface IReflectionDescriptor
+public interface IReflectionDescription
 {
     ReflectionType ReflectionType { get; }
     string Name { get; }

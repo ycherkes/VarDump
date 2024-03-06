@@ -7,8 +7,8 @@ using VarDump.CodeDom.Compiler;
 using VarDump.Collections;
 using VarDump.Extensions;
 using VarDump.Utils;
-using VarDump.Visitor.Describers;
-using VarDump.Visitor.Describers.Implementation;
+using VarDump.Visitor.Descriptors;
+using VarDump.Visitor.Descriptors.Implementation;
 using VarDump.Visitor.KnownTypes;
 
 namespace VarDump.Visitor;
@@ -22,7 +22,7 @@ internal sealed class ObjectVisitor : IObjectVisitor
     private readonly int _maxDepth;
     private readonly Stack<object> _visitedObjects;
     private readonly ListSortDirection? _sortDirection;
-    private readonly IObjectDescriber _objectDescriber;
+    private readonly IObjectDescriptor _objectDescriptor;
     private readonly OrderedDictionary<string, IKnownObjectVisitor> _knownTypes;
 
     private int _depth;
@@ -36,18 +36,18 @@ internal sealed class ObjectVisitor : IObjectVisitor
         _excludeTypes = options.ExcludeTypes ?? [];
         _sortDirection = options.SortDirection;
 
-        IObjectDescriber anonymousObjectDescriber = new ObjectPropertiesDescriber(options.GetPropertiesBindingFlags, false);
-        _objectDescriber = new ObjectPropertiesDescriber(options.GetPropertiesBindingFlags, options.WritablePropertiesOnly);
+        IObjectDescriptor anonymousObjectDescriptor = new ObjectPropertiesDescriptor(options.GetPropertiesBindingFlags, false);
+        _objectDescriptor = new ObjectPropertiesDescriptor(options.GetPropertiesBindingFlags, options.WritablePropertiesOnly);
 
         if (options.GetFieldsBindingFlags != null)
         {
-            _objectDescriber = anonymousObjectDescriber.Concat(new ObjectFieldsDescriber(options.GetFieldsBindingFlags.Value));
+            _objectDescriptor = anonymousObjectDescriptor.Concat(new ObjectFieldsDescriptor(options.GetFieldsBindingFlags.Value));
         }
 
-        if (options.Describers.Count > 0)
+        if (options.Descriptors.Count > 0)
         {
-            _objectDescriber = _objectDescriber.ApplyMiddleware(options.Describers);
-            anonymousObjectDescriber = anonymousObjectDescriber.ApplyMiddleware(options.Describers);
+            _objectDescriptor = _objectDescriptor.ApplyMiddleware(options.Descriptors);
+            anonymousObjectDescriptor = anonymousObjectDescriptor.ApplyMiddleware(options.Descriptors);
         }
 
         _visitedObjects = new Stack<object>();
@@ -69,7 +69,7 @@ internal sealed class ObjectVisitor : IObjectVisitor
             new DateOnlyVisitor(codeWriter, options.DateTimeInstantiation),
             new TimeOnlyVisitor(codeWriter, options.DateTimeInstantiation),
             new RecordVisitor(this, codeWriter, options.UseNamedArgumentsForReferenceRecordTypes),
-            new AnonymousTypeVisitor(this, anonymousObjectDescriber, codeWriter),
+            new AnonymousTypeVisitor(this, anonymousObjectDescriptor, codeWriter),
             new KeyValuePairVisitor(this, codeWriter),
             new TupleVisitor(this, codeWriter),
             new ValueTupleVisitor(this, codeWriter),
@@ -124,7 +124,7 @@ internal sealed class ObjectVisitor : IObjectVisitor
 
         try
         {
-            var objectDescription = _objectDescriber.DescribeObject(o, objectType);
+            var objectDescription = _objectDescriptor.GetObjectDescription(o, objectType);
 
             var members = objectDescription.Members;
 

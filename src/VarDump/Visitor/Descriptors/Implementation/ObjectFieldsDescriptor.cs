@@ -5,22 +5,22 @@ using VarDump.CodeDom.Common;
 using VarDump.Extensions;
 using VarDump.Utils;
 
-namespace VarDump.Visitor.Describers.Implementation;
+namespace VarDump.Visitor.Descriptors.Implementation;
 
-internal class ObjectFieldsDescriber(BindingFlags getFieldsBindingFlags) : IObjectDescriber
+internal sealed class ObjectFieldsDescriptor(BindingFlags getFieldsBindingFlags) : IObjectDescriptor
 {
-    public ObjectDescriptor DescribeObject(object @object, Type objectType)
+    public IObjectDescription GetObjectDescription(object @object, Type objectType)
     {
         var fields = EnumerableExtensions.AsEnumerable(() => objectType
                 .GetFields(getFieldsBindingFlags))
-            .Select(f => new ReflectionDescriptor(() => ReflectionUtils.GetValue(f, @object))
+            .Select(f => new ReflectionDescription(() => ReflectionUtils.GetValue(f, @object))
             {
                 Name = f.Name,
                 Type = f.FieldType,
                 ReflectionType = ReflectionType.Field
             });
 
-        return new ObjectDescriptor
+        return new ObjectDescription
         {
             Type = new CodeTypeInfo(objectType),
             Members = fields

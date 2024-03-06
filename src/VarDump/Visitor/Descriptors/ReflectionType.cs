@@ -1,4 +1,4 @@
-﻿namespace VarDump.Visitor.Describers;
+﻿namespace VarDump.Visitor.Descriptors;
 
 public enum ReflectionType
 {

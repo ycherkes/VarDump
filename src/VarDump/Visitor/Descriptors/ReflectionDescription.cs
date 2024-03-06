@@ -1,20 +1,20 @@
 ﻿using System;
 
-namespace VarDump.Visitor.Describers;
+namespace VarDump.Visitor.Descriptors;
 
-public class ReflectionDescriptor : IReflectionDescriptor
+public sealed class ReflectionDescription : IReflectionDescription
 {
     private readonly Func<object> _getValueFunc;
     private object _value;
     private bool _isValueInitialized;
 
-    public ReflectionDescriptor(object value)
+    public ReflectionDescription(object value)
     {
         _value = value;
         _isValueInitialized = true;
     }
 
-    public ReflectionDescriptor(Func<object> getValueFunc)
+    public ReflectionDescription(Func<object> getValueFunc)
     {
         _getValueFunc = getValueFunc;
         _isValueInitialized = false;

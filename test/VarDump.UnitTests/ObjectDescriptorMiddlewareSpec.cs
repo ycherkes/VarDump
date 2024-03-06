@@ -6,12 +6,12 @@ using System.Linq;
 using System.Reflection;
 using VarDump.CodeDom.Common;
 using VarDump.Visitor;
-using VarDump.Visitor.Describers;
+using VarDump.Visitor.Descriptors;
 using Xunit;
 
 namespace VarDump.UnitTests;
 
-public class ObjectDescriberMiddlewareSpec
+public class ObjectDescriptorMiddlewareSpec
 {
     [Fact]
     public void DumpObjectSkipWritingCardNumberCsharp()
@@ -29,7 +29,7 @@ public class ObjectDescriberMiddlewareSpec
 
         var options = new DumpOptions
         {
-            Describers = { new CardNumberSkippingMiddleware() }
+            Descriptors = { new CardNumberSkippingMiddleware() }
         };
 
         var dumper = new CSharpDumper(options);
@@ -65,7 +65,7 @@ public class ObjectDescriberMiddlewareSpec
 
         var options = new DumpOptions
         {
-            Describers = { new CardNumberMaskingMiddleware() }
+            Descriptors = { new CardNumberMaskingMiddleware() }
         };
 
         var dumper = new CSharpDumper(options);
@@ -95,7 +95,7 @@ public class ObjectDescriberMiddlewareSpec
 
         var options = new DumpOptions
         {
-            Describers =
+            Descriptors =
             {
                 new FileSystemInfoMiddleware(),
                 new FileInfoMiddleware(),
@@ -130,7 +130,7 @@ public class ObjectDescriberMiddlewareSpec
 
         var options = new DumpOptions
         {
-            Describers = { new MemberInfoMiddleware() },
+            Descriptors = { new MemberInfoMiddleware() },
             WritablePropertiesOnly = false
         };
 
@@ -148,8 +148,8 @@ public class ObjectDescriberMiddlewareSpec
                   Method = new RuntimeMethodInfo
                   {
                       Name = "{{delegateObject.Method.Name}}",
-                      DeclaringType = typeof({{nameof(ObjectDescriberMiddlewareSpec)}}),
-                      ReflectedType = typeof({{nameof(ObjectDescriberMiddlewareSpec)}}),
+                      DeclaringType = typeof({{nameof(ObjectDescriptorMiddlewareSpec)}}),
+                      ReflectedType = typeof({{nameof(ObjectDescriptorMiddlewareSpec)}}),
                       MemberType = MemberTypes.Method,
                       Attributes = MethodAttributes.Assembly | MethodAttributes.Static | MethodAttributes.HideBySig
                   }
@@ -166,8 +166,8 @@ public class ObjectDescriberMiddlewareSpec
                   Method = new RuntimeMethodInfo
                   {
                       Name = "{{delegateObject.Method.Name}}",
-                      DeclaringType = typeof({{nameof(ObjectDescriberMiddlewareSpec)}}),
-                      ReflectedType = typeof({{nameof(ObjectDescriberMiddlewareSpec)}}),
+                      DeclaringType = typeof({{nameof(ObjectDescriptorMiddlewareSpec)}}),
+                      ReflectedType = typeof({{nameof(ObjectDescriptorMiddlewareSpec)}}),
                       MemberType = MemberTypes.Method,
                       Attributes = MethodAttributes.PrivateScope | MethodAttributes.Assembly | MethodAttributes.Static | MethodAttributes.HideBySig
                   }
@@ -183,7 +183,7 @@ public class ObjectDescriberMiddlewareSpec
     {
         var options = new DumpOptions
         {
-            Describers = { new FileSystemInfoMiddleware() },
+            Descriptors = { new FileSystemInfoMiddleware() },
             DateKind = DateKind.ConvertToUtc,
             WritablePropertiesOnly = false,
             SortDirection = ListSortDirection.Ascending
@@ -246,7 +246,7 @@ public class ObjectDescriberMiddlewareSpec
     {
         var options = new DumpOptions
         {
-            Describers = { new FileInfoMiddleware() }
+            Descriptors = { new FileInfoMiddleware() }
         };
 
         var fileName = $"{Guid.NewGuid()}.txt";
@@ -266,7 +266,7 @@ public class ObjectDescriberMiddlewareSpec
     {
         var options = new DumpOptions
         {
-            Describers = { new DriveInfoMiddleware() }
+            Descriptors = { new DriveInfoMiddleware() }
         };
 
         var driveName = "C:";
@@ -290,7 +290,7 @@ public class ObjectDescriberMiddlewareSpec
 
         var options = new DumpOptions
         {
-            Describers = { new MemberInfoMiddleware() },
+            Descriptors = { new MemberInfoMiddleware() },
             WritablePropertiesOnly = false
         };
 
@@ -307,8 +307,8 @@ public class ObjectDescriberMiddlewareSpec
               Dim eventHandlerValue = New EventHandler With {
                   .Method = New RuntimeMethodInfo With {
                       .Name = "{{delegateObject.Method.Name}}",
-                      .DeclaringType = GetType({{nameof(ObjectDescriberMiddlewareSpec)}}),
-                      .ReflectedType = GetType({{nameof(ObjectDescriberMiddlewareSpec)}}),
+                      .DeclaringType = GetType({{nameof(ObjectDescriptorMiddlewareSpec)}}),
+                      .ReflectedType = GetType({{nameof(ObjectDescriptorMiddlewareSpec)}}),
                       .MemberType = MemberTypes.Method,
                       .Attributes = MethodAttributes.[Assembly] Or MethodAttributes.[Static] Or MethodAttributes.HideBySig
                   }
@@ -323,8 +323,8 @@ public class ObjectDescriberMiddlewareSpec
               Dim eventHandlerValue = New EventHandler With {
                   .Method = New RuntimeMethodInfo With {
                       .Name = "{{delegateObject.Method.Name}}",
-                      .DeclaringType = GetType({{nameof(ObjectDescriberMiddlewareSpec)}}),
-                      .ReflectedType = GetType({{nameof(ObjectDescriberMiddlewareSpec)}}),
+                      .DeclaringType = GetType({{nameof(ObjectDescriptorMiddlewareSpec)}}),
+                      .ReflectedType = GetType({{nameof(ObjectDescriptorMiddlewareSpec)}}),
                       .MemberType = MemberTypes.Method,
                       .Attributes = MethodAttributes.PrivateScope Or MethodAttributes.[Assembly] Or MethodAttributes.[Static] Or MethodAttributes.HideBySig
                   }
@@ -335,7 +335,7 @@ public class ObjectDescriberMiddlewareSpec
 #endif
     }
 
-    private class MemberInfoMiddleware : IObjectDescriberMiddleware
+    private class MemberInfoMiddleware : IObjectDescriptorMiddleware
     {
         private readonly HashSet<string> _includeProperties =
         [
@@ -346,20 +346,20 @@ public class ObjectDescriberMiddlewareSpec
             "Attributes"
         ];
 
-        public ObjectDescriptor DescribeObject(object @object, Type objectType, Func<ObjectDescriptor> prev)
+        public IObjectDescription GetObjectDescription(object @object, Type objectType, Func<IObjectDescription> prev)
         {
-            var objectDescriptor = prev();
+            var objectInfo = prev();
 
             if (typeof(MemberInfo).IsAssignableFrom(objectType))
             {
-                objectDescriptor.Members = objectDescriptor.Members.Where(m => _includeProperties.Contains(m.Name)).ToList();
+                objectInfo.Members = objectInfo.Members.Where(m => _includeProperties.Contains(m.Name)).ToList();
             }
 
-            return objectDescriptor;
+            return objectInfo;
         }
     }
 
-    private class FileSystemInfoMiddleware : IObjectDescriberMiddleware
+    private class FileSystemInfoMiddleware : IObjectDescriptorMiddleware
     {
         private readonly HashSet<string> _excludeProperties =
         [
@@ -368,31 +368,31 @@ public class ObjectDescriberMiddlewareSpec
             "Root"
         ];
 
-        public ObjectDescriptor DescribeObject(object @object, Type objectType, Func<ObjectDescriptor> prev)
+        public IObjectDescription GetObjectDescription(object @object, Type objectType, Func<IObjectDescription> prev)
         {
-            var objectDescriptor = prev();
+            var objectDescription = prev();
 
             if (typeof(FileSystemInfo).IsAssignableFrom(objectType))
             {
-                objectDescriptor.Members = objectDescriptor.Members.Where(m => !_excludeProperties.Contains(m.Name)).ToList();
+                objectDescription.Members = objectDescription.Members.Where(m => !_excludeProperties.Contains(m.Name)).ToList();
             }
 
-            return objectDescriptor;
+            return objectDescription;
         }
     }
 
-    private class FileInfoMiddleware : IObjectDescriberMiddleware
+    private class FileInfoMiddleware : IObjectDescriptorMiddleware
     {
-        public ObjectDescriptor DescribeObject(object @object, Type objectType, Func<ObjectDescriptor> prev)
+        public IObjectDescription GetObjectDescription(object @object, Type objectType, Func<IObjectDescription> prev)
         {
             if (@object is FileInfo fileInfo)
             {
-                return new ObjectDescriptor
+                return new ObjectDescription
                 {
                     Type = new CodeTypeInfo(objectType),
                     ConstructorParameters = new []
                     {
-                        new ReflectionDescriptor(fileInfo.FullName)
+                        new ReflectionDescription(fileInfo.FullName)
                         {
                             ReflectionType = ReflectionType.ConstructorParameter
                         }
@@ -404,18 +404,18 @@ public class ObjectDescriberMiddlewareSpec
         }
     }
 
-    private class DriveInfoMiddleware : IObjectDescriberMiddleware
+    private class DriveInfoMiddleware : IObjectDescriptorMiddleware
     {
-        public ObjectDescriptor DescribeObject(object @object, Type objectType, Func<ObjectDescriptor> prev)
+        public IObjectDescription GetObjectDescription(object @object, Type objectType, Func<IObjectDescription> prev)
         {
             if (@object is DriveInfo driveInfo)
             {
-                return new ObjectDescriptor
+                return new ObjectDescription
                 {
                     Type = new CodeTypeInfo(objectType),
                     ConstructorParameters = new []
                     {
-                        new ReflectionDescriptor(driveInfo.Name)
+                        new ReflectionDescription(driveInfo.Name)
                         {
                             ReflectionType = ReflectionType.ConstructorParameter
                         }
@@ -426,13 +426,13 @@ public class ObjectDescriberMiddlewareSpec
             return prev();
         }
     }
-    private class FormattableStringMiddleware : IObjectDescriberMiddleware
+    private class FormattableStringMiddleware : IObjectDescriptorMiddleware
     {
-        public ObjectDescriptor DescribeObject(object @object, Type objectType, Func<ObjectDescriptor> prev)
+        public IObjectDescription GetObjectDescription(object @object, Type objectType, Func<IObjectDescription> prev)
         {
             if (@object is FormattableString fs)
             {
-                return ObjectDescriptor.FromObject(new
+                return ObjectDescription.FromObject(new
                 {
                     fs.Format,
                     Arguments = fs.GetArguments()
@@ -443,55 +443,55 @@ public class ObjectDescriberMiddlewareSpec
         }
     }
 
-    private class CardNumberSkippingMiddleware : IObjectDescriberMiddleware
+    private class CardNumberSkippingMiddleware : IObjectDescriptorMiddleware
     {
-        public ObjectDescriptor DescribeObject(object @object, Type objectType, Func<ObjectDescriptor> prev)
+        public IObjectDescription GetObjectDescription(object @object, Type objectType, Func<IObjectDescription> prev)
         {
-            var objectDescriptor = prev();
+            var objectDescription = prev();
 
-            return new ObjectDescriptor
+            return new ObjectDescription
             {
-                Type = objectDescriptor.Type,
-                ConstructorParameters = objectDescriptor.ConstructorParameters,
-                Members = objectDescriptor.Members.Where(memberDescriptor => !string.Equals(memberDescriptor.Name, "cardnumber", StringComparison.OrdinalIgnoreCase))
+                Type = objectDescription.Type,
+                ConstructorParameters = objectDescription.ConstructorParameters,
+                Members = objectDescription.Members.Where(memberDescriptor => !string.Equals(memberDescriptor.Name, "cardnumber", StringComparison.OrdinalIgnoreCase))
             };
         }
     }
 
-    private class CardNumberMaskingMiddleware : IObjectDescriberMiddleware
+    private class CardNumberMaskingMiddleware : IObjectDescriptorMiddleware
     {
-        public ObjectDescriptor DescribeObject(object @object, Type objectType, Func<ObjectDescriptor> prev)
+        public IObjectDescription GetObjectDescription(object @object, Type objectType, Func<IObjectDescription> prev)
         {
-            var objectDescriptor = prev();
+            var objectDescription = prev();
 
-            return new ObjectDescriptor
+            return new ObjectDescription
             {
-                Type = objectDescriptor.Type,
-                ConstructorParameters = objectDescriptor.ConstructorParameters,
-                Members = objectDescriptor.Members.Select(ReplaceCardNumberDescriptor)
+                Type = objectDescription.Type,
+                ConstructorParameters = objectDescription.ConstructorParameters,
+                Members = objectDescription.Members.Select(ReplaceCardNumberDescriptor)
             };
         }
 
-        private static IReflectionDescriptor ReplaceCardNumberDescriptor(IReflectionDescriptor memberDescriptor)
+        private static IReflectionDescription ReplaceCardNumberDescriptor(IReflectionDescription memberDescription)
         {
-            if (memberDescriptor.Type != typeof(string) 
-                || !string.Equals(memberDescriptor.Name, "cardnumber", StringComparison.OrdinalIgnoreCase) 
-                || string.IsNullOrWhiteSpace((string)memberDescriptor.Value))
+            if (memberDescription.Type != typeof(string) 
+                || !string.Equals(memberDescription.Name, "cardnumber", StringComparison.OrdinalIgnoreCase) 
+                || string.IsNullOrWhiteSpace((string)memberDescription.Value))
             {
-                return memberDescriptor;
+                return memberDescription;
             }
 
-            var stringValue = (string)memberDescriptor.Value;
+            var stringValue = (string)memberDescription.Value;
 
             var maskedValue = stringValue.Length - 4 > 0
                     ? new string('*', stringValue.Length - 4) + stringValue.Substring(stringValue.Length - 4)
                     : stringValue;
 
-            return new ReflectionDescriptor(maskedValue)
+            return new ReflectionDescription(maskedValue)
             {
-                Name = memberDescriptor.Name, 
-                Type = memberDescriptor.Type, 
-                ReflectionType = memberDescriptor.ReflectionType
+                Name = memberDescription.Name, 
+                Type = memberDescription.Type, 
+                ReflectionType = memberDescription.ReflectionType
             };
         }
     }

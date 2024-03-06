@@ -5,26 +5,26 @@ using VarDump.CodeDom.Common;
 using VarDump.Extensions;
 using VarDump.Utils;
 
-namespace VarDump.Visitor.Describers.Implementation;
+namespace VarDump.Visitor.Descriptors.Implementation;
 
-internal class ObjectPropertiesDescriber(BindingFlags getPropertiesBindingFlags, bool writablePropertiesOnly)
-    : IObjectDescriber
+internal sealed class ObjectPropertiesDescriptor(BindingFlags getPropertiesBindingFlags, bool writablePropertiesOnly)
+    : IObjectDescriptor
 {
-    public ObjectDescriptor DescribeObject(object @object, Type objectType)
+    public IObjectDescription GetObjectDescription(object @object, Type objectType)
     {
         var properties = EnumerableExtensions.AsEnumerable(() => objectType
             .GetProperties(getPropertiesBindingFlags))
             .Where(p => p.CanRead &&
                         (p.CanWrite || !writablePropertiesOnly) &&
                         !ReflectionUtils.IsIndexer(p))
-            .Select(p => new ReflectionDescriptor(() => ReflectionUtils.GetValue(p, @object))
+            .Select(p => new ReflectionDescription(() => ReflectionUtils.GetValue(p, @object))
             {
                 Name = p.Name,
                 Type = p.PropertyType,
                 ReflectionType = ReflectionType.Property
             });
 
-        return new ObjectDescriptor
+        return new ObjectDescription
         {
             Type = new CodeTypeInfo(objectType),
             Members = properties

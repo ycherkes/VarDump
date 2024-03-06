@@ -5,7 +5,7 @@ using System.Linq;
 using System.Reflection;
 using VarDump.CodeDom.Compiler;
 using VarDump.Collections;
-using VarDump.Visitor.Describers;
+using VarDump.Visitor.Descriptors;
 using VarDump.Visitor.KnownTypes;
 
 namespace VarDump.Visitor;
@@ -16,7 +16,7 @@ public class DumpOptions
     public Action<IOrderedDictionary<string, IKnownObjectVisitor>, IObjectVisitor, DumpOptions, ICodeWriter> ConfigureKnownTypes { get; set; }
     public DateKind DateKind { get; set; } = DateKind.Original;
     public DateTimeInstantiation DateTimeInstantiation { get; set; } = DateTimeInstantiation.Parse;
-    public ICollection<IObjectDescriberMiddleware> Describers { get; set; } = [];
+    public ICollection<IObjectDescriptorMiddleware> Descriptors { get; set; } = [];
     public ICollection<string> ExcludeTypes { get; set; } = [];
     public bool GenerateVariableInitializer { get; set; } = true;
     public BindingFlags? GetFieldsBindingFlags { get; set; }
@@ -38,7 +38,7 @@ public class DumpOptions
             ConfigureKnownTypes = ConfigureKnownTypes,
             DateKind = DateKind,
             DateTimeInstantiation = DateTimeInstantiation,
-            Describers = Describers.ToArray(),
+            Descriptors = Descriptors.ToArray(),
             ExcludeTypes = ExcludeTypes?.ToArray() ?? [],
             GenerateVariableInitializer = GenerateVariableInitializer,
             GetFieldsBindingFlags = GetFieldsBindingFlags,

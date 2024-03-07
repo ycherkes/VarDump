@@ -14,7 +14,7 @@ public class CSharpDumper : IDumper
 
     public CSharpDumper()
     {
-        _options = DumpOptions.Default;
+        _options = new DumpOptions();
     }
 
     public CSharpDumper(DumpOptions options)

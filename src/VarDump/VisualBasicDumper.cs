@@ -14,7 +14,7 @@ public class VisualBasicDumper : IDumper
 
     public VisualBasicDumper()
     {
-        _options = DumpOptions.Default;
+        _options = new DumpOptions();
     }
 
     public VisualBasicDumper(DumpOptions options)

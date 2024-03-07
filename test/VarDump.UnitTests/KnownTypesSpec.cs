@@ -25,12 +25,13 @@ public class KnownTypesSpec
             ServiceDescriptor.Scoped<IPerson, Person>()
         };
 
-        var dumpOptions = DumpOptions.Default;
-
-        dumpOptions.ConfigureKnownTypes = (knownObjects, rootObjectVisitor, _, codeWriter) =>
+        var dumpOptions = new DumpOptions
         {
-            var sdv = new ServiceDescriptorVisitor(rootObjectVisitor, codeWriter);
-            knownObjects.Add(sdv.Id, sdv);
+            ConfigureKnownTypes = (knownObjects, rootObjectVisitor, _, codeWriter) =>
+            {
+                var sdv = new ServiceDescriptorVisitor(rootObjectVisitor, codeWriter);
+                knownObjects.Add(sdv.Id, sdv);
+            }
         };
 
         var dumper = new CSharpDumper(dumpOptions);
@@ -53,12 +54,13 @@ public class KnownTypesSpec
     {
         var personServiceDescriptor = ServiceDescriptor.Transient<IPerson, Person>();
 
-        var dumpOptions = DumpOptions.Default;
-
-        dumpOptions.ConfigureKnownTypes = (knownObjects, rootObjectVisitor, _, codeWriter) =>
+        var dumpOptions = new DumpOptions
         {
-            var sdv = new ServiceDescriptorVisitor(rootObjectVisitor, codeWriter);
-            knownObjects.Add(sdv.Id, sdv);
+            ConfigureKnownTypes = (knownObjects, rootObjectVisitor, _, codeWriter) =>
+            {
+                var sdv = new ServiceDescriptorVisitor(rootObjectVisitor, codeWriter);
+                knownObjects.Add(sdv.Id, sdv);
+            }
         };
 
         var dumper = new VisualBasicDumper(dumpOptions);
@@ -76,12 +78,13 @@ public class KnownTypesSpec
         const string name = "World";
         FormattableString str = $"Hello, {name}";
 
-        var dumpOptions = DumpOptions.Default;
-
-        dumpOptions.ConfigureKnownTypes = (knownObjects, rootObjectVisitor, _, codeWriter) =>
+        var dumpOptions = new DumpOptions
         {
-            var fsv = new FormattableStringVisitor(rootObjectVisitor, codeWriter);
-            knownObjects.Add(fsv.Id, fsv);
+            ConfigureKnownTypes = (knownObjects, rootObjectVisitor, _, codeWriter) =>
+            {
+                var fsv = new FormattableStringVisitor(rootObjectVisitor, codeWriter);
+                knownObjects.Add(fsv.Id, fsv);
+            }
         };
 
         var dumper = new CSharpDumper(dumpOptions);
@@ -101,12 +104,13 @@ public class KnownTypesSpec
         const string name = "World";
         FormattableString str = $"Hello, {name}";
 
-        var dumpOptions = DumpOptions.Default;
-
-        dumpOptions.ConfigureKnownTypes = (knownObjects, rootObjectVisitor, _, codeWriter) =>
+        var dumpOptions = new DumpOptions
         {
-            var fsv = new FormattableStringVisitor(rootObjectVisitor, codeWriter);
-            knownObjects.Add(fsv.Id, fsv);
+            ConfigureKnownTypes = (knownObjects, rootObjectVisitor, _, codeWriter) =>
+            {
+                var fsv = new FormattableStringVisitor(rootObjectVisitor, codeWriter);
+                knownObjects.Add(fsv.Id, fsv);
+            }
         };
 
         var dumper = new VisualBasicDumper(dumpOptions);

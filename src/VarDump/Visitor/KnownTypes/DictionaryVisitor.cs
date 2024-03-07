@@ -92,8 +92,7 @@ internal sealed class DictionaryVisitor : IKnownObjectVisitor
             return;
         }
 
-        _codeWriter.WriteObjectCreateAndInitialize(
-            new CodeCollectionTypeInfo(type), [], items);
+        _codeWriter.WriteObjectCreateAndInitialize(new CodeCollectionTypeInfo(type), [], items);
     }
 
     private void VisitAnonymousDictionary(IEnumerable dictionary)
@@ -117,8 +116,7 @@ internal sealed class DictionaryVisitor : IKnownObjectVisitor
 
         _codeWriter.WriteMethodInvoke(() =>
                 _codeWriter.WriteMethodReference(
-                    () => _codeWriter.WriteArrayCreate(new CodeAnonymousTypeInfo { ArrayRank = 1 },
-                        items),
+                    () => _codeWriter.WriteArrayCreate(new CodeAnonymousTypeInfo { ArrayRank = 1 }, items),
                     methodName),
             [
                 WriteKeyLambda,

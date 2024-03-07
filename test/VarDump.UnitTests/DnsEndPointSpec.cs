@@ -15,8 +15,10 @@ public class DnsEndPointSpec
         var result = dumper.Dump(dnsEndPoint);
 
         Assert.Equal(
-            @"var dnsEndPoint = new DnsEndPoint(""google.com"", 12345);
-", result);
+            """
+            var dnsEndPoint = new DnsEndPoint("google.com", 12345);
+
+            """, result);
     }
 
 
@@ -30,7 +32,9 @@ public class DnsEndPointSpec
         var result = dumper.Dump(dnsEndPoint);
 
         Assert.Equal(
-            @"Dim dnsEndPointValue = New DnsEndPoint(""google.com"", 12345)
-", result);
+            """
+            Dim dnsEndPointValue = New DnsEndPoint("google.com", 12345)
+
+            """, result);
     }
 }

@@ -68,8 +68,10 @@ public class KnownTypesSpec
         var result = dumper.Dump(personServiceDescriptor);
 
         Assert.Equal(
-            @"Dim serviceDescriptorValue = ServiceDescriptor.Transient(Of IPerson, Person)()
-", result);
+            """
+            Dim serviceDescriptorValue = ServiceDescriptor.Transient(Of IPerson, Person)()
+
+            """, result);
     }
 
     [Fact]

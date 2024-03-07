@@ -8,7 +8,7 @@ using VarDump.Visitor;
 
 namespace VarDump;
 
-public class VisualBasicDumper : IDumper
+public sealed class VisualBasicDumper : IDumper
 {
     private readonly DumpOptions _options;
 

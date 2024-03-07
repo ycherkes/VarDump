@@ -85,8 +85,10 @@ public class DateTimeSpec
         var result = dumper.Dump(dto);
 
         Assert.Equal(
-            @"var dateTimeOffset = DateTimeOffset.ParseExact(""2022-06-24T11:59:21.7961218+03:00"", ""O"", CultureInfo.InvariantCulture, DateTimeStyles.RoundtripKind);
-", result);
+            """
+            var dateTimeOffset = DateTimeOffset.ParseExact("2022-06-24T11:59:21.7961218+03:00", "O", CultureInfo.InvariantCulture, DateTimeStyles.RoundtripKind);
+
+            """, result);
     }
 
     [Fact]
@@ -106,11 +108,13 @@ public class DateTimeSpec
         var result = dumper.Dump(anonymous);
 
         Assert.Equal(
-            @"var anonymousType = new 
-{
-    DateOnly = DateOnly.ParseExact(""2022-12-10"", ""O"")
-};
-", result);
+            """
+            var anonymousType = new 
+            {
+                DateOnly = DateOnly.ParseExact("2022-12-10", "O")
+            };
+
+            """, result);
     }
 
     [Fact]
@@ -129,11 +133,13 @@ public class DateTimeSpec
         var result = dumper.Dump(anonymous);
 
         Assert.Equal(
-            @"var anonymousType = new 
-{
-    TimeOnly = TimeOnly.ParseExact(""22:55:33.1220000"", ""O"")
-};
-", result);
+            """
+            var anonymousType = new 
+            {
+                TimeOnly = TimeOnly.ParseExact("22:55:33.1220000", "O")
+            };
+
+            """, result);
     }
 
     [Fact]
@@ -152,10 +158,12 @@ public class DateTimeSpec
         var result = dumper.Dump(anonymous);
 
         Assert.Equal(
-            @"Dim anonymousType = New With {
-    .DateOnly = DateOnly.ParseExact(""2022-12-10"", ""O"")
-}
-", result);
+            """
+            Dim anonymousType = New With {
+                .DateOnly = DateOnly.ParseExact("2022-12-10", "O")
+            }
+
+            """, result);
     }
 
     [Fact]
@@ -174,9 +182,11 @@ public class DateTimeSpec
         var result = dumper.Dump(anonymous);
 
         Assert.Equal(
-            @"Dim anonymousType = New With {
-    .TimeOnly = TimeOnly.ParseExact(""22:55:33.1220000"", ""O"")
-}
-", result);
+            """
+            Dim anonymousType = New With {
+                .TimeOnly = TimeOnly.ParseExact("22:55:33.1220000", "O")
+            }
+
+            """, result);
     }
 }

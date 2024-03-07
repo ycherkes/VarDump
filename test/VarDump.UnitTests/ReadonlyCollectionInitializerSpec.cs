@@ -23,14 +23,16 @@ public class ReadonlyCollectionInitializerSpec
         var result = dumper.Dump(owner);
 
         Assert.Equal(
-            @"var arrayOfArrayOfInt = new int[][]
-{
-    new int[]
-    {
-        1
-    }
-};
-", result);
+            """
+            var arrayOfArrayOfInt = new int[][]
+            {
+                new int[]
+                {
+                    1
+                }
+            };
+
+            """, result);
     }
 
     [Fact(Skip = "Not implemented yet")]
@@ -51,13 +53,15 @@ public class ReadonlyCollectionInitializerSpec
         var result = dumper.Dump(owner);
 
         Assert.Equal(
-            @"var arrayOfArrayOfInt = new int[][]
-{
-    new int[]
-    {
-        1
-    }
-};
-", result);
+            """
+            var arrayOfArrayOfInt = new int[][]
+            {
+                new int[]
+                {
+                    1
+                }
+            };
+
+            """, result);
     }
 }

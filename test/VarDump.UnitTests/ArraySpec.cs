@@ -15,14 +15,16 @@ public class ArraySpec
         var result = dumper.Dump(array);
 
         Assert.Equal(
-            @"var arrayOfArrayOfInt = new int[][]
-{
-    new int[]
-    {
-        1
-    }
-};
-", result);
+            """
+            var arrayOfArrayOfInt = new int[][]
+            {
+                new int[]
+                {
+                    1
+                }
+            };
+
+            """, result);
     }
 
     [Fact]
@@ -35,14 +37,16 @@ public class ArraySpec
         var result = dumper.Dump(array);
 
         Assert.Equal(
-            @"var immutableArrayOfArrayOfInt = new int[][]
-{
-    new int[]
-    {
-        1
-    }
-}.ToImmutableArray();
-", result);
+            """
+            var immutableArrayOfArrayOfInt = new int[][]
+            {
+                new int[]
+                {
+                    1
+                }
+            }.ToImmutableArray();
+
+            """, result);
     }
 
     [Fact]
@@ -54,20 +58,22 @@ public class ArraySpec
         var result = dumper.Dump(array);
 
         Assert.Equal(
-            @"var arrayOfInt = new int[,]
-{
-    {
-        2,
-        3,
-        4
-    },
-    {
-        5,
-        6,
-        7
-    }
-};
-", result);
+            """
+            var arrayOfInt = new int[,]
+            {
+                {
+                    2,
+                    3,
+                    4
+                },
+                {
+                    5,
+                    6,
+                    7
+                }
+            };
+
+            """, result);
     }
 
     [Fact]
@@ -79,22 +85,24 @@ public class ArraySpec
         var result = dumper.Dump(array);
 
         Assert.Equal(
-            @"var arrayOfAnonymousType = new [,]
-{
-    {
-        new 
-        {
-            Name = ""Test1""
-        }
-    },
-    {
-        new 
-        {
-            Name = ""Test2""
-        }
-    }
-};
-", result);
+            """
+            var arrayOfAnonymousType = new [,]
+            {
+                {
+                    new 
+                    {
+                        Name = "Test1"
+                    }
+                },
+                {
+                    new 
+                    {
+                        Name = "Test2"
+                    }
+                }
+            };
+
+            """, result);
     }
 
     [Fact]
@@ -107,17 +115,19 @@ public class ArraySpec
         var result = dumper.Dump(array);
 
         Assert.Equal(
-            @"var arrayOfArrayOfAnonymousType = new []
-{
-    new []
-    {
-        new 
-        {
-            Name = ""Clark""
-        }
-    }
-};
-", result);
+            """
+            var arrayOfArrayOfAnonymousType = new []
+            {
+                new []
+                {
+                    new 
+                    {
+                        Name = "Clark"
+                    }
+                }
+            };
+
+            """, result);
     }
 
     [Fact]
@@ -130,12 +140,14 @@ public class ArraySpec
         var result = dumper.Dump(array);
 
         Assert.Equal(
-            @"Dim arrayOfArrayOfInteger = New Integer()(){
-    New Integer(){
-        1
-    }
-}
-", result);
+            """
+            Dim arrayOfArrayOfInteger = New Integer()(){
+                New Integer(){
+                    1
+                }
+            }
+
+            """, result);
     }
 
     [Fact]
@@ -147,19 +159,21 @@ public class ArraySpec
         var result = dumper.Dump(array);
 
         Assert.Equal(
-            @"Dim arrayOfInteger = New Integer(,){
-    {
-        2,
-        3,
-        4
-    },
-    {
-        5,
-        6,
-        7
-    }
-}
-", result);
+            """
+            Dim arrayOfInteger = New Integer(,){
+                {
+                    2,
+                    3,
+                    4
+                },
+                {
+                    5,
+                    6,
+                    7
+                }
+            }
+
+            """, result);
     }
 
     [Fact]
@@ -171,19 +185,21 @@ public class ArraySpec
         var result = dumper.Dump(array);
 
         Assert.Equal(
-            @"Dim arrayOfAnonymousType = {
-    {
-        New With {
-            .Name = ""Test1""
-        }
-    },
-    {
-        New With {
-            .Name = ""Test2""
-        }
-    }
-}
-", result);
+            """
+            Dim arrayOfAnonymousType = {
+                {
+                    New With {
+                        .Name = "Test1"
+                    }
+                },
+                {
+                    New With {
+                        .Name = "Test2"
+                    }
+                }
+            }
+
+            """, result);
     }
 
     [Fact]
@@ -196,13 +212,15 @@ public class ArraySpec
         var result = dumper.Dump(array);
 
         Assert.Equal(
-            @"Dim arrayOfArrayOfAnonymousType = {
-    {
-        New With {
-            .Name = ""Clark""
-        }
-    }
-}
-", result);
+            """
+            Dim arrayOfArrayOfAnonymousType = {
+                {
+                    New With {
+                        .Name = "Clark"
+                    }
+                }
+            }
+
+            """, result);
     }
 }

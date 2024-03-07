@@ -17,20 +17,22 @@ public class DiagnosticsSpec
     public void DumpDiagnosticsCsharp()
     {
         var code =
-            @"namespace Debuggable
-        {
-            public class HelloWorld
-            {
-                public string Greet(string name)
-                {
-                    var result = ""Hello, "" + name;
-                    var anonymous = new { Name = ""Boris"" };
-                    Console.WriteLine(result);
-                    return result;
-                }
-            }
-        }
-        ";
+            """
+            namespace Debuggable
+                    {
+                        public class HelloWorld
+                        {
+                            public string Greet(string name)
+                            {
+                                var result = "Hello, " + name;
+                                var anonymous = new { Name = "Boris" };
+                                Console.WriteLine(result);
+                                return result;
+                            }
+                        }
+                    }
+                    
+            """;
         var failures = CreateAssembly(code, DefaultReferences);
 
         var dumper = new CSharpDumper(new DumpOptions
@@ -45,20 +47,22 @@ public class DiagnosticsSpec
     public void DumpDiagnosticsVb()
     {
         var code =
-            @"namespace Debuggable
-        {
-            public class HelloWorld
-            {
-                public string Greet(string name)
-                {
-                    var result = ""Hello, "" + name;
-                    var anonymous = new { Name = ""Boris"" };
-                    Console.WriteLine(result);
-                    return result;
-                }
-            }
-        }
-        ";
+            """
+            namespace Debuggable
+                    {
+                        public class HelloWorld
+                        {
+                            public string Greet(string name)
+                            {
+                                var result = "Hello, " + name;
+                                var anonymous = new { Name = "Boris" };
+                                Console.WriteLine(result);
+                                return result;
+                            }
+                        }
+                    }
+                    
+            """;
         var failures = CreateAssembly(code, DefaultReferences);
 
         var dumper = new VisualBasicDumper(new DumpOptions

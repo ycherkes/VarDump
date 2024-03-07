@@ -110,15 +110,17 @@ public class ObjectDescriptorMiddlewareSpec
         var result = dumper.Dump(str);
 
         Assert.Equal(
-            @"var concreteFormattableString = new ConcreteFormattableString
-{
-    Format = ""Hello, {0}"",
-    Arguments = new object[]
-    {
-        ""World""
-    }
-};
-", result);
+            """
+            var concreteFormattableString = new ConcreteFormattableString
+            {
+                Format = "Hello, {0}",
+                Arguments = new object[]
+                {
+                    "World"
+                }
+            };
+
+            """, result);
     }
 
     [Fact]

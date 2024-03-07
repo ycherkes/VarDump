@@ -19,11 +19,13 @@ public class KeyValuePairArraySpec
         var result = dumper.Dump(kvpArray);
 
         Assert.Equal(
-            @"Dim arrayOfKeyValuePair = New KeyValuePair(Of Integer, String)(){
-    New KeyValuePair(Of Integer, String)(1, ""First""),
-    New KeyValuePair(Of Integer, String)(2, ""Second"")
-}
-", result);
+            """
+            Dim arrayOfKeyValuePair = New KeyValuePair(Of Integer, String)(){
+                New KeyValuePair(Of Integer, String)(1, "First"),
+                New KeyValuePair(Of Integer, String)(2, "Second")
+            }
+
+            """, result);
     }
 
     [Fact]
@@ -40,11 +42,13 @@ public class KeyValuePairArraySpec
         var result = dumper.Dump(kvpArray);
 
         Assert.Equal(
-            @"var arrayOfKeyValuePair = new KeyValuePair<int, string>[]
-{
-    new KeyValuePair<int, string>(1, ""First""),
-    new KeyValuePair<int, string>(2, ""Second"")
-};
-", result);
+            """
+            var arrayOfKeyValuePair = new KeyValuePair<int, string>[]
+            {
+                new KeyValuePair<int, string>(1, "First"),
+                new KeyValuePair<int, string>(2, "Second")
+            };
+
+            """, result);
     }
 }

@@ -37,7 +37,7 @@ public class DumpOptions
             ConfigureKnownTypes = ConfigureKnownTypes,
             DateKind = DateKind,
             DateTimeInstantiation = DateTimeInstantiation,
-            Descriptors = Descriptors.ToArray(),
+            Descriptors = Descriptors?.ToArray() ?? [],
             ExcludeTypes = ExcludeTypes?.ToArray() ?? [],
             GenerateVariableInitializer = GenerateVariableInitializer,
             GetFieldsBindingFlags = GetFieldsBindingFlags,

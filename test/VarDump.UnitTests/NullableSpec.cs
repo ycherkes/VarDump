@@ -14,8 +14,10 @@ public class NullableSpec
         var result = dumper.Dump(value);
 
         Assert.Equal(
-            @"var myEnum = MyEnum.TestValue;
-", result);
+            """
+            var myEnum = MyEnum.TestValue;
+
+            """, result);
     }
 
     [Fact]
@@ -28,8 +30,10 @@ public class NullableSpec
         var result = dumper.Dump(value);
 
         Assert.Equal(
-            @"Dim myEnumValue = MyEnum.TestValue
-", result);
+            """
+            Dim myEnumValue = MyEnum.TestValue
+
+            """, result);
     }
 
     enum MyEnum

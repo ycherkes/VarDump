@@ -15,8 +15,10 @@ public class IpEndPointSpec
         var result = dumper.Dump(ipEndPoint);
 
         Assert.Equal(
-            @"var iPEndPoint = new IPEndPoint(IPAddress.Parse(""142.250.74.110""), 12345);
-", result);
+            """
+            var iPEndPoint = new IPEndPoint(IPAddress.Parse("142.250.74.110"), 12345);
+
+            """, result);
     }
 
 
@@ -30,7 +32,9 @@ public class IpEndPointSpec
         var result = dumper.Dump(ipEndPoint);
 
         Assert.Equal(
-            @"Dim iPEndPointValue = New IPEndPoint(IPAddress.Parse(""142.250.74.110""), 12345)
-", result);
+            """
+            Dim iPEndPointValue = New IPEndPoint(IPAddress.Parse("142.250.74.110"), 12345)
+
+            """, result);
     }
 }

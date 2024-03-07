@@ -21,22 +21,24 @@ public class AnonymousTypeSpec
         var result = dumper.Dump(anonymous);
 
         Assert.Equal(
-            @"var arrayOfAnonymousType = new []
-{
-    new 
-    {
-        Name = ""Steeve"",
-        Age = (int?)int.MaxValue,
-        Reference = ""Test reference""
-    },
-    new 
-    {
-        Name = ""Peter"",
-        Age = (int?)null,
-        Reference = (string)null
-    }
-};
-", result);
+            """
+            var arrayOfAnonymousType = new []
+            {
+                new 
+                {
+                    Name = "Steeve",
+                    Age = (int?)int.MaxValue,
+                    Reference = "Test reference"
+                },
+                new 
+                {
+                    Name = "Peter",
+                    Age = (int?)null,
+                    Reference = (string)null
+                }
+            };
+
+            """, result);
     }
 
     [Fact]
@@ -53,19 +55,21 @@ public class AnonymousTypeSpec
         var result = dumper.Dump(anonymous);
 
         Assert.Equal(
-            @"Dim arrayOfAnonymousType = {
-    New With {
-        .Name = ""Steeve"",
-        .Age = CType(Integer.MaxValue, Integer?),
-        .Reference = ""Test reference""
-    },
-    New With {
-        .Name = ""Peter"",
-        .Age = CType(Nothing, Integer?),
-        .Reference = CType(Nothing, String)
-    }
-}
-", result);
+            """
+            Dim arrayOfAnonymousType = {
+                New With {
+                    .Name = "Steeve",
+                    .Age = CType(Integer.MaxValue, Integer?),
+                    .Reference = "Test reference"
+                },
+                New With {
+                    .Name = "Peter",
+                    .Age = CType(Nothing, Integer?),
+                    .Reference = CType(Nothing, String)
+                }
+            }
+
+            """, result);
     }
 
     [Fact]

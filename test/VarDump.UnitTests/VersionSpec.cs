@@ -15,8 +15,10 @@ public class VersionSpec
         var result = dumper.Dump(version);
 
         Assert.Equal(
-            @"var version = new Version(""1.2.3.4"");
-", result);
+            """
+            var version = new Version("1.2.3.4");
+
+            """, result);
     }
 
 
@@ -30,7 +32,9 @@ public class VersionSpec
         var result = dumper.Dump(version);
 
         Assert.Equal(
-            @"Dim versionValue = New Version(""1.2.3.4"")
-", result);
+            """
+            Dim versionValue = New Version("1.2.3.4")
+
+            """, result);
     }
 }

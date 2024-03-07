@@ -15,20 +15,22 @@ public class EnumerableRangeSpec
         var result = dumper.Dump(range);
 
         Assert.Equal(
-            @"var selectIteratorOfAnonymousType = new []
-{
-    new 
-    {
-        i = 0,
-        x = 5
-    },
-    new 
-    {
-        i = 1,
-        x = 6
-    }
-};
-", result);
+            """
+            var selectIteratorOfAnonymousType = new []
+            {
+                new 
+                {
+                    i = 0,
+                    x = 5
+                },
+                new 
+                {
+                    i = 1,
+                    x = 6
+                }
+            };
+
+            """, result);
     }
 
     [Fact]
@@ -41,16 +43,18 @@ public class EnumerableRangeSpec
         var result = dumper.Dump(range);
 
         Assert.Equal(
-            @"Dim selectIteratorOfAnonymousType = {
-    New With {
-        .i = 5,
-        .x = 0
-    },
-    New With {
-        .i = 6,
-        .x = 1
-    }
-}
-", result);
+            """
+            Dim selectIteratorOfAnonymousType = {
+                New With {
+                    .i = 5,
+                    .x = 0
+                },
+                New With {
+                    .i = 6,
+                    .x = 1
+                }
+            }
+
+            """, result);
     }
 }

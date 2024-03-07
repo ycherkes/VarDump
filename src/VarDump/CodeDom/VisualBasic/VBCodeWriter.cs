@@ -156,7 +156,7 @@ internal sealed class VBCodeWriter : ICodeWriter
                 fInDoubleQuotes = true;
 
                 b.Append("& _ ");
-                b.Append(Environment.NewLine);
+                b.Append(_output.NewLine);
                 b.Append(indentObj.IndentationString);
                 b.Append('\"');
             }

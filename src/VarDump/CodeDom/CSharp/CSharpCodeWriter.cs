@@ -94,7 +94,7 @@ internal sealed class CSharpCodeWriter : ICodeWriter
                 }
 
                 b.Append("\" +");
-                b.Append(Environment.NewLine);
+                b.Append(_output.NewLine);
                 b.Append(indentObj.IndentationString);
                 b.Append('\"');
             }

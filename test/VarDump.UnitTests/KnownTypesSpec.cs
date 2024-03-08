@@ -166,8 +166,8 @@ public class KnownTypesSpec
             codeWriter.WriteMethodInvoke(() => 
                 codeWriter.WriteMethodReference(
                     () => codeWriter.WriteType(typeof(ServiceDescriptor)),
-                    serviceDescriptor.Lifetime.ToString(), typeParameters.ToArray()
-                    ), parameters);
+                    serviceDescriptor.Lifetime.ToString(), typeParameters.ToArray()),
+                parameters);
         }
     }
 

@@ -12,7 +12,7 @@ internal sealed class TypeVisitor(ICodeWriter codeWriter) : IKnownObjectVisitor
         return obj is Type;
     }
 
-    public void Visit(object obj, Type objectType)
+    public void Visit(object obj, Type objectType, VisitContext context)
     {
        codeWriter.WriteTypeOf((Type)obj);
     }

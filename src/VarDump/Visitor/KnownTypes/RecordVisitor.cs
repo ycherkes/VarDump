@@ -7,7 +7,7 @@ using VarDump.Utils;
 namespace VarDump.Visitor.KnownTypes;
 
 internal sealed class RecordVisitor(
-    IObjectVisitor rootObjectVisitor,
+    IRootObjectVisitor rootObjectVisitor,
     ICodeWriter codeWriter,
     bool useNamedArgumentsForReferenceRecordTypes)
     : IKnownObjectVisitor
@@ -18,12 +18,12 @@ internal sealed class RecordVisitor(
         return objectType.IsRecord();
     }
 
-    public void Visit(object obj, Type objectType)
+    public void Visit(object obj, Type objectType, VisitContext context)
     {
         var properties = objectType.GetProperties(BindingFlags.Public | BindingFlags.Instance | BindingFlags.NonPublic).Where(p => p.CanWrite);
         var argumentValues = useNamedArgumentsForReferenceRecordTypes
-            ? properties.Select(p => (Action)(() => codeWriter.WriteNamedArgument(p.Name, () => rootObjectVisitor.Visit(ReflectionUtils.GetValue(p, obj)))))
-            : properties.Select(p => ReflectionUtils.GetValue(p, obj)).Select(value => (Action)(() => rootObjectVisitor.Visit(value)));
+            ? properties.Select(p => (Action)(() => codeWriter.WriteNamedArgument(p.Name, () => rootObjectVisitor.Visit(ReflectionUtils.GetValue(p, obj), context))))
+            : properties.Select(p => ReflectionUtils.GetValue(p, obj)).Select(value => (Action)(() => rootObjectVisitor.Visit(value, context)));
 
         codeWriter.WriteArrayCreate(objectType, argumentValues);
     }

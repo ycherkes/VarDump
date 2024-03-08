@@ -12,7 +12,7 @@ internal sealed class VersionVisitor(ICodeWriter codeWriter) : IKnownObjectVisit
         return obj is Version;
     }
 
-    public void Visit(object obj, Type objectType)
+    public void Visit(object obj, Type objectType, VisitContext context)
     {
         codeWriter.WriteObjectCreate(typeof(Version), [() => codeWriter.WritePrimitive(obj.ToString())]);
     }

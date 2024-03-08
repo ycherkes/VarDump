@@ -12,11 +12,11 @@ namespace VarDump.Visitor.KnownTypes;
 
 internal sealed class CollectionVisitor : IKnownObjectVisitor
 {
-    private readonly IObjectVisitor _rootObjectVisitor;
+    private readonly IRootObjectVisitor _rootObjectVisitor;
     private readonly ICodeWriter _codeWriter;
     private readonly int _maxCollectionSize;
 
-    public CollectionVisitor(IObjectVisitor rootObjectVisitor, ICodeWriter codeWriter, int maxCollectionSize)
+    public CollectionVisitor(IRootObjectVisitor rootObjectVisitor, ICodeWriter codeWriter, int maxCollectionSize)
     {
         if (maxCollectionSize <= 0)
         {
@@ -35,16 +35,16 @@ internal sealed class CollectionVisitor : IKnownObjectVisitor
         return obj is IEnumerable;
     }
 
-    public void Visit(object obj, Type collectionType)
+    public void Visit(object obj, Type collectionType, VisitContext context)
     {
         IEnumerable collection = (IEnumerable)obj;
-        if (_rootObjectVisitor.IsVisited(collection))
+        if (context.IsVisited(collection))
         {
             _codeWriter.WriteCircularReferenceDetected();
             return;
         }
 
-        _rootObjectVisitor.PushVisited(collection);
+        context.PushVisited(collection);
 
         try
         {
@@ -52,29 +52,29 @@ internal sealed class CollectionVisitor : IKnownObjectVisitor
 
             if (elementType.IsGrouping())
             {
-                VisitGroupingCollection(collection);
+                VisitGroupingCollection(collection, context);
                 return;
             }
 
             if (collectionType.ContainsAnonymousType())
             {
-                VisitAnonymousCollection(collection);
+                VisitAnonymousCollection(collection, context);
                 return;
             }
 
-            VisitSimpleCollection(collection, elementType);
+            VisitSimpleCollection(collection, elementType, context);
         }
         finally
         {
-            _rootObjectVisitor.PopVisited();
+            context.PopVisited();
         }
     }
 
-    private void VisitGroupingCollection(IEnumerable collection)
+    private void VisitGroupingCollection(IEnumerable collection, VisitContext context)
     {
         var type = collection.GetType();
 
-        var items = VisitGroupings(collection.Cast<object>());
+        var items = VisitGroupings(collection.Cast<object>(), context);
 
         if (_maxCollectionSize < int.MaxValue)
         {
@@ -124,9 +124,9 @@ internal sealed class CollectionVisitor : IKnownObjectVisitor
         void WriteValueLambdaExpression() => _codeWriter.WriteLambdaExpression(WriteValueLambdaPropertyExpression, [WriteVariableReference]);
     }
 
-    private void VisitSimpleCollection(IEnumerable enumerable, Type elementType)
+    private void VisitSimpleCollection(IEnumerable enumerable, Type elementType, VisitContext context)
     {
-        var items = enumerable.Cast<object>().Select(item => (Action)(() => _rootObjectVisitor.Visit(item)));
+        var items = enumerable.Cast<object>().Select(item => (Action)(() => _rootObjectVisitor.Visit(item, context)));
 
         if (_maxCollectionSize < int.MaxValue)
         {
@@ -197,9 +197,9 @@ internal sealed class CollectionVisitor : IKnownObjectVisitor
         return result;
     }
 
-    private void VisitAnonymousCollection(IEnumerable enumerable)
+    private void VisitAnonymousCollection(IEnumerable enumerable, VisitContext context)
     {
-        var items = enumerable.Cast<object>().Select(item => (Action)(() => _rootObjectVisitor.Visit(item)));
+        var items = enumerable.Cast<object>().Select(item => (Action)(() => _rootObjectVisitor.Visit(item, context)));
 
         if (_maxCollectionSize < int.MaxValue)
         {
@@ -247,11 +247,11 @@ internal sealed class CollectionVisitor : IKnownObjectVisitor
         return new KeyValuePair<object, IEnumerable>(fieldValues[0], (IEnumerable)fieldValues[1]);
     }
 
-    private IEnumerable<Action> VisitGroupings(IEnumerable<object> objects)
+    private IEnumerable<Action> VisitGroupings(IEnumerable<object> objects, VisitContext context)
     {
         var items = objects.Select(GetIGroupingValue)
             .SelectMany(g => g.Value.Cast<object>().Select(e => new { g.Key, Element = e }));
 
-        return items.Select(item =>(Action)(() => _rootObjectVisitor.Visit(item)));
+        return items.Select(item =>(Action)(() => _rootObjectVisitor.Visit(item, context)));
     }
 }

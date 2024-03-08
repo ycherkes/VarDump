@@ -8,5 +8,5 @@ public interface IKnownObjectVisitor
 
     bool IsSuitableFor(object obj, Type objectType);
 
-    void Visit(object obj, Type objectType);
+    void Visit(object obj, Type objectType, VisitContext context);
 }

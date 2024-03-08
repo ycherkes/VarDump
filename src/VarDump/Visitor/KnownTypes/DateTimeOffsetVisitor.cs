@@ -5,7 +5,7 @@ using VarDump.CodeDom.Compiler;
 namespace VarDump.Visitor.KnownTypes;
 
 internal sealed class DateTimeOffsetVisitor(
-    IObjectVisitor rootObjectVisitor,
+    IRootObjectVisitor rootObjectVisitor,
     ICodeWriter codeWriter,
     DateTimeInstantiation dateTimeInstantiation)
     : IKnownObjectVisitor
@@ -16,7 +16,7 @@ internal sealed class DateTimeOffsetVisitor(
         return obj is DateTimeOffset;
     }
 
-    public void Visit(object obj, Type objectType)
+    public void Visit(object obj, Type objectType, VisitContext context)
     {
         var dateTimeOffset = (DateTimeOffset)obj;
 
@@ -78,6 +78,6 @@ internal sealed class DateTimeOffsetVisitor(
         void WriteMinute() => codeWriter.WritePrimitive(dateTimeOffset.Minute);
         void WriteSecond() => codeWriter.WritePrimitive(dateTimeOffset.Second);
         void WriteMillisecond() => codeWriter.WritePrimitive(dateTimeOffset.Millisecond);
-        void WriteOffset() => rootObjectVisitor.Visit(dateTimeOffset.Offset);
+        void WriteOffset() => rootObjectVisitor.Visit(dateTimeOffset.Offset, context);
     }
 }

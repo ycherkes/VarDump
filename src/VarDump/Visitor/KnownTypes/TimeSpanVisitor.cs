@@ -15,7 +15,7 @@ internal sealed class TimeSpanVisitor(ICodeWriter codeWriter, DateTimeInstantiat
         return obj is TimeSpan;
     }
 
-    public void Visit(object obj, Type objectType)
+    public void Visit(object obj, Type objectType, VisitContext context)
     {
         var timeSpan = (TimeSpan)obj;
 

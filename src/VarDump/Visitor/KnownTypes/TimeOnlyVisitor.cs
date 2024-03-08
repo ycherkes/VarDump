@@ -14,7 +14,7 @@ internal sealed class TimeOnlyVisitor(ICodeWriter codeWriter, DateTimeInstantiat
         return objectType.IsTimeOnly();
     }
 
-    public void Visit(object timeOnly, Type objectType)
+    public void Visit(object timeOnly, Type objectType, VisitContext context)
     {
         var ticks = (long?)objectType.GetProperty("Ticks")?.GetValue(timeOnly);
 

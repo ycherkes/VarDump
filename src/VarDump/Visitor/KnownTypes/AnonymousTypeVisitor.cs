@@ -8,7 +8,7 @@ using VarDump.Visitor.Descriptors;
 namespace VarDump.Visitor.KnownTypes;
 
 internal sealed class AnonymousTypeVisitor(
-    IObjectVisitor rootObjectVisitor,
+    IRootObjectVisitor rootObjectVisitor,
     IObjectDescriptor anonymousObjectDescriptor,
     ICodeWriter codeWriter)
     : IKnownObjectVisitor
@@ -19,7 +19,7 @@ internal sealed class AnonymousTypeVisitor(
         return objectType.IsAnonymousType();
     }
 
-    public void Visit(object obj, Type objectType)
+    public void Visit(object obj, Type objectType, VisitContext context)
     {
         var initializeActions = anonymousObjectDescriptor.GetObjectDescription(obj, objectType)
             .Members
@@ -30,11 +30,11 @@ internal sealed class AnonymousTypeVisitor(
                     if (pv.Type.IsNullableType() || pv.Value == null)
                     {
                         codeWriter.WriteCast(pv.Type, 
-                            () => rootObjectVisitor.Visit(pv.Value));
+                            () => rootObjectVisitor.Visit(pv.Value, context));
                     }
                     else
                     {
-                        rootObjectVisitor.Visit(pv.Value);
+                        rootObjectVisitor.Visit(pv.Value, context);
                     }
                 })));
 

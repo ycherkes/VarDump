@@ -5,7 +5,7 @@ using VarDump.Utils;
 
 namespace VarDump.Visitor.KnownTypes;
 
-internal sealed class ValueTupleVisitor(IObjectVisitor rootObjectVisitor, ICodeWriter codeWriter) : IKnownObjectVisitor
+internal sealed class ValueTupleVisitor(IRootObjectVisitor rootObjectVisitor, ICodeWriter codeWriter) : IKnownObjectVisitor
 {
     public string Id => "ValueTuple";
     public bool IsSuitableFor(object obj, Type objectType)
@@ -13,9 +13,9 @@ internal sealed class ValueTupleVisitor(IObjectVisitor rootObjectVisitor, ICodeW
         return objectType.IsValueTuple();
     }
 
-    public void Visit(object obj, Type objectType)
+    public void Visit(object obj, Type objectType, VisitContext context)
     {
-        var propertyValues = objectType.GetFields().Select(p => ReflectionUtils.GetValue(p, obj)).Select(v => (Action)(() => rootObjectVisitor.Visit(v)));
+        var propertyValues = objectType.GetFields().Select(p => ReflectionUtils.GetValue(p, obj)).Select(v => (Action)(() => rootObjectVisitor.Visit(v, context)));
 
         codeWriter.WriteValueTupleCreate(propertyValues);
     }

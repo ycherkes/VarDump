@@ -16,7 +16,7 @@ internal sealed class DateTimeVisitor(
         return obj is DateTime;
     }
 
-    public void Visit(object obj, Type objectType)
+    public void Visit(object obj, Type objectType, VisitContext context)
     {
         var dateTime = (DateTime)obj;
 

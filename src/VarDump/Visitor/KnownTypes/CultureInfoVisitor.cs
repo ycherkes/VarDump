@@ -12,7 +12,7 @@ internal sealed class CultureInfoVisitor(ICodeWriter codeWriter) : IKnownObjectV
         return obj is CultureInfo;
     }
 
-    public void Visit(object obj, Type objectType)
+    public void Visit(object obj, Type objectType, VisitContext context)
     {
         codeWriter.WriteObjectCreate(typeof(CultureInfo), [() => codeWriter.WritePrimitive(obj.ToString())]);
     }

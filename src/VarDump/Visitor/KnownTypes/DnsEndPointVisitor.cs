@@ -6,7 +6,7 @@ using VarDump.CodeDom.Compiler;
 
 namespace VarDump.Visitor.KnownTypes;
 
-internal sealed class DnsEndPointVisitor(IObjectVisitor rootObjectVisitor, ICodeWriter codeWriter) : IKnownObjectVisitor
+internal sealed class DnsEndPointVisitor(IRootObjectVisitor rootObjectVisitor, ICodeWriter codeWriter) : IKnownObjectVisitor
 {
     public string Id => nameof(DnsEndPoint);
     public bool IsSuitableFor(object obj, Type objectType)
@@ -14,7 +14,7 @@ internal sealed class DnsEndPointVisitor(IObjectVisitor rootObjectVisitor, ICode
         return obj is DnsEndPoint;
     }
 
-    public void Visit(object obj, Type objectType)
+    public void Visit(object obj, Type objectType, VisitContext context)
     {
         var dnsEndPoint = (DnsEndPoint)obj;
 
@@ -26,7 +26,7 @@ internal sealed class DnsEndPointVisitor(IObjectVisitor rootObjectVisitor, ICode
             yield return () => codeWriter.WritePrimitive(dnsEndPoint.Port);
             if (dnsEndPoint.AddressFamily != AddressFamily.Unspecified)
             {
-                yield return () => rootObjectVisitor.Visit(dnsEndPoint.AddressFamily);
+                yield return () => rootObjectVisitor.Visit(dnsEndPoint.AddressFamily, context);
             }
         }
     }

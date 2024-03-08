@@ -14,7 +14,7 @@ internal sealed class DateOnlyVisitor(ICodeWriter codeWriter, DateTimeInstantiat
         return objectType.IsDateOnly();
     }
 
-    public void Visit(object dateOnly, Type objectType)
+    public void Visit(object dateOnly, Type objectType, VisitContext context)
     {
         var dayNumber = (int?)objectType.GetProperty("DayNumber")?.GetValue(dateOnly);
 

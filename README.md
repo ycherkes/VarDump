@@ -208,31 +208,31 @@ Console.WriteLine(result);
 
 return;
 
-class FormattableStringVisitor(IObjectVisitor rootObjectVisitor, ICodeWriter codeWriter) : IKnownObjectVisitor
+class FormattableStringVisitor(IRootObjectVisitor rootObjectVisitor, ICodeWriter codeWriter) : IKnownObjectVisitor
 {
-    public string Id => "ServiceDescriptor";
-    public bool IsSuitableFor(object obj, Type objectType)
-    {
-        return obj is FormattableString;
-    }
+	public string Id => "ServiceDescriptor";
+	public bool IsSuitableFor(object obj, Type objectType)
+	{
+		return obj is FormattableString;
+	}
 
-    public void Visit(object obj, Type objectType)
-    {
-        var formattableString = (FormattableString)obj;
+	public void Visit(object obj, Type objectType, VisitContext context)
+	{
+		var formattableString = (FormattableString)obj;
 
-        IEnumerable<Action> argumentActions =
-        [
-            () => codeWriter.WritePrimitive(formattableString.Format)
-        ];
+		IEnumerable<Action> argumentActions =
+		[
+			() => codeWriter.WritePrimitive(formattableString.Format)
+		];
 
-        argumentActions = argumentActions.Concat(formattableString.GetArguments().Select(a => (Action)(() => rootObjectVisitor.Visit(a))));
+		argumentActions = argumentActions.Concat(formattableString.GetArguments().Select(a => (Action)(() => rootObjectVisitor.Visit(a, context))));
 
-        codeWriter.WriteMethodInvoke(() =>
-            codeWriter.WriteMethodReference(
-                () => codeWriter.WriteType(typeof(FormattableStringFactory)),
-                nameof(FormattableStringFactory.Create)),
-            argumentActions);
-    }
+		codeWriter.WriteMethodInvoke(() =>
+			codeWriter.WriteMethodReference(
+				() => codeWriter.WriteType(typeof(FormattableStringFactory)),
+				nameof(FormattableStringFactory.Create)),
+			argumentActions);
+	}
 }
 ```
 

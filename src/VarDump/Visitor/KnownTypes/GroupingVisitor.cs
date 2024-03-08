@@ -8,7 +8,7 @@ using VarDump.Utils;
 
 namespace VarDump.Visitor.KnownTypes;
 
-internal sealed class GroupingVisitor(IObjectVisitor rootObjectVisitor, ICodeWriter codeWriter) : IKnownObjectVisitor
+internal sealed class GroupingVisitor(IRootObjectVisitor rootObjectVisitor, ICodeWriter codeWriter) : IKnownObjectVisitor
 {
     public string Id => "Grouping";
     public bool IsSuitableFor(object obj, Type objectType)
@@ -16,12 +16,12 @@ internal sealed class GroupingVisitor(IObjectVisitor rootObjectVisitor, ICodeWri
         return objectType.IsGrouping();
     }
 
-    public void Visit(object o, Type objectType)
+    public void Visit(object o, Type objectType, VisitContext context)
     {
         codeWriter.WriteMethodInvoke(() => 
                 codeWriter.WriteMethodReference(() => 
                     codeWriter.WriteMethodInvoke(() => 
-                            codeWriter.WriteMethodReference(() => VisitGroupings(o), 
+                            codeWriter.WriteMethodReference(() => VisitGroupings(o, context), 
                             "GroupBy"),
                 [
                     WriteKeyLambda,
@@ -48,10 +48,10 @@ internal sealed class GroupingVisitor(IObjectVisitor rootObjectVisitor, ICodeWri
         return new KeyValuePair<object, IEnumerable>(fieldValues[0], (IEnumerable)fieldValues[1]);
     }
 
-    private void VisitGroupings(object @object)
+    private void VisitGroupings(object o, VisitContext context)
     {
-        var grouping = GetIGroupingValue(@object);
+        var grouping = GetIGroupingValue(o);
         var groupingValues = grouping.Value.Cast<object>().Select(e => new { grouping.Key, Element = e });
-        rootObjectVisitor.Visit(groupingValues);
+        rootObjectVisitor.Visit(groupingValues, context);
     }
 }

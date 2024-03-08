@@ -11,7 +11,7 @@ internal sealed class GuidVisitor(ICodeWriter codeWriter) : IKnownObjectVisitor
         return obj is Guid;
     }
 
-    public void Visit(object obj, Type objectType)
+    public void Visit(object obj, Type objectType, VisitContext context)
     {
         var guid = (Guid)obj;
 

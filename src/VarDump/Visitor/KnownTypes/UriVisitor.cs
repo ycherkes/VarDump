@@ -12,7 +12,7 @@ internal sealed class UriVisitor(ICodeWriter codeWriter) : IKnownObjectVisitor
         return obj is Uri;
     }
 
-    public void Visit(object obj, Type objectType)
+    public void Visit(object obj, Type objectType, VisitContext context)
     {
         var uri = (Uri)obj;
 

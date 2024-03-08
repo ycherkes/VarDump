@@ -126,7 +126,7 @@ public class KnownTypesSpec
             """, result);
     }
 
-    private class ServiceDescriptorVisitor(IObjectVisitor rootObjectVisitor, ICodeWriter codeWriter) : IKnownObjectVisitor
+    private class ServiceDescriptorVisitor(IRootObjectVisitor rootObjectVisitor, ICodeWriter codeWriter) : IKnownObjectVisitor
     {
         public string Id => "ServiceDescriptor";
         public bool IsSuitableFor(object obj, Type objectType)
@@ -134,7 +134,7 @@ public class KnownTypesSpec
             return obj is ServiceDescriptor;
         }
 
-        public void Visit(object obj, Type objectType)
+        public void Visit(object obj, Type objectType, VisitContext context)
         {
             var serviceDescriptor = (ServiceDescriptor)obj;
 
@@ -152,7 +152,7 @@ public class KnownTypesSpec
 
             if (serviceDescriptor.ImplementationInstance != null)
             {
-                parameters.Add(() => rootObjectVisitor.Visit(serviceDescriptor.ImplementationInstance));
+                parameters.Add(() => rootObjectVisitor.Visit(serviceDescriptor.ImplementationInstance, context));
             }
 
             if (serviceDescriptor.ImplementationFactory != null)
@@ -171,7 +171,7 @@ public class KnownTypesSpec
         }
     }
 
-    private class FormattableStringVisitor(IObjectVisitor rootObjectVisitor, ICodeWriter codeWriter) : IKnownObjectVisitor
+    private class FormattableStringVisitor(IRootObjectVisitor rootObjectVisitor, ICodeWriter codeWriter) : IKnownObjectVisitor
     {
         public string Id => "ServiceDescriptor";
         public bool IsSuitableFor(object obj, Type objectType)
@@ -179,7 +179,7 @@ public class KnownTypesSpec
             return obj is FormattableString;
         }
 
-        public void Visit(object obj, Type objectType)
+        public void Visit(object obj, Type objectType, VisitContext context)
         {
             var formattableString = (FormattableString)obj;
 
@@ -188,7 +188,7 @@ public class KnownTypesSpec
                 () => codeWriter.WritePrimitive(formattableString.Format)
             ];
 
-            argumentActions = argumentActions.Concat(formattableString.GetArguments().Select(a => (Action)(() => rootObjectVisitor.Visit(a))));
+            argumentActions = argumentActions.Concat(formattableString.GetArguments().Select(a => (Action)(() => rootObjectVisitor.Visit(a, context))));
 
             codeWriter.WriteMethodInvoke(() =>
                 codeWriter.WriteMethodReference(

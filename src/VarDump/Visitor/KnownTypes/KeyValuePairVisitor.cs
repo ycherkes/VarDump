@@ -5,7 +5,7 @@ using VarDump.Utils;
 
 namespace VarDump.Visitor.KnownTypes;
 
-internal sealed class KeyValuePairVisitor(IObjectVisitor rootObjectVisitor, ICodeWriter codeWriter)
+internal sealed class KeyValuePairVisitor(IRootObjectVisitor rootObjectVisitor, ICodeWriter codeWriter)
     : IKnownObjectVisitor
 {
     public string Id => "KeyValuePair";
@@ -14,9 +14,9 @@ internal sealed class KeyValuePairVisitor(IObjectVisitor rootObjectVisitor, ICod
         return objectType.IsKeyValuePair();
     }
 
-    public void Visit(object obj, Type objectType)
+    public void Visit(object obj, Type objectType, VisitContext context)
     {
-        var propertyValues = objectType.GetProperties().Select(p => ReflectionUtils.GetValue(p, obj)).Select(v => (Action)(() => rootObjectVisitor.Visit(v)));
+        var propertyValues = objectType.GetProperties().Select(p => ReflectionUtils.GetValue(p, obj)).Select(v => (Action)(() => rootObjectVisitor.Visit(v, context)));
 
         codeWriter.WriteObjectCreate(objectType, propertyValues);
     }

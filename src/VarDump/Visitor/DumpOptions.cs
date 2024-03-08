@@ -12,7 +12,7 @@ namespace VarDump.Visitor;
 
 public class DumpOptions
 {
-    public Action<IOrderedDictionary<string, IKnownObjectVisitor>, IObjectVisitor, DumpOptions, ICodeWriter> ConfigureKnownTypes { get; set; }
+    public Action<IOrderedDictionary<string, IKnownObjectVisitor>, IRootObjectVisitor, DumpOptions, ICodeWriter> ConfigureKnownTypes { get; set; }
     public DateKind DateKind { get; set; } = DateKind.Original;
     public DateTimeInstantiation DateTimeInstantiation { get; set; } = DateTimeInstantiation.Parse;
     public ICollection<IObjectDescriptorMiddleware> Descriptors { get; set; } = [];

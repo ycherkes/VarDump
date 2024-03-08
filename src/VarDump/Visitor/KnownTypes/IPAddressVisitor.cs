@@ -12,7 +12,7 @@ internal sealed class IPAddressVisitor(ICodeWriter codeWriter) : IKnownObjectVis
         return obj is IPAddress;
     }
 
-    public void Visit(object obj, Type objectType)
+    public void Visit(object obj, Type objectType, VisitContext context)
     {
         codeWriter.WriteMethodInvoke(
             () => codeWriter.WriteMethodReference(

@@ -6,7 +6,7 @@ using VarDump.Utils;
 
 namespace VarDump.Visitor.KnownTypes;
 
-internal sealed class TupleVisitor(IObjectVisitor rootObjectVisitor, ICodeWriter codeWriter) : IKnownObjectVisitor
+internal sealed class TupleVisitor(IRootObjectVisitor rootObjectVisitor, ICodeWriter codeWriter) : IKnownObjectVisitor
 {
     public string Id => "Tuple";
     public bool IsSuitableFor(object obj, Type objectType)
@@ -14,25 +14,25 @@ internal sealed class TupleVisitor(IObjectVisitor rootObjectVisitor, ICodeWriter
         return objectType.IsTuple();
     }
 
-    public void Visit(object o, Type objectType)
+    public void Visit(object o, Type objectType, VisitContext context)
     {
-        if (rootObjectVisitor.IsVisited(o))
+        if (context.IsVisited(o))
         {
             codeWriter.WriteCircularReferenceDetected();
             return;
         }
 
-        rootObjectVisitor.PushVisited(o);
+        context.PushVisited(o);
 
         try
         {
-            var propertyValues = objectType.GetProperties().Select(p => ReflectionUtils.GetValue(p, o)).Select(v => (Action)(() => rootObjectVisitor.Visit(v)));
+            var propertyValues = objectType.GetProperties().Select(p => ReflectionUtils.GetValue(p, o)).Select(v => (Action)(() => rootObjectVisitor.Visit(v, context)));
 
             codeWriter.WriteObjectCreate(objectType, propertyValues);
         }
         finally
         {
-            rootObjectVisitor.PopVisited();
+            context.PopVisited();
         }
     }
 }

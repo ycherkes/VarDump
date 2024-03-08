@@ -13,19 +13,16 @@ using VarDump.Visitor.KnownTypes;
 
 namespace VarDump.Visitor;
 
-internal sealed class ObjectVisitor : IObjectVisitor
+internal sealed class ObjectVisitor : IObjectVisitor, IRootObjectVisitor
 {
     private readonly ICodeWriter _codeWriter;
     private readonly ICollection<string> _excludeTypes;
     private readonly bool _ignoreDefaultValues;
     private readonly bool _ignoreNullValues;
-    private readonly int _maxDepth;
-    private readonly Stack<object> _visitedObjects;
     private readonly ListSortDirection? _sortDirection;
     private readonly IObjectDescriptor _objectDescriptor;
     private readonly OrderedDictionary<string, IKnownObjectVisitor> _knownTypes;
-
-    private int _depth;
+    private readonly int _maxDepth;
 
     public ObjectVisitor(DumpOptions options, ICodeWriter codeWriter)
     {
@@ -49,8 +46,6 @@ internal sealed class ObjectVisitor : IObjectVisitor
             _objectDescriptor = _objectDescriptor.ApplyMiddleware(options.Descriptors);
             anonymousObjectDescriptor = anonymousObjectDescriptor.ApplyMiddleware(options.Descriptors);
         }
-
-        _visitedObjects = new Stack<object>();
 
         _knownTypes = new[]
         {
@@ -84,7 +79,12 @@ internal sealed class ObjectVisitor : IObjectVisitor
 
     public void Visit(object @object)
     {
-        if (IsMaxDepth())
+        Visit(@object, new VisitContext(_maxDepth));
+    }
+
+    public void Visit(object @object, VisitContext context)
+    {
+        if (context.IsMaxDepth())
         {
             _codeWriter.WriteMaxDepthExpression(@object);
             return;
@@ -92,35 +92,35 @@ internal sealed class ObjectVisitor : IObjectVisitor
 
         try
         {
-            _depth++;
+            context.CurrentDepth++;
 
             var objectType = @object?.GetType();
 
             var knownObjectVisitor = _knownTypes.Values.FirstOrDefault(v => v.IsSuitableFor(@object, objectType));
-            
+
             if (knownObjectVisitor != null)
             {
-                knownObjectVisitor.Visit(@object, objectType);
+                knownObjectVisitor.Visit(@object, objectType, context);
                 return;
             }
 
-            VisitObject(@object, objectType);
+            VisitObject(@object, objectType, context);
         }
         finally
         {
-            _depth--;
+            context.CurrentDepth--;
         }
     }
 
-    private void VisitObject(object o, Type objectType)
+    private void VisitObject(object o, Type objectType, VisitContext context)
     {
-        if (IsVisited(o))
+        if (context.IsVisited(o))
         {
             _codeWriter.WriteCircularReferenceDetected();
             return;
         }
 
-        PushVisited(o);
+        context.PushVisited(o);
 
         try
         {
@@ -154,27 +154,7 @@ internal sealed class ObjectVisitor : IObjectVisitor
         }
         finally
         {
-            PopVisited();
+            context.PopVisited();
         }
-    }
-
-    public void PushVisited(object value)
-    {
-        _visitedObjects.Push(value);
-    }
-
-    public void PopVisited()
-    {
-        _visitedObjects.Pop();
-    }
-
-    public bool IsVisited(object value)
-    {
-        return value != null && _visitedObjects.Contains(value);
-    }
-
-    private bool IsMaxDepth()
-    {
-        return _depth > _maxDepth;
     }
 }

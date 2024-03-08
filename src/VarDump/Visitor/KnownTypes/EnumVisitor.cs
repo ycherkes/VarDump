@@ -12,7 +12,7 @@ internal sealed class EnumVisitor(ICodeWriter codeWriter) : IKnownObjectVisitor
         return obj is Enum;
     }
 
-    public void Visit(object obj, Type objectType)
+    public void Visit(object obj, Type objectType, VisitContext context)
     {
         var values = obj.ToString().Split(new[] { "," }, StringSplitOptions.RemoveEmptyEntries);
 

@@ -15,7 +15,7 @@ internal sealed class PrimitiveVisitor(ICodeWriter codeWriter) : IKnownObjectVis
         return ReflectionUtils.IsPrimitiveOrNull(obj);
     }
 
-    public void Visit(object obj, Type objectType)
+    public void Visit(object obj, Type objectType, VisitContext context)
     {
         if (obj == null || ValueEquality(obj, 0) || obj is byte)
         {

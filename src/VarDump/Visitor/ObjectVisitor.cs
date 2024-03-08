@@ -137,7 +137,7 @@ internal sealed class ObjectVisitor : IObjectVisitor, IRootObjectVisitor
 
             var constructorParams = objectDescription.ConstructorParameters
                     .Where(mc => mc.ReflectionType == ReflectionType.ConstructorParameter)
-                    .Select(cp => (Action)(() => Visit(cp.Value)));
+                    .Select(cp => (Action)(() => Visit(cp.Value, context)));
 
             var initializers = members
                     .Where(pv => !_excludeTypes.Contains(pv.Type.FullName) &&
@@ -146,7 +146,7 @@ internal sealed class ObjectVisitor : IObjectVisitor, IRootObjectVisitor
                                      ReflectionUtils.GetDefaultValue(pv.Type)?.Equals(pv.Value) != true))
                     .Select(pv => (Action)(() => _codeWriter.WriteAssign(
                         () => _codeWriter.WritePropertyReference(pv.Name, null),
-                        () => Visit(pv.Value))));
+                        () => Visit(pv.Value, context))));
 
             _codeWriter.WriteObjectCreateAndInitialize(objectDescription.Type ?? new CodeTypeInfo(objectType),
                 constructorParams,

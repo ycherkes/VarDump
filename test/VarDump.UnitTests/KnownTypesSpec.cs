@@ -27,10 +27,10 @@ public class KnownTypesSpec
 
         var dumpOptions = new DumpOptions
         {
-            ConfigureKnownTypes = (knownObjects, rootObjectVisitor, _, codeWriter) =>
+            ConfigureKnownTypes = (knownTypes, rootObjectVisitor, _, codeWriter) =>
             {
                 var sdv = new ServiceDescriptorVisitor(rootObjectVisitor, codeWriter);
-                knownObjects.Add(sdv.Id, sdv);
+                knownTypes.Add(sdv.Id, sdv);
             }
         };
 
@@ -56,10 +56,10 @@ public class KnownTypesSpec
 
         var dumpOptions = new DumpOptions
         {
-            ConfigureKnownTypes = (knownObjects, rootObjectVisitor, _, codeWriter) =>
+            ConfigureKnownTypes = (knownTypes, rootObjectVisitor, _, codeWriter) =>
             {
                 var sdv = new ServiceDescriptorVisitor(rootObjectVisitor, codeWriter);
-                knownObjects.Add(sdv.Id, sdv);
+                knownTypes.Add(sdv.Id, sdv);
             }
         };
 
@@ -108,10 +108,10 @@ public class KnownTypesSpec
 
         var dumpOptions = new DumpOptions
         {
-            ConfigureKnownTypes = (knownObjects, rootObjectVisitor, _, codeWriter) =>
+            ConfigureKnownTypes = (knownTypes, rootObjectVisitor, _, codeWriter) =>
             {
                 var fsv = new FormattableStringVisitor(rootObjectVisitor, codeWriter);
-                knownObjects.Add(fsv.Id, fsv);
+                knownTypes.Add(fsv.Id, fsv);
             }
         };
 

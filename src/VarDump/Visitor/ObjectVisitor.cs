@@ -1,11 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Linq;
+﻿using System.Linq;
 using VarDump.CodeDom.Compiler;
 using VarDump.Collections;
 using VarDump.Extensions;
-using VarDump.Utils;
 using VarDump.Visitor.Descriptors;
 using VarDump.Visitor.Descriptors.Implementation;
 using VarDump.Visitor.KnownTypes;
@@ -15,38 +11,30 @@ namespace VarDump.Visitor;
 internal sealed class ObjectVisitor : IObjectVisitor, IRootObjectVisitor
 {
     private readonly ICodeWriter _codeWriter;
-    private readonly ICollection<string> _excludeTypes;
-    private readonly bool _ignoreDefaultValues;
-    private readonly bool _ignoreNullValues;
-    private readonly ListSortDirection? _sortDirection;
-    private readonly IObjectDescriptor _objectDescriptor;
     private readonly OrderedDictionary<string, IKnownObjectVisitor> _knownTypes;
     private readonly int _maxDepth;
-    private readonly bool _useNamedArguments;
+    private readonly UnknownObjectVisitor _unknownObjectVisitor;
 
     public ObjectVisitor(DumpOptions options, ICodeWriter codeWriter)
     {
         _codeWriter = codeWriter;
         _maxDepth = options.MaxDepth;
-        _ignoreDefaultValues = options.IgnoreDefaultValues;
-        _ignoreNullValues = options.IgnoreNullValues;
-        _excludeTypes = options.ExcludeTypes ?? [];
-        _sortDirection = options.SortDirection;
-        _useNamedArguments = options.UseNamedArguments;
 
         IObjectDescriptor anonymousObjectDescriptor = new ObjectPropertiesDescriptor(options.GetPropertiesBindingFlags, false);
-        _objectDescriptor = new ObjectPropertiesDescriptor(options.GetPropertiesBindingFlags, options.WritablePropertiesOnly);
+        IObjectDescriptor objectDescriptor = new ObjectPropertiesDescriptor(options.GetPropertiesBindingFlags, options.WritablePropertiesOnly);
 
         if (options.GetFieldsBindingFlags != null)
         {
-            _objectDescriptor = _objectDescriptor.Concat(new ObjectFieldsDescriptor(options.GetFieldsBindingFlags.Value));
+            objectDescriptor = objectDescriptor.Concat(new ObjectFieldsDescriptor(options.GetFieldsBindingFlags.Value));
         }
 
         if (options.Descriptors.Count > 0)
         {
-            _objectDescriptor = _objectDescriptor.ApplyMiddleware(options.Descriptors);
+            objectDescriptor = objectDescriptor.ApplyMiddleware(options.Descriptors);
             anonymousObjectDescriptor = anonymousObjectDescriptor.ApplyMiddleware(options.Descriptors);
         }
+
+        _unknownObjectVisitor = new UnknownObjectVisitor(codeWriter, this, objectDescriptor, options);
 
         _knownTypes = new[]
         {
@@ -105,61 +93,11 @@ internal sealed class ObjectVisitor : IObjectVisitor, IRootObjectVisitor
                 return;
             }
 
-            VisitObject(@object, objectType, context);
+            _unknownObjectVisitor.Visit(@object, objectType, context);
         }
         finally
         {
             context.CurrentDepth--;
-        }
-    }
-
-    private void VisitObject(object o, Type objectType, VisitContext context)
-    {
-        if (context.IsVisited(o))
-        {
-            _codeWriter.WriteCircularReferenceDetected();
-            return;
-        }
-
-        context.PushVisited(o);
-
-        try
-        {
-            var objectDescription = _objectDescriptor.GetObjectDescription(o, objectType);
-
-            var members = objectDescription.Members;
-
-            if (_sortDirection != null)
-            {
-                members = _sortDirection == ListSortDirection.Ascending
-                    ? members.OrderBy(x => x.Name)
-                    : members.OrderByDescending(x => x.Name);
-            }
-
-            var constructorArguments = objectDescription.ConstructorParameters
-                .Select(cp => !string.IsNullOrWhiteSpace(cp.Name) && _useNamedArguments
-                    ? () => _codeWriter.WriteNamedArgument(cp.Name, () => Visit(cp.Value, context))
-                    : (Action)(() => Visit(cp.Value, context)));
-
-            var initializers = members
-                    .Where(pv => !_excludeTypes.Contains(pv.Type.FullName) &&
-                                 (!_ignoreNullValues || _ignoreNullValues && pv.Value != null) &&
-                                 (!_ignoreDefaultValues || !pv.Type.IsValueType || _ignoreDefaultValues &&
-                                     ReflectionUtils.GetDefaultValue(pv.Type)?.Equals(pv.Value) != true))
-                    .Select(pv => (Action)(() => _codeWriter.WriteAssign(
-                        () => _codeWriter.WritePropertyReference(pv.Name, null),
-                        () => Visit(pv.Value, context))));
-
-            _codeWriter.WriteObjectCreateAndInitialize
-            (
-                objectDescription.Type ?? objectType,
-                constructorArguments,
-                initializers
-            );
-        }
-        finally
-        {
-            context.PopVisited();
         }
     }
 }

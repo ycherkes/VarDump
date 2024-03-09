@@ -9,7 +9,7 @@ Developed as a free alternative to [ObjectDumper.NET](https://github.com/thomasg
 [![nuget downloads](https://img.shields.io/nuget/dt/VarDump?label=Downloads)](https://www.nuget.org/packages/VarDump)
 
 ## C# & VB Dumper:
-<p align="right"><a href="https://dotnetfiddle.net/4ARhwR">Run .NET fiddle</a></p>
+<p align="right"><a href="https://dotnetfiddle.net/vI6Wq4">Run .NET fiddle</a></p>
 
 ```csharp
 using System;
@@ -22,7 +22,7 @@ var vb = new VisualBasicDumper().Dump(anonymousObject);
 Console.WriteLine(vb);
 ```
 ## C# & VB Dumper, how to use DumpOptions:
-<p align="right"><a href="https://dotnetfiddle.net/CxsDtN">Run .NET fiddle</a></p>
+<p align="right"><a href="https://dotnetfiddle.net/p4oIKX">Run .NET fiddle</a></p>
 
 ```csharp
 using System;

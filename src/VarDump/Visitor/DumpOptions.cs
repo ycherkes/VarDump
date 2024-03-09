@@ -26,7 +26,7 @@ public class DumpOptions
     public int MaxCollectionSize { get; set; } = int.MaxValue;
     public int MaxDepth { get; set; } = 25;
     public ListSortDirection? SortDirection { get; set; }
-    public bool UseNamedArgumentsForReferenceRecordTypes { get; set; }
+    public bool UseNamedArguments { get; set; }
     public bool UseTypeFullName { get; set; }
     public bool WritablePropertiesOnly { get; set; } = true;
 
@@ -48,7 +48,7 @@ public class DumpOptions
             MaxCollectionSize = MaxCollectionSize,
             MaxDepth = MaxDepth,
             SortDirection = SortDirection,
-            UseNamedArgumentsForReferenceRecordTypes = UseNamedArgumentsForReferenceRecordTypes,
+            UseNamedArguments = UseNamedArguments,
             UseTypeFullName = UseTypeFullName,
             WritablePropertiesOnly = WritablePropertiesOnly
         };

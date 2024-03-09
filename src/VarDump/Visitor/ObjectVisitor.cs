@@ -22,6 +22,7 @@ internal sealed class ObjectVisitor : IObjectVisitor, IRootObjectVisitor
     private readonly IObjectDescriptor _objectDescriptor;
     private readonly OrderedDictionary<string, IKnownObjectVisitor> _knownTypes;
     private readonly int _maxDepth;
+    private readonly bool _useNamedArguments;
 
     public ObjectVisitor(DumpOptions options, ICodeWriter codeWriter)
     {
@@ -31,13 +32,14 @@ internal sealed class ObjectVisitor : IObjectVisitor, IRootObjectVisitor
         _ignoreNullValues = options.IgnoreNullValues;
         _excludeTypes = options.ExcludeTypes ?? [];
         _sortDirection = options.SortDirection;
+        _useNamedArguments = options.UseNamedArguments;
 
         IObjectDescriptor anonymousObjectDescriptor = new ObjectPropertiesDescriptor(options.GetPropertiesBindingFlags, false);
         _objectDescriptor = new ObjectPropertiesDescriptor(options.GetPropertiesBindingFlags, options.WritablePropertiesOnly);
 
         if (options.GetFieldsBindingFlags != null)
         {
-            _objectDescriptor = anonymousObjectDescriptor.Concat(new ObjectFieldsDescriptor(options.GetFieldsBindingFlags.Value));
+            _objectDescriptor = _objectDescriptor.Concat(new ObjectFieldsDescriptor(options.GetFieldsBindingFlags.Value));
         }
 
         if (options.Descriptors.Count > 0)
@@ -62,7 +64,7 @@ internal sealed class ObjectVisitor : IObjectVisitor, IRootObjectVisitor
             new VersionVisitor(codeWriter),
             new DateOnlyVisitor(codeWriter, options.DateTimeInstantiation),
             new TimeOnlyVisitor(codeWriter, options.DateTimeInstantiation),
-            new RecordVisitor(this, codeWriter, options.UseNamedArgumentsForReferenceRecordTypes),
+            new RecordVisitor(this, codeWriter, options.UseNamedArguments),
             new AnonymousTypeVisitor(this, anonymousObjectDescriptor, codeWriter),
             new KeyValuePairVisitor(this, codeWriter),
             new TupleVisitor(this, codeWriter),
@@ -134,8 +136,10 @@ internal sealed class ObjectVisitor : IObjectVisitor, IRootObjectVisitor
                     : members.OrderByDescending(x => x.Name);
             }
 
-            var constructorParams = objectDescription.ConstructorParameters
-                    .Select(cp => (Action)(() => Visit(cp.Value, context)));
+            var constructorArguments = objectDescription.ConstructorParameters
+                .Select(cp => !string.IsNullOrWhiteSpace(cp.Name) && _useNamedArguments
+                    ? () => _codeWriter.WriteNamedArgument(cp.Name, () => Visit(cp.Value, context))
+                    : (Action)(() => Visit(cp.Value, context)));
 
             var initializers = members
                     .Where(pv => !_excludeTypes.Contains(pv.Type.FullName) &&
@@ -149,7 +153,7 @@ internal sealed class ObjectVisitor : IObjectVisitor, IRootObjectVisitor
             _codeWriter.WriteObjectCreateAndInitialize
             (
                 objectDescription.Type ?? objectType,
-                constructorParams,
+                constructorArguments,
                 initializers
             );
         }

@@ -4,7 +4,6 @@ using System.ComponentModel;
 using System.IO;
 using System.Linq;
 using System.Reflection;
-using VarDump.CodeDom.Common;
 using VarDump.Visitor;
 using VarDump.Visitor.Descriptors;
 using Xunit;
@@ -282,6 +281,26 @@ public class ObjectDescriptorMiddlewareSpec
         Assert.Equal(expectedString, actualString);
     }
 
+    [Fact]
+    public void DumpDriveInfoWithNamedArgumentsCsharp()
+    {
+        var options = new DumpOptions
+        {
+            Descriptors = { new DriveInfoMiddleware() },
+            UseNamedArguments = true
+        };
+
+        var driveName = "C:";
+
+        var dumper = new CSharpDumper(options);
+
+        var actualString = dumper.Dump(new DriveInfo(driveName));
+
+        var expectedString = $"var driveInfo = new DriveInfo(driveName: \"{driveName}\\\\\");\r\n";
+
+        Assert.Equal(expectedString, actualString);
+    }
+
 
     [Fact]
     public void DumpDelegateVb()
@@ -392,13 +411,15 @@ public class ObjectDescriptorMiddlewareSpec
                 return new ObjectDescription
                 {
                     Type = objectType,
-                    ConstructorParameters = new []
-                    {
-                        new ReflectionDescription(fileInfo.FullName)
+                    ConstructorParameters =
+                    [
+                        new ConstructorParameterDescription
                         {
-                            ReflectionType = ReflectionType.ConstructorParameter
+                            Value = fileInfo.FullName,
+                            Type = typeof(string),
+                            Name = "fileName"
                         }
-                    }
+                    ]
                 };
             }
 
@@ -415,13 +436,15 @@ public class ObjectDescriptorMiddlewareSpec
                 return new ObjectDescription
                 {
                     Type = objectType,
-                    ConstructorParameters = new []
-                    {
-                        new ReflectionDescription(driveInfo.Name)
+                    ConstructorParameters =
+                    [
+                        new ConstructorParameterDescription
                         {
-                            ReflectionType = ReflectionType.ConstructorParameter
+                            Value = driveInfo.Name,
+                            Type = typeof(string),
+                            Name = "driveName"
                         }
-                    }
+                    ]
                 };
             }
 
@@ -469,12 +492,12 @@ public class ObjectDescriptorMiddlewareSpec
             return new ObjectDescription
             {
                 Type = objectDescription.Type,
-                ConstructorParameters = objectDescription.ConstructorParameters,
+                ConstructorParameters = objectDescription.ConstructorParameters.Select(ReplaceCardNumberDescriptor),
                 Members = objectDescription.Members.Select(ReplaceCardNumberDescriptor)
             };
         }
 
-        private static IReflectionDescription ReplaceCardNumberDescriptor(IReflectionDescription memberDescription)
+        private static T ReplaceCardNumberDescriptor<T>(T memberDescription) where T : ReflectionDescription
         {
             if (memberDescription.Type != typeof(string) 
                 || !string.Equals(memberDescription.Name, "cardnumber", StringComparison.OrdinalIgnoreCase) 
@@ -489,11 +512,9 @@ public class ObjectDescriptorMiddlewareSpec
                     ? new string('*', stringValue.Length - 4) + stringValue.Substring(stringValue.Length - 4)
                     : stringValue;
 
-            return new ReflectionDescription(maskedValue)
+            return memberDescription with
             {
-                Name = memberDescription.Name, 
-                Type = memberDescription.Type, 
-                ReflectionType = memberDescription.ReflectionType
+                Value = maskedValue
             };
         }
     }

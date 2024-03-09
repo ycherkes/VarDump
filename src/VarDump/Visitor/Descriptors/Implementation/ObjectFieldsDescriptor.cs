@@ -11,11 +11,10 @@ internal sealed class ObjectFieldsDescriptor(BindingFlags getFieldsBindingFlags)
     public IObjectDescription GetObjectDescription(object @object, Type objectType)
     {
         var fields = EnumerableExtensions.AsEnumerable(() => objectType.GetFields(getFieldsBindingFlags))
-            .Select(f => new ReflectionDescription(() => ReflectionUtils.GetValue(f, @object))
+            .Select(f => new FieldDescription(() => ReflectionUtils.GetValue(f, @object))
             {
                 Name = f.Name,
-                Type = f.FieldType,
-                ReflectionType = ReflectionType.Field
+                Type = f.FieldType
             });
 
         return new ObjectDescription

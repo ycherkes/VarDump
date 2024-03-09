@@ -17,11 +17,10 @@ internal sealed class ObjectPropertiesDescriptor(BindingFlags getPropertiesBindi
             .Where(p => p.CanRead &&
                         (p.CanWrite || !writablePropertiesOnly) &&
                         !ReflectionUtils.IsIndexer(p))
-            .Select(p => new ReflectionDescription(() => ReflectionUtils.GetValue(p, @object))
+            .Select(p => new PropertyDescription(() => ReflectionUtils.GetValue(p, @object))
             {
                 Name = p.Name,
-                Type = p.PropertyType,
-                ReflectionType = ReflectionType.Property
+                Type = p.PropertyType
             });
 
         return new ObjectDescription

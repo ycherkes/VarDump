@@ -52,7 +52,7 @@ class Person
 ```
 
 ## Object Extension methods:
-<p align="right"><a href="https://dotnetfiddle.net/Lz9duL">Run .NET fiddle</a></p>
+<p align="right"><a href="https://dotnetfiddle.net/n9kjiF">Run .NET fiddle</a></p>
 
 ```csharp
 using System;
@@ -69,11 +69,11 @@ var dictionary = new[]
     }
 }.ToDictionary(x => x.Name, x => x);
 
-Console.WriteLine(dictionary.Dump(DumpOptions.Default));
+Console.WriteLine(dictionary.Dump(new DumpOptions()));
 ```
 
 ## Object Extension methods, how to switch default dumper to VB:
-<p align="right"><a href="https://dotnetfiddle.net/sM1lML">Run .NET fiddle</a></p>
+<p align="right"><a href="https://dotnetfiddle.net/OGCcrk">Run .NET fiddle</a></p>
 
 ```csharp
 using System;
@@ -92,7 +92,7 @@ var dictionary = new[]
     }
 }.ToDictionary(x => x.Name, x => x);
 
-Console.WriteLine(dictionary.Dump(DumpOptions.Default));
+Console.WriteLine(dictionary.Dump(new DumpOptions()));
 ```
 
 ## Extensibility:

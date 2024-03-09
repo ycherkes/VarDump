@@ -287,7 +287,7 @@ public class ObjectDescriptorMiddlewareSpec
         var options = new DumpOptions
         {
             Descriptors = { new DriveInfoMiddleware() },
-            UseNamedArguments = true
+            UseNamedArgumentsInConstructors = true
         };
 
         var driveName = "C:";

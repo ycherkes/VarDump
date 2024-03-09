@@ -52,7 +52,7 @@ internal sealed class ObjectVisitor : IObjectVisitor, IRootObjectVisitor
             new VersionVisitor(codeWriter),
             new DateOnlyVisitor(codeWriter, options.DateTimeInstantiation),
             new TimeOnlyVisitor(codeWriter, options.DateTimeInstantiation),
-            new RecordVisitor(this, codeWriter, options.UseNamedArguments),
+            new RecordVisitor(this, codeWriter, options.UseNamedArgumentsInConstructors),
             new AnonymousTypeVisitor(this, anonymousObjectDescriptor, codeWriter),
             new KeyValuePairVisitor(this, codeWriter),
             new TupleVisitor(this, codeWriter),

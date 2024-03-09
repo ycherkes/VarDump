@@ -38,7 +38,7 @@ internal sealed class UnknownObjectVisitor(
             }
 
             var constructorArguments = objectDescription.ConstructorParameters
-                .Select(cp => !string.IsNullOrWhiteSpace(cp.Name) && dumpOptions.UseNamedArguments
+                .Select(cp => !string.IsNullOrWhiteSpace(cp.Name) && dumpOptions.UseNamedArgumentsInConstructors
                     ? () => codeWriter.WriteNamedArgument(cp.Name, () => rootObjectVisitor.Visit(cp.Value, context))
                     : (Action)(() => rootObjectVisitor.Visit(cp.Value, context)));
 

@@ -17,6 +17,7 @@ internal sealed class UriVisitor(ICodeWriter codeWriter) : IKnownObjectVisitor
         var uri = (Uri)obj;
 
         codeWriter.WriteObjectCreate(typeof(Uri), GetConstructorArguments());
+        return;
 
         IEnumerable<Action> GetConstructorArguments()
         {

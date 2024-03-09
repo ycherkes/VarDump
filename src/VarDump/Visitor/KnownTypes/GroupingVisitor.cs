@@ -28,6 +28,7 @@ internal sealed class GroupingVisitor(IRootObjectVisitor rootObjectVisitor, ICod
                     WriteValueLambda
                 ]), "Single"),
         []);
+        return;
 
         void WriteVariable() => codeWriter.WriteVariableReference("grp");
         void WriteKeyLambdaProperty() => codeWriter.WritePropertyReference("Key", WriteVariable);

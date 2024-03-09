@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Linq;
 using System.Reflection;
-using VarDump.CodeDom.Common;
 using VarDump.Extensions;
 using VarDump.Utils;
 
@@ -11,8 +10,7 @@ internal sealed class ObjectFieldsDescriptor(BindingFlags getFieldsBindingFlags)
 {
     public IObjectDescription GetObjectDescription(object @object, Type objectType)
     {
-        var fields = EnumerableExtensions.AsEnumerable(() => objectType
-                .GetFields(getFieldsBindingFlags))
+        var fields = EnumerableExtensions.AsEnumerable(() => objectType.GetFields(getFieldsBindingFlags))
             .Select(f => new ReflectionDescription(() => ReflectionUtils.GetValue(f, @object))
             {
                 Name = f.Name,
@@ -22,7 +20,7 @@ internal sealed class ObjectFieldsDescriptor(BindingFlags getFieldsBindingFlags)
 
         return new ObjectDescription
         {
-            Type = new CodeTypeInfo(objectType),
+            Type = objectType,
             Members = fields
         };
     }

@@ -26,7 +26,7 @@ internal sealed class TupleVisitor(IRootObjectVisitor rootObjectVisitor, ICodeWr
 
         try
         {
-            var propertyValues = objectType.GetProperties().Select(p => ReflectionUtils.GetValue(p, o)).Select(v => (Action)(() => rootObjectVisitor.Visit(v, context)));
+            var propertyValues = objectType.GetProperties().Select(p => (Action)(() => rootObjectVisitor.Visit(ReflectionUtils.GetValue(p, o), context)));
 
             codeWriter.WriteObjectCreate(objectType, propertyValues);
         }

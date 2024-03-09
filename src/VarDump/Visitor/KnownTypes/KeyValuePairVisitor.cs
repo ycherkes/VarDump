@@ -16,7 +16,7 @@ internal sealed class KeyValuePairVisitor(IRootObjectVisitor rootObjectVisitor, 
 
     public void Visit(object obj, Type objectType, VisitContext context)
     {
-        var propertyValues = objectType.GetProperties().Select(p => ReflectionUtils.GetValue(p, obj)).Select(v => (Action)(() => rootObjectVisitor.Visit(v, context)));
+        var propertyValues = objectType.GetProperties().Select(p => (Action)(() => rootObjectVisitor.Visit(ReflectionUtils.GetValue(p, obj), context)));
 
         codeWriter.WriteObjectCreate(objectType, propertyValues);
     }

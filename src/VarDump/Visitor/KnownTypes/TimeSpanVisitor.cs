@@ -9,6 +9,13 @@ namespace VarDump.Visitor.KnownTypes;
 internal sealed class TimeSpanVisitor(ICodeWriter codeWriter, DateTimeInstantiation dateTimeInstantiation)
     : IKnownObjectVisitor
 {
+    private static readonly Dictionary<TimeSpan, string> SpecialValuesDictionary = new()
+    {
+        { TimeSpan.MaxValue, nameof(TimeSpan.MaxValue) },
+        { TimeSpan.MinValue, nameof(TimeSpan.MinValue) },
+        { TimeSpan.Zero, nameof(TimeSpan.Zero) }
+    };
+
     public string Id => nameof(TimeSpan);
     public bool IsSuitableFor(object obj, Type objectType)
     {
@@ -19,14 +26,7 @@ internal sealed class TimeSpanVisitor(ICodeWriter codeWriter, DateTimeInstantiat
     {
         var timeSpan = (TimeSpan)obj;
 
-        var specialValuesDictionary = new Dictionary<TimeSpan, string>
-        {
-            { TimeSpan.MaxValue, nameof(TimeSpan.MaxValue) },
-            { TimeSpan.MinValue, nameof(TimeSpan.MinValue) },
-            { TimeSpan.Zero, nameof(TimeSpan.Zero) }
-        };
-
-        if (specialValuesDictionary.TryGetValue(timeSpan, out var name))
+        if (SpecialValuesDictionary.TryGetValue(timeSpan, out var name))
         {
             codeWriter.WriteFieldReference(name, () => codeWriter.WriteType(objectType));
 
@@ -91,6 +91,7 @@ internal sealed class TimeSpanVisitor(ICodeWriter codeWriter, DateTimeInstantiat
         }
 
         codeWriter.WriteObjectCreate(objectType, [WriteDays, WriteHours, WriteMinutes, WriteSeconds, WriteMilliseconds]);
+        return;
 
         void WriteSeconds() => codeWriter.WritePrimitive(timeSpan.Seconds);
         void WriteMinutes() => codeWriter.WritePrimitive(timeSpan.Minutes);

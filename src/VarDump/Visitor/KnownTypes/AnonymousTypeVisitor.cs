@@ -29,8 +29,7 @@ internal sealed class AnonymousTypeVisitor(
                 {
                     if (pv.Type.IsNullableType() || pv.Value == null)
                     {
-                        codeWriter.WriteCast(pv.Type, 
-                            () => rootObjectVisitor.Visit(pv.Value, context));
+                        codeWriter.WriteCast(pv.Type, () => rootObjectVisitor.Visit(pv.Value, context));
                     }
                     else
                     {

@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
-using VarDump.CodeDom.Common;
 using VarDump.CodeDom.Compiler;
 using VarDump.Collections;
 using VarDump.Extensions;
@@ -136,7 +135,6 @@ internal sealed class ObjectVisitor : IObjectVisitor, IRootObjectVisitor
             }
 
             var constructorParams = objectDescription.ConstructorParameters
-                    .Where(mc => mc.ReflectionType == ReflectionType.ConstructorParameter)
                     .Select(cp => (Action)(() => Visit(cp.Value, context)));
 
             var initializers = members
@@ -148,9 +146,12 @@ internal sealed class ObjectVisitor : IObjectVisitor, IRootObjectVisitor
                         () => _codeWriter.WritePropertyReference(pv.Name, null),
                         () => Visit(pv.Value, context))));
 
-            _codeWriter.WriteObjectCreateAndInitialize(objectDescription.Type ?? new CodeTypeInfo(objectType),
+            _codeWriter.WriteObjectCreateAndInitialize
+            (
+                objectDescription.Type ?? objectType,
                 constructorParams,
-                initializers);
+                initializers
+            );
         }
         finally
         {

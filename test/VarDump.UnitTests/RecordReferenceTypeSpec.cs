@@ -1,94 +1,92 @@
-#if NET60
-using VarDump;
+#if NET6_0_OR_GREATER
 using Xunit;
 
-namespace UnitTests
+namespace VarDump.UnitTests;
+
+public class RecordReferenceTypeSpec
 {
-    public class RecordReferenceTypeSpec
+    [Fact]
+    public void DumpRecordWithConstructorCsharp()
     {
-        [Fact]
-        public void DumpRecordWithConstructorCsharp()
+        var person = new Person("Boris", "Johnson");
+
+        var dumper = new CSharpDumper();
+
+        var result = dumper.Dump(person);
+
+        Assert.Equal("var person = new Person(\"Boris\", \"Johnson\");\r\n", result);
+    }
+
+    [Fact]
+    public void DumpRecordWithConstructorVb()
+    {
+        var person = new Person("Boris", "Johnson");
+
+        var dumper = new VisualBasicDumper();
+
+        var result = dumper.Dump(person);
+
+        Assert.Equal("Dim personValue = New Person(\"Boris\", \"Johnson\")\r\n", result);
+    }
+
+    [Fact]
+    public void DumpRecordWithoutConstructorCsharp()
+    {
+        var person1 = new Person1
         {
-            var person = new Person("Boris", "Johnson");
+            FirstName = "Boris",
+            LastName = "Johnson"
+        };
 
-            var dumper = new CSharpDumper();
+        var dumper = new CSharpDumper();
 
-            var result = dumper.Dump(person);
+        var result = dumper.Dump(person1);
 
-            Assert.Equal("var person = new Person(\"Boris\", \"Johnson\");\r\n", result);
-        }
-
-        [Fact]
-        public void DumpRecordWithConstructorVb()
-        {
-            var person = new Person("Boris", "Johnson");
-
-            var dumper = new VisualBasicDumper();
-
-            var result = dumper.Dump(person);
-
-            Assert.Equal("Dim personValue = New Person(\"Boris\", \"Johnson\")\r\n", result);
-        }
-
-        [Fact]
-        public void DumpRecordWithoutConstructorCsharp()
-        {
-            var person1 = new Person1
-            {
-                FirstName = "Boris",
-                LastName = "Johnson"
-            };
-
-            var dumper = new CSharpDumper();
-
-            var result = dumper.Dump(person1);
-
-            Assert.Equal(
-@"var person1 = new Person1
+        Assert.Equal(
+            @"var person1 = new Person1
 {
     FirstName = ""Boris"",
     LastName = ""Johnson""
 };
 ", result);
-        }
+    }
 
-        [Fact]
-        public void DumpRecordWithoutConstructorVb()
+    [Fact]
+    public void DumpRecordWithoutConstructorVb()
+    {
+        var person1 = new Person1
         {
-            var person1 = new Person1
-            {
-                FirstName = "Boris",
-                LastName = "Johnson"
-            };
+            FirstName = "Boris",
+            LastName = "Johnson"
+        };
 
-            var dumper = new VisualBasicDumper();
+        var dumper = new VisualBasicDumper();
 
-            var result = dumper.Dump(person1);
+        var result = dumper.Dump(person1);
 
-            Assert.Equal(
-@"Dim person1Value = New Person1 With {
+        Assert.Equal(
+            @"Dim person1Value = New Person1 With {
     .FirstName = ""Boris"",
     .LastName = ""Johnson""
 }
 ", result);
-        }
+    }
 
-        private record Person(string FirstName, string LastName)
-        {
-            public string FullName => $"{FirstName} {LastName}";
-        }
+    private record Person(string FirstName, string LastName)
+    {
+        public string FullName => $"{FirstName} {LastName}";
+    }
 
-        public record Person2(string FirstName, string LastName, string Id)
-        {
-            internal string Id { get; init; } = Id;
-        }
+    public record Person2(string FirstName, string LastName, string Id)
+    {
+        internal string Id { get; init; } = Id;
+    }
 
 
-        private record Person1
-        {
-            public string FirstName { get; set; }
-            public string LastName { get; set; }
-        }
+    private record Person1
+    {
+        public string FirstName { get; set; }
+        public string LastName { get; set; }
     }
 }
 #endif

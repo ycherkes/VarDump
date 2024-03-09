@@ -19,6 +19,7 @@ internal sealed class DnsEndPointVisitor(IRootObjectVisitor rootObjectVisitor, I
         var dnsEndPoint = (DnsEndPoint)obj;
 
         codeWriter.WriteObjectCreate(typeof(DnsEndPoint), GetConstructorArguments());
+        return;
 
         IEnumerable<Action> GetConstructorArguments()
         {

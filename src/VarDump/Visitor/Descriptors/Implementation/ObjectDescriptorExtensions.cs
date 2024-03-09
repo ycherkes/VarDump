@@ -12,16 +12,16 @@ internal static class ObjectDescriptorExtensions
 
     public static IObjectDescriptor ApplyMiddleware(this IObjectDescriptor objectDescriptor, IEnumerable<IObjectDescriptorMiddleware> middleware)
     {
-        var describe = objectDescriptor.GetObjectDescription;
+        var descriptionFunc = objectDescriptor.GetObjectDescription;
 
         foreach (var item in middleware.Reverse())
         {
-            var prevDescribe = describe;
-            describe = (@object, objectType) =>
+            var prevDescriptionFunc = descriptionFunc;
+            descriptionFunc = (@object, objectType) =>
             {
-                return item.GetObjectDescription(@object, objectType, () => prevDescribe(@object, objectType));
+                return item.GetObjectDescription(@object, objectType, () => prevDescriptionFunc(@object, objectType));
             };
         }
-        return new DelegateToObjectDescriptor(describe);
+        return new FuncToObjectDescriptor(descriptionFunc);
     }
 }

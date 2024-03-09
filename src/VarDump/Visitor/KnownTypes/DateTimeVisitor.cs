@@ -63,6 +63,7 @@ internal sealed class DateTimeVisitor(
         }
 
         codeWriter.WriteMethodInvoke(() => codeWriter.WriteMethodReference(WriteObjectCreate, nameof(DateTime.AddTicks)), [() => codeWriter.WritePrimitive(lessThanMillisecondTicks)]);
+        return;
 
         void WriteObjectCreate() => codeWriter.WriteObjectCreate(objectType, 
             [

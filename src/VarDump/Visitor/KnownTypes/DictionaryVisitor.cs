@@ -122,6 +122,7 @@ internal sealed class DictionaryVisitor : IKnownObjectVisitor
                 WriteKeyLambda,
                 WriteValueLambda
             ]);
+        return;
 
         void WriteVariable() => _codeWriter.WriteVariableReference("kvp");
         void WriteKeyLambdaProperty() => _codeWriter.WritePropertyReference(keyName, WriteVariable);

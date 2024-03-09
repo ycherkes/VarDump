@@ -57,7 +57,11 @@ internal sealed class DateTimeOffsetVisitor(
             return;
         }
 
-        codeWriter.WriteMethodInvoke(() => codeWriter.WriteMethodReference(WriteObjectCreate, nameof(DateTimeOffset.AddTicks)), [() => codeWriter.WritePrimitive(lessThanMillisecondTicks)]);
+        codeWriter.WriteMethodInvoke(
+            () => codeWriter.WriteMethodReference(WriteObjectCreate, nameof(DateTimeOffset.AddTicks)), 
+            [() => codeWriter.WritePrimitive(lessThanMillisecondTicks)]);
+
+        return;
 
         void WriteObjectCreate() => codeWriter.WriteObjectCreate(objectType,
             [

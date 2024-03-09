@@ -14,7 +14,7 @@ internal sealed class EnumVisitor(ICodeWriter codeWriter) : IKnownObjectVisitor
 
     public void Visit(object obj, Type objectType, VisitContext context)
     {
-        var values = obj.ToString().Split(new[] { "," }, StringSplitOptions.RemoveEmptyEntries);
+        var values = obj.ToString().Split([','], StringSplitOptions.RemoveEmptyEntries);
 
         if (values.Length == 1)
         {

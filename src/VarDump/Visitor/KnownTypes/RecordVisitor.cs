@@ -20,11 +20,13 @@ internal sealed class RecordVisitor(
 
     public void Visit(object obj, Type objectType, VisitContext context)
     {
-        var properties = objectType.GetProperties(BindingFlags.Public | BindingFlags.Instance | BindingFlags.NonPublic).Where(p => p.CanWrite);
+        var properties = objectType.GetProperties(BindingFlags.Public | BindingFlags.Instance | BindingFlags.NonPublic)
+                                                        .Where(p => p.CanWrite);
+
         var argumentValues = useNamedArgumentsForReferenceRecordTypes
             ? properties.Select(p => (Action)(() => codeWriter.WriteNamedArgument(p.Name, () => rootObjectVisitor.Visit(ReflectionUtils.GetValue(p, obj), context))))
-            : properties.Select(p => ReflectionUtils.GetValue(p, obj)).Select(value => (Action)(() => rootObjectVisitor.Visit(value, context)));
+            : properties.Select(p => (Action)(() => rootObjectVisitor.Visit(ReflectionUtils.GetValue(p, obj), context)));
 
-        codeWriter.WriteArrayCreate(objectType, argumentValues);
+        codeWriter.WriteObjectCreate(objectType, argumentValues);
     }
 }

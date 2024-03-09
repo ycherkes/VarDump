@@ -391,7 +391,7 @@ public class ObjectDescriptorMiddlewareSpec
             {
                 return new ObjectDescription
                 {
-                    Type = new CodeTypeInfo(objectType),
+                    Type = objectType,
                     ConstructorParameters = new []
                     {
                         new ReflectionDescription(fileInfo.FullName)
@@ -414,7 +414,7 @@ public class ObjectDescriptorMiddlewareSpec
             {
                 return new ObjectDescription
                 {
-                    Type = new CodeTypeInfo(objectType),
+                    Type = objectType,
                     ConstructorParameters = new []
                     {
                         new ReflectionDescription(driveInfo.Name)

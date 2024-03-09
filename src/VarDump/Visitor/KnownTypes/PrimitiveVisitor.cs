@@ -8,6 +8,16 @@ namespace VarDump.Visitor.KnownTypes;
 
 internal sealed class PrimitiveVisitor(ICodeWriter codeWriter) : IKnownObjectVisitor
 {
+    private static readonly string[] SpecialValueNames =
+    [
+        nameof(int.MaxValue),
+        nameof(int.MinValue),
+        nameof(float.PositiveInfinity),
+        nameof(float.NegativeInfinity),
+        nameof(float.Epsilon),
+        nameof(float.NaN)
+    ];
+
     public string Id => "Primitive";
 
     public bool IsSuitableFor(object obj, Type objectType)
@@ -23,17 +33,9 @@ internal sealed class PrimitiveVisitor(ICodeWriter codeWriter) : IKnownObjectVis
             return;
         }
 
-        var specialValueName = new[]
-        {
-            nameof(int.MaxValue),
-            nameof(int.MinValue),
-            nameof(float.PositiveInfinity),
-            nameof(float.NegativeInfinity),
-            nameof(float.Epsilon),
-            nameof(float.NaN)
-        }
-        .Where(specialValue => IsSpecialValueField(obj, objectType, specialValue))
-        .FirstOrDefault(x => x != null);
+        var specialValueName = SpecialValueNames
+            .Where(specialValue => IsSpecialValueField(obj, objectType, specialValue))
+            .FirstOrDefault(x => x != null);
 
         if (specialValueName != null)
         {

@@ -15,7 +15,7 @@ internal sealed class ValueTupleVisitor(IRootObjectVisitor rootObjectVisitor, IC
 
     public void Visit(object obj, Type objectType, VisitContext context)
     {
-        var propertyValues = objectType.GetFields().Select(p => ReflectionUtils.GetValue(p, obj)).Select(v => (Action)(() => rootObjectVisitor.Visit(v, context)));
+        var propertyValues = objectType.GetFields().Select(f => (Action)(() => rootObjectVisitor.Visit(ReflectionUtils.GetValue(f, obj), context)));
 
         codeWriter.WriteValueTupleCreate(propertyValues);
     }

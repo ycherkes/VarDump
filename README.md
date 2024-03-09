@@ -138,40 +138,38 @@ Console.WriteLine(vb);
 
 class CardNumberMaskingMiddleware : IObjectDescriptorMiddleware
 {
-	public IObjectDescription GetObjectDescription(object @object, Type objectType, Func<IObjectDescription> prev)
-	{
-		var objectDescription = prev();
+    public IObjectDescription GetObjectDescription(object @object, Type objectType, Func<IObjectDescription> prev)
+    {
+        var objectDescription = prev();
 
-		return new ObjectDescription
-		{
-			Type = objectDescription.Type,
-			ConstructorParameters = objectDescription.ConstructorParameters,
-			Members = objectDescription.Members.Select(ReplaceCardNumberDescriptor)
-		};
-	}
+        return new ObjectDescription
+        {
+            Type = objectDescription.Type,
+            ConstructorParameters = objectDescription.ConstructorParameters.Select(ReplaceCardNumberDescriptor),
+            Members = objectDescription.Members.Select(ReplaceCardNumberDescriptor)
+        };
+    }
 
-	private static IReflectionDescription ReplaceCardNumberDescriptor(IReflectionDescription memberDescription)
-	{
-		if (memberDescription.Type != typeof(string) 
-			|| !string.Equals(memberDescription.Name, "cardnumber", StringComparison.OrdinalIgnoreCase) 
-			|| string.IsNullOrWhiteSpace((string)memberDescription.Value))
-		{
-			return memberDescription;
-		}
+    private static T ReplaceCardNumberDescriptor<T>(T memberDescription) where T : ReflectionDescription
+    {
+        if (memberDescription.Type != typeof(string) 
+            || !string.Equals(memberDescription.Name, "cardnumber", StringComparison.OrdinalIgnoreCase) 
+            || string.IsNullOrWhiteSpace((string)memberDescription.Value))
+        {
+            return memberDescription;
+        }
 
-		var stringValue = (string)memberDescription.Value;
+        var stringValue = (string)memberDescription.Value;
 
-		var maskedValue = stringValue.Length - 4 > 0
-				? new string('*', stringValue.Length - 4) + stringValue.Substring(stringValue.Length - 4)
-				: stringValue;
+        var maskedValue = stringValue.Length - 4 > 0
+                ? new string('*', stringValue.Length - 4) + stringValue.Substring(stringValue.Length - 4)
+                : stringValue;
 
-		return new ReflectionDescription(maskedValue)
-		{
-			Name = memberDescription.Name, 
-			Type = memberDescription.Type, 
-			ReflectionType = memberDescription.ReflectionType
-		};
-	}
+        return memberDescription with
+        {
+            Value = maskedValue
+        };
+    }
 }
 ```
 
@@ -210,29 +208,29 @@ return;
 
 class FormattableStringVisitor(IRootObjectVisitor rootObjectVisitor, ICodeWriter codeWriter) : IKnownObjectVisitor
 {
-	public string Id => "ServiceDescriptor";
-	public bool IsSuitableFor(object obj, Type objectType)
-	{
-		return obj is FormattableString;
-	}
+    public string Id => "ServiceDescriptor";
+    public bool IsSuitableFor(object obj, Type objectType)
+    {
+        return obj is FormattableString;
+    }
 
-	public void Visit(object obj, Type objectType, VisitContext context)
-	{
-		var formattableString = (FormattableString)obj;
+    public void Visit(object obj, Type objectType, VisitContext context)
+    {
+        var formattableString = (FormattableString)obj;
 
-		IEnumerable<Action> argumentActions =
-		[
-			() => codeWriter.WritePrimitive(formattableString.Format)
-		];
+        IEnumerable<Action> argumentActions =
+        [
+            () => codeWriter.WritePrimitive(formattableString.Format)
+        ];
 
-		argumentActions = argumentActions.Concat(formattableString.GetArguments().Select(a => (Action)(() => rootObjectVisitor.Visit(a, context))));
+        argumentActions = argumentActions.Concat(formattableString.GetArguments().Select(a => (Action)(() => rootObjectVisitor.Visit(a, context))));
 
-		codeWriter.WriteMethodInvoke(() =>
-			codeWriter.WriteMethodReference(
-				() => codeWriter.WriteType(typeof(FormattableStringFactory)),
-				nameof(FormattableStringFactory.Create)),
-			argumentActions);
-	}
+        codeWriter.WriteMethodInvoke(() =>
+            codeWriter.WriteMethodReference(
+                () => codeWriter.WriteType(typeof(FormattableStringFactory)),
+                nameof(FormattableStringFactory.Create)),
+            argumentActions);
+    }
 }
 ```
 

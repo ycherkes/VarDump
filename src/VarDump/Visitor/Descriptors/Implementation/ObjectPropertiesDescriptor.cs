@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Linq;
 using System.Reflection;
-using VarDump.CodeDom.Common;
 using VarDump.Extensions;
 using VarDump.Utils;
 
@@ -25,7 +24,7 @@ internal sealed class ObjectPropertiesDescriptor(BindingFlags getPropertiesBindi
 
         return new ObjectDescription
         {
-            Type = new CodeTypeInfo(objectType),
+            Type = objectType,
             Members = properties
         };
     }

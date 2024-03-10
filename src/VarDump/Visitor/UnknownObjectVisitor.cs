@@ -33,23 +33,23 @@ internal sealed class UnknownObjectVisitor(
             if (dumpOptions.SortDirection != null)
             {
                 members = dumpOptions.SortDirection == ListSortDirection.Ascending
-                    ? members.OrderBy(x => x.Name)
-                    : members.OrderByDescending(x => x.Name);
+                    ? members.OrderBy(m => m.Name)
+                    : members.OrderByDescending(m => m.Name);
             }
 
-            var constructorArguments = objectDescription.ConstructorParameters
-                .Select(cp => !string.IsNullOrWhiteSpace(cp.Name) && dumpOptions.UseNamedArgumentsInConstructors
-                    ? () => codeWriter.WriteNamedArgument(cp.Name, () => rootObjectVisitor.Visit(cp.Value, context))
-                    : (Action)(() => rootObjectVisitor.Visit(cp.Value, context)));
+            var constructorArguments = objectDescription.ConstructorArguments
+                .Select(ca => !string.IsNullOrWhiteSpace(ca.Name) && dumpOptions.UseNamedArgumentsInConstructors
+                    ? () => codeWriter.WriteNamedArgument(ca.Name, () => rootObjectVisitor.Visit(ca.Value, context))
+                    : (Action)(() => rootObjectVisitor.Visit(ca.Value, context)));
 
             var initializers = members
-                .Where(pv => !dumpOptions.ExcludeTypes.Contains(pv.Type.FullName) &&
-                             (!dumpOptions.IgnoreNullValues || dumpOptions.IgnoreNullValues && pv.Value != null) &&
-                             (!dumpOptions.IgnoreDefaultValues || !pv.Type.IsValueType || dumpOptions.IgnoreDefaultValues &&
-                                 ReflectionUtils.GetDefaultValue(pv.Type)?.Equals(pv.Value) != true))
-                .Select(pv => (Action)(() => codeWriter.WriteAssign(
-                    () => codeWriter.WritePropertyReference(pv.Name, null),
-                    () => rootObjectVisitor.Visit(pv.Value, context))));
+                .Where(m => !dumpOptions.ExcludeTypes.Contains(m.Type.FullName) &&
+                             (!dumpOptions.IgnoreNullValues || dumpOptions.IgnoreNullValues && m.Value != null) &&
+                             (!dumpOptions.IgnoreDefaultValues || !m.Type.IsValueType || dumpOptions.IgnoreDefaultValues &&
+                                 ReflectionUtils.GetDefaultValue(m.Type)?.Equals(m.Value) != true))
+                .Select(m => (Action)(() => codeWriter.WriteAssign(
+                    () => codeWriter.WritePropertyReference(m.Name, null),
+                    () => rootObjectVisitor.Visit(m.Value, context))));
 
             codeWriter.WriteObjectCreateAndInitialize
             (

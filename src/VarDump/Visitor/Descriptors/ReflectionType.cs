@@ -3,7 +3,7 @@
 public enum ReflectionType
 {
     Unknown,
-    ConstructorParameter,
+    ConstructorArgument,
     Field,
     Property
 }

@@ -28,7 +28,7 @@ internal sealed class ObjectVisitor : IObjectVisitor, IRootObjectVisitor
             objectDescriptor = objectDescriptor.Concat(new ObjectFieldsDescriptor(options.GetFieldsBindingFlags.Value));
         }
 
-        if (options.Descriptors.Count > 0)
+        if (options.Descriptors?.Count > 0)
         {
             objectDescriptor = objectDescriptor.ApplyMiddleware(options.Descriptors);
             anonymousObjectDescriptor = anonymousObjectDescriptor.ApplyMiddleware(options.Descriptors);

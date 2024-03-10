@@ -411,9 +411,9 @@ public class ObjectDescriptorMiddlewareSpec
                 return new ObjectDescription
                 {
                     Type = objectType,
-                    ConstructorParameters =
+                    ConstructorArguments =
                     [
-                        new ConstructorParameterDescription
+                        new ConstructorArgumentDescription
                         {
                             Value = fileInfo.FullName,
                             Type = typeof(string),
@@ -436,9 +436,9 @@ public class ObjectDescriptorMiddlewareSpec
                 return new ObjectDescription
                 {
                     Type = objectType,
-                    ConstructorParameters =
+                    ConstructorArguments =
                     [
-                        new ConstructorParameterDescription
+                        new ConstructorArgumentDescription
                         {
                             Value = driveInfo.Name,
                             Type = typeof(string),
@@ -477,7 +477,7 @@ public class ObjectDescriptorMiddlewareSpec
             return new ObjectDescription
             {
                 Type = objectDescription.Type,
-                ConstructorParameters = objectDescription.ConstructorParameters,
+                ConstructorArguments = objectDescription.ConstructorArguments,
                 Members = objectDescription.Members.Where(memberDescriptor => !string.Equals(memberDescriptor.Name, "cardnumber", StringComparison.OrdinalIgnoreCase))
             };
         }
@@ -492,7 +492,7 @@ public class ObjectDescriptorMiddlewareSpec
             return new ObjectDescription
             {
                 Type = objectDescription.Type,
-                ConstructorParameters = objectDescription.ConstructorParameters.Select(ReplaceCardNumberDescriptor),
+                ConstructorArguments = objectDescription.ConstructorArguments.Select(ReplaceCardNumberDescriptor),
                 Members = objectDescription.Members.Select(ReplaceCardNumberDescriptor)
             };
         }

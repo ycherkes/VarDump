@@ -5,7 +5,7 @@ namespace VarDump.Visitor.Descriptors;
 
 public interface IObjectDescription
 {
-    IEnumerable<ConstructorParameterDescription> ConstructorParameters { get; set; }
+    IEnumerable<ConstructorArgumentDescription> ConstructorArguments { get; set; }
     IEnumerable<MemberDescription> Members { get; set; }
     CodeTypeInfo Type { get; set; }
 }

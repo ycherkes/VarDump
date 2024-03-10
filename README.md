@@ -208,7 +208,7 @@ return;
 
 class FormattableStringVisitor(IRootObjectVisitor rootObjectVisitor, ICodeWriter codeWriter) : IKnownObjectVisitor
 {
-    public string Id => "ServiceDescriptor";
+    public string Id => "FormattableString";
     public bool IsSuitableFor(object obj, Type objectType)
     {
         return obj is FormattableString;

@@ -8,7 +8,7 @@ public class ArraySpec
     [Fact]
     public void DumpArrayOfArraysCsharp()
     {
-        int[][] array = { new[] { 1 } };
+        int[][] array = [[1]];
 
         var dumper = new CSharpDumper();
 
@@ -133,7 +133,7 @@ public class ArraySpec
     [Fact]
     public void DumpArrayOfArraysVb()
     {
-        int[][] array = { new[] { 1 } };
+        int[][] array = [[1]];
 
         var dumper = new VisualBasicDumper();
 

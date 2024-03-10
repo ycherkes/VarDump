@@ -492,12 +492,12 @@ public class ObjectDescriptorMiddlewareSpec
             return new ObjectDescription
             {
                 Type = objectDescription.Type,
-                ConstructorArguments = objectDescription.ConstructorArguments.Select(ReplaceCardNumberDescriptor),
-                Members = objectDescription.Members.Select(ReplaceCardNumberDescriptor)
+                ConstructorArguments = objectDescription.ConstructorArguments.Select(ReplaceCardNumberDescription),
+                Members = objectDescription.Members.Select(ReplaceCardNumberDescription)
             };
         }
 
-        private static T ReplaceCardNumberDescriptor<T>(T memberDescription) where T : ReflectionDescription
+        private static T ReplaceCardNumberDescription<T>(T memberDescription) where T : ReflectionDescription
         {
             if (memberDescription.Type != typeof(string) 
                 || !string.Equals(memberDescription.Name, "cardnumber", StringComparison.OrdinalIgnoreCase) 

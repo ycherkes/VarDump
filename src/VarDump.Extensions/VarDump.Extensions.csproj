@@ -12,7 +12,7 @@
       <Copyright>Copyright $([System.DateTime]::Now.Year) Yevhen Cherkes</Copyright>
       <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
       <Title>VarDump.Extensions</Title>
-      <Version>0.3.6</Version>
+      <Version>0.3.6-alpha</Version>
       <Description>Extension methods that simplify the usage of the VarDump library.</Description>
       <PackageProjectUrl>https://github.com/ycherkes/VarDump</PackageProjectUrl>
       <PackageReadmeFile>README.md</PackageReadmeFile>

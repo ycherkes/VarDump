@@ -11,8 +11,9 @@ public sealed record PropertyDescription : MemberDescription
     public PropertyDescription(Func<object> getValueFunc) : base(getValueFunc)
     {
     }
-
-    public override ReflectionType ReflectionType => ReflectionType.Property;
+    
+    public bool CanWrite { get; set; }
     public override string Name { get; set; }
+    public override ReflectionType ReflectionType => ReflectionType.Property;
     public override Type Type { get; set; }
 }

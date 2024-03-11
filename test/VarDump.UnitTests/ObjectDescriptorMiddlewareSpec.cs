@@ -369,14 +369,15 @@ public class ObjectDescriptorMiddlewareSpec
 
         public IObjectDescription GetObjectDescription(object @object, Type objectType, Func<IObjectDescription> prev)
         {
-            var objectInfo = prev();
+            var objectDescription = prev();
 
             if (typeof(MemberInfo).IsAssignableFrom(objectType))
             {
-                objectInfo.Members = objectInfo.Members.Where(m => _includeProperties.Contains(m.Name)).ToList();
+                objectDescription.Properties = objectDescription.Properties.Where(m => _includeProperties.Contains(m.Name)).ToList();
+                objectDescription.Fields = [];
             }
 
-            return objectInfo;
+            return objectDescription;
         }
     }
 
@@ -395,7 +396,8 @@ public class ObjectDescriptorMiddlewareSpec
 
             if (typeof(FileSystemInfo).IsAssignableFrom(objectType))
             {
-                objectDescription.Members = objectDescription.Members.Where(m => !_excludeProperties.Contains(m.Name)).ToList();
+                objectDescription.Properties = objectDescription.Properties.Where(m => !_excludeProperties.Contains(m.Name)).ToList();
+                objectDescription.Fields = [];
             }
 
             return objectDescription;
@@ -478,8 +480,15 @@ public class ObjectDescriptorMiddlewareSpec
             {
                 Type = objectDescription.Type,
                 ConstructorArguments = objectDescription.ConstructorArguments,
-                Members = objectDescription.Members.Where(memberDescriptor => !string.Equals(memberDescriptor.Name, "cardnumber", StringComparison.OrdinalIgnoreCase))
+                Properties = objectDescription.Properties.Where(IsNotCardNumber),
+                Fields = objectDescription.Fields.Where(IsNotCardNumber)
             };
+        }
+
+        private static bool IsNotCardNumber<T>(T description) where T : ReflectionDescription
+        {
+            return description.Type != typeof(string)
+                   || description.Name?.EndsWith("cardnumber", StringComparison.OrdinalIgnoreCase) != true;
         }
     }
 
@@ -492,27 +501,32 @@ public class ObjectDescriptorMiddlewareSpec
             return new ObjectDescription
             {
                 Type = objectDescription.Type,
-                ConstructorArguments = objectDescription.ConstructorArguments.Select(ReplaceCardNumberDescription),
-                Members = objectDescription.Members.Select(ReplaceCardNumberDescription)
+                ConstructorArguments = objectDescription.ConstructorArguments.Select(MaskCardNumber),
+                Properties = objectDescription.Properties.Select(MaskCardNumber),
+                Fields = objectDescription.Fields.Select(MaskCardNumber)
             };
         }
 
-        private static T ReplaceCardNumberDescription<T>(T memberDescription) where T : ReflectionDescription
+        private static bool IsCardNumber<T>(T description) where T : ReflectionDescription
         {
-            if (memberDescription.Type != typeof(string) 
-                || !string.Equals(memberDescription.Name, "cardnumber", StringComparison.OrdinalIgnoreCase) 
-                || string.IsNullOrWhiteSpace((string)memberDescription.Value))
+            return description.Type == typeof(string)
+                   && description.Name?.EndsWith("cardnumber", StringComparison.OrdinalIgnoreCase) == true;
+        }
+
+        private static T MaskCardNumber<T>(T description) where T : ReflectionDescription
+        {
+            if (!IsCardNumber(description) || string.IsNullOrWhiteSpace((string)description.Value))
             {
-                return memberDescription;
+                return description;
             }
 
-            var stringValue = (string)memberDescription.Value;
+            var stringValue = (string)description.Value;
 
             var maskedValue = stringValue.Length - 4 > 0
                     ? new string('*', stringValue.Length - 4) + stringValue.Substring(stringValue.Length - 4)
                     : stringValue;
 
-            return memberDescription with
+            return description with
             {
                 Value = maskedValue
             };

@@ -5,7 +5,7 @@ VarDump is a utility for serialization of runtime objects to C# or Visual Basic 
 
 Developed as a free alternative to [ObjectDumper.NET](https://github.com/thomasgalliker/ObjectDumper), which is not free for commercial use.
 
-[![nuget version](https://img.shields.io/badge/Nuget-v0.3.5.alpha-blue)](https://www.nuget.org/packages/VarDump)
+[![nuget version](https://img.shields.io/badge/Nuget-v0.3.6)](https://www.nuget.org/packages/VarDump)
 [![nuget downloads](https://img.shields.io/nuget/dt/VarDump?label=Downloads)](https://www.nuget.org/packages/VarDump)
 
 ## C# & VB Dumper:
@@ -145,27 +145,32 @@ class CardNumberMaskingMiddleware : IObjectDescriptorMiddleware
         return new ObjectDescription
         {
             Type = objectDescription.Type,
-            ConstructorArguments = objectDescription.ConstructorArguments.Select(ReplaceCardNumberDescription),
-            Members = objectDescription.Members.Select(ReplaceCardNumberDescription)
+            ConstructorArguments = objectDescription.ConstructorArguments.Select(MaskCardNumber),
+            Properties = objectDescription.Properties.Select(MaskCardNumber),
+            Fields = objectDescription.Fields.Select(MaskCardNumber)
         };
     }
 
-    private static T ReplaceCardNumberDescription<T>(T memberDescription) where T : ReflectionDescription
+    private static bool IsCardNumber<T>(T description) where T : ReflectionDescription
     {
-        if (memberDescription.Type != typeof(string) 
-            || !string.Equals(memberDescription.Name, "cardnumber", StringComparison.OrdinalIgnoreCase) 
-            || string.IsNullOrWhiteSpace((string)memberDescription.Value))
+        return description.Type == typeof(string)
+               && description.Name?.EndsWith("cardnumber", StringComparison.OrdinalIgnoreCase) == true;
+    }
+
+    private static T MaskCardNumber<T>(T description) where T : ReflectionDescription
+    {
+        if (!IsCardNumber(description) || string.IsNullOrWhiteSpace((string)description.Value))
         {
-            return memberDescription;
+            return description;
         }
 
-        var stringValue = (string)memberDescription.Value;
+        var stringValue = (string)description.Value;
 
         var maskedValue = stringValue.Length - 4 > 0
                 ? new string('*', stringValue.Length - 4) + stringValue.Substring(stringValue.Length - 4)
                 : stringValue;
 
-        return memberDescription with
+        return description with
         {
             Value = maskedValue
         };

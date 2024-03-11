@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using VarDump.CodeDom.Compiler;
@@ -28,7 +29,7 @@ internal sealed class UnknownObjectVisitor(
         {
             var objectDescription = objectDescriptor.GetObjectDescription(o, objectType);
 
-            var members = objectDescription.Members;
+            var members = ((IEnumerable<MemberDescription>)objectDescription.Fields).Concat(objectDescription.Properties);
 
             if (dumpOptions.SortDirection != null)
             {

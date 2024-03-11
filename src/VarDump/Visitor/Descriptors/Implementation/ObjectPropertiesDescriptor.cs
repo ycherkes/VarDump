@@ -18,14 +18,15 @@ internal sealed class ObjectPropertiesDescriptor(BindingFlags getPropertiesBindi
                         !ReflectionUtils.IsIndexer(p))
             .Select(p => new PropertyDescription(() => ReflectionUtils.GetValue(p, @object))
             {
+                CanWrite = p.CanWrite,
                 Name = p.Name,
                 Type = p.PropertyType
             });
 
         return new ObjectDescription
         {
-            Type = objectType,
-            Members = properties
+            Properties = properties,
+            Type = objectType
         };
     }
 }

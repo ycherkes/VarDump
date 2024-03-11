@@ -22,7 +22,7 @@ internal sealed class AnonymousTypeVisitor(
     public void Visit(object obj, Type objectType, VisitContext context)
     {
         var initializeActions = anonymousObjectDescriptor.GetObjectDescription(obj, objectType)
-            .Members
+            .Properties
             .Select(pv => (Action)(() => codeWriter.WriteAssign(
                 () => codeWriter.WritePropertyReference(pv.Name, null),
                 () =>

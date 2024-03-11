@@ -19,7 +19,7 @@ internal sealed class ObjectFieldsDescriptor(BindingFlags getFieldsBindingFlags)
 
         return new ObjectDescription
         {
-            Members = fields,
+            Fields = fields,
             Type = objectType
         };
     }

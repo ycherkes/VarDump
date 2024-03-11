@@ -13,7 +13,8 @@ internal sealed class ConcatenatedObjectDescriptor(IObjectDescriptor first, IObj
         return new ObjectDescription
         {
             ConstructorArguments = firstInfo.ConstructorArguments.Concat(secondInfo.ConstructorArguments),
-            Members = firstInfo.Members.Concat(secondInfo.Members),
+            Properties = firstInfo.Properties.Concat(secondInfo.Properties),
+            Fields = firstInfo.Fields.Concat(secondInfo.Fields),
             Type = secondInfo.Type ?? firstInfo.Type
         };
     }

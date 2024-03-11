@@ -221,18 +221,18 @@ class FormattableStringVisitor(IRootVisitor rootVisitor, ICodeWriter codeWriter)
     {
         var formattableString = (FormattableString)obj;
 
-        IEnumerable<Action> argumentActions =
+        IEnumerable<Action> arguments =
         [
             () => codeWriter.WritePrimitive(formattableString.Format)
         ];
 
-        argumentActions = argumentActions.Concat(formattableString.GetArguments().Select(a => (Action)(() => rootVisitor.Visit(a, context))));
+        arguments = arguments.Concat(formattableString.GetArguments().Select(a => (Action)(() => rootVisitor.Visit(a, context))));
 
         codeWriter.WriteMethodInvoke(() =>
             codeWriter.WriteMethodReference(
                 () => codeWriter.WriteType(typeof(FormattableStringFactory)),
                 nameof(FormattableStringFactory.Create)),
-            argumentActions);
+            arguments);
     }
 }
 ```

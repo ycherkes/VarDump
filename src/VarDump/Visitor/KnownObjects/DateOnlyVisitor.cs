@@ -3,12 +3,11 @@ using VarDump.CodeDom.Compiler;
 using VarDump.Extensions;
 using VarDump.Utils;
 
-namespace VarDump.Visitor.KnownTypes;
+namespace VarDump.Visitor.KnownObjects;
 
 internal sealed class DateOnlyVisitor(ICodeWriter codeWriter, DateTimeInstantiation dateTimeInstantiation)
     : IKnownObjectVisitor
 {
-    public string Id => "DateOnly";
     public bool IsSuitableFor(object obj, Type objectType)
     {
         return objectType.IsDateOnly();

@@ -4,11 +4,10 @@ using VarDump.CodeDom.Compiler;
 using VarDump.Extensions;
 using VarDump.Utils;
 
-namespace VarDump.Visitor.KnownTypes;
+namespace VarDump.Visitor.KnownObjects;
 
-internal sealed class TupleVisitor(IRootObjectVisitor rootObjectVisitor, ICodeWriter codeWriter) : IKnownObjectVisitor
+internal sealed class TupleVisitor(IRootVisitor rootVisitor, ICodeWriter codeWriter) : IKnownObjectVisitor
 {
-    public string Id => "Tuple";
     public bool IsSuitableFor(object obj, Type objectType)
     {
         return objectType.IsTuple();
@@ -26,7 +25,7 @@ internal sealed class TupleVisitor(IRootObjectVisitor rootObjectVisitor, ICodeWr
 
         try
         {
-            var propertyValues = objectType.GetProperties().Select(p => (Action)(() => rootObjectVisitor.Visit(ReflectionUtils.GetValue(p, o), context)));
+            var propertyValues = objectType.GetProperties().Select(p => (Action)(() => rootVisitor.Visit(ReflectionUtils.GetValue(p, o), context)));
 
             codeWriter.WriteObjectCreate(objectType, propertyValues);
         }

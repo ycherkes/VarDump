@@ -8,12 +8,11 @@ using VarDump.CodeDom.Common;
 using VarDump.CodeDom.Compiler;
 using VarDump.UnitTests.TestModel;
 using VarDump.Visitor;
-using VarDump.Visitor.KnownTypes;
 using Xunit;
 
 namespace VarDump.UnitTests;
 
-public class KnownTypesSpec
+public class KnownObjectsSpec
 {
     [Fact]
     public void DumpServiceDescriptorSpecCsharp()
@@ -27,10 +26,9 @@ public class KnownTypesSpec
 
         var dumpOptions = new DumpOptions
         {
-            ConfigureKnownTypes = (knownTypes, rootObjectVisitor, _, codeWriter) =>
+            ConfigureKnownObjects = (knownObjects, rootVisitor, _, codeWriter) =>
             {
-                var sdv = new ServiceDescriptorVisitor(rootObjectVisitor, codeWriter);
-                knownTypes.Add(sdv.Id, sdv);
+                knownObjects.Add(new ServiceDescriptorVisitor(rootVisitor, codeWriter));
             }
         };
 
@@ -56,10 +54,9 @@ public class KnownTypesSpec
 
         var dumpOptions = new DumpOptions
         {
-            ConfigureKnownTypes = (knownTypes, rootObjectVisitor, _, codeWriter) =>
+            ConfigureKnownObjects = (knownObjects, rootVisitor, _, codeWriter) =>
             {
-                var sdv = new ServiceDescriptorVisitor(rootObjectVisitor, codeWriter);
-                knownTypes.Add(sdv.Id, sdv);
+                knownObjects.Add(new ServiceDescriptorVisitor(rootVisitor, codeWriter));
             }
         };
 
@@ -82,10 +79,9 @@ public class KnownTypesSpec
 
         var dumpOptions = new DumpOptions
         {
-            ConfigureKnownTypes = (knownObjects, rootObjectVisitor, _, codeWriter) =>
+            ConfigureKnownObjects = (knownObjects, rootVisitor, _, codeWriter) =>
             {
-                var fsv = new FormattableStringVisitor(rootObjectVisitor, codeWriter);
-                knownObjects.Add(fsv.Id, fsv);
+                knownObjects.Add(new FormattableStringVisitor(rootVisitor, codeWriter));
             }
         };
 
@@ -108,10 +104,9 @@ public class KnownTypesSpec
 
         var dumpOptions = new DumpOptions
         {
-            ConfigureKnownTypes = (knownTypes, rootObjectVisitor, _, codeWriter) =>
+            ConfigureKnownObjects = (knownObjects, rootVisitor, _, codeWriter) =>
             {
-                var fsv = new FormattableStringVisitor(rootObjectVisitor, codeWriter);
-                knownTypes.Add(fsv.Id, fsv);
+                knownObjects.Add(new FormattableStringVisitor(rootVisitor, codeWriter));
             }
         };
 
@@ -126,9 +121,8 @@ public class KnownTypesSpec
             """, result);
     }
 
-    private class ServiceDescriptorVisitor(IRootObjectVisitor rootObjectVisitor, ICodeWriter codeWriter) : IKnownObjectVisitor
+    private class ServiceDescriptorVisitor(IRootVisitor rootVisitor, ICodeWriter codeWriter) : IKnownObjectVisitor
     {
-        public string Id => "ServiceDescriptor";
         public bool IsSuitableFor(object obj, Type objectType)
         {
             return obj is ServiceDescriptor;
@@ -152,7 +146,7 @@ public class KnownTypesSpec
 
             if (serviceDescriptor.ImplementationInstance != null)
             {
-                parameters.Add(() => rootObjectVisitor.Visit(serviceDescriptor.ImplementationInstance, context));
+                parameters.Add(() => rootVisitor.Visit(serviceDescriptor.ImplementationInstance, context));
             }
 
             if (serviceDescriptor.ImplementationFactory != null)
@@ -171,9 +165,8 @@ public class KnownTypesSpec
         }
     }
 
-    private class FormattableStringVisitor(IRootObjectVisitor rootObjectVisitor, ICodeWriter codeWriter) : IKnownObjectVisitor
+    private class FormattableStringVisitor(IRootVisitor rootVisitor, ICodeWriter codeWriter) : IKnownObjectVisitor
     {
-        public string Id => "FormattableString";
         public bool IsSuitableFor(object obj, Type objectType)
         {
             return obj is FormattableString;
@@ -183,18 +176,18 @@ public class KnownTypesSpec
         {
             var formattableString = (FormattableString)obj;
 
-            IEnumerable<Action> argumentActions =
+            IEnumerable<Action> arguments =
             [
                 () => codeWriter.WritePrimitive(formattableString.Format)
             ];
 
-            argumentActions = argumentActions.Concat(formattableString.GetArguments().Select(a => (Action)(() => rootObjectVisitor.Visit(a, context))));
+            arguments = arguments.Concat(formattableString.GetArguments().Select(a => (Action)(() => rootVisitor.Visit(a, context))));
 
             codeWriter.WriteMethodInvoke(() =>
                 codeWriter.WriteMethodReference(
                     () => codeWriter.WriteType(typeof(FormattableStringFactory)),
                     nameof(FormattableStringFactory.Create)),
-                argumentActions);
+                arguments);
         }
     }
 }

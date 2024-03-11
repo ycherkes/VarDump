@@ -5,15 +5,14 @@ using VarDump.CodeDom.Compiler;
 using VarDump.Utils;
 using VarDump.Visitor.Descriptors;
 
-namespace VarDump.Visitor.KnownTypes;
+namespace VarDump.Visitor.KnownObjects;
 
-internal sealed class AnonymousTypeVisitor(
-    IRootObjectVisitor rootObjectVisitor,
+internal sealed class AnonymousVisitor(
+    IRootVisitor rootVisitor,
     IObjectDescriptor anonymousObjectDescriptor,
     ICodeWriter codeWriter)
     : IKnownObjectVisitor
 {
-    public string Id => "Anonymous";
     public bool IsSuitableFor(object obj, Type objectType)
     {
         return objectType.IsAnonymousType();
@@ -29,11 +28,11 @@ internal sealed class AnonymousTypeVisitor(
                 {
                     if (pv.Type.IsNullableType() || pv.Value == null)
                     {
-                        codeWriter.WriteCast(pv.Type, () => rootObjectVisitor.Visit(pv.Value, context));
+                        codeWriter.WriteCast(pv.Type, () => rootVisitor.Visit(pv.Value, context));
                     }
                     else
                     {
-                        rootObjectVisitor.Visit(pv.Value, context);
+                        rootVisitor.Visit(pv.Value, context);
                     }
                 })));
 

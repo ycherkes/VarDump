@@ -2,7 +2,7 @@
 using System.Globalization;
 using VarDump.CodeDom.Compiler;
 
-namespace VarDump.Visitor.KnownTypes;
+namespace VarDump.Visitor.KnownObjects;
 
 internal sealed class DateTimeVisitor(
     ICodeWriter codeWriter,
@@ -10,7 +10,6 @@ internal sealed class DateTimeVisitor(
     DateKind dateKind)
     : IKnownObjectVisitor
 {
-    public string Id => nameof(DateTime);
     public bool IsSuitableFor(object obj, Type objectType)
     {
         return obj is DateTime;

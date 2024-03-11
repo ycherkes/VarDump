@@ -2,15 +2,14 @@
 using System.Globalization;
 using VarDump.CodeDom.Compiler;
 
-namespace VarDump.Visitor.KnownTypes;
+namespace VarDump.Visitor.KnownObjects;
 
 internal sealed class DateTimeOffsetVisitor(
-    IRootObjectVisitor rootObjectVisitor,
+    IRootVisitor rootVisitor,
     ICodeWriter codeWriter,
     DateTimeInstantiation dateTimeInstantiation)
     : IKnownObjectVisitor
 {
-    public string Id => nameof(DateTimeOffset);
     public bool IsSuitableFor(object obj, Type objectType)
     {
         return obj is DateTimeOffset;
@@ -82,6 +81,6 @@ internal sealed class DateTimeOffsetVisitor(
         void WriteMinute() => codeWriter.WritePrimitive(dateTimeOffset.Minute);
         void WriteSecond() => codeWriter.WritePrimitive(dateTimeOffset.Second);
         void WriteMillisecond() => codeWriter.WritePrimitive(dateTimeOffset.Millisecond);
-        void WriteOffset() => rootObjectVisitor.Visit(dateTimeOffset.Offset, context);
+        void WriteOffset() => rootVisitor.Visit(dateTimeOffset.Offset, context);
     }
 }

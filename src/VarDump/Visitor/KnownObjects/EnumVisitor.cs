@@ -2,11 +2,10 @@
 using System.Linq;
 using VarDump.CodeDom.Compiler;
 
-namespace VarDump.Visitor.KnownTypes;
+namespace VarDump.Visitor.KnownObjects;
 
 internal sealed class EnumVisitor(ICodeWriter codeWriter) : IKnownObjectVisitor
 {
-    public string Id => nameof(Enum);
     public bool IsSuitableFor(object obj, Type objectType)
     {
         return obj is Enum;

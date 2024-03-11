@@ -189,19 +189,18 @@ using System.Runtime.CompilerServices;
 using VarDump;
 using VarDump.CodeDom.Compiler;
 using VarDump.Visitor;
-using VarDump.Visitor.KnownTypes;
+using VarDump.Visitor.KnownObjects;
 
-// For more examples see https://github.com/ycherkes/VarDump/blob/main/test/VarDump.UnitTests/KnownTypesSpec.cs
+// For more examples see https://github.com/ycherkes/VarDump/blob/main/test/VarDump.UnitTests/KnownObjectsSpec.cs
 
 const string name = "World";
 FormattableString str = $"Hello, {name}";
 
 var dumpOptions = new DumpOptions
 {
-    ConfigureKnownTypes = (knownObjects, rootObjectVisitor, _, codeWriter) =>
+    ConfigureKnownObjects = (knownObjects, rootVisitor, _, codeWriter) =>
     {
-        var fsv = new FormattableStringVisitor(rootObjectVisitor, codeWriter);
-        knownObjects.Add(fsv.Id, fsv);
+        knownObjects.Add(new FormattableStringVisitor(rootVisitor, codeWriter));
     }
 };
 
@@ -211,9 +210,8 @@ Console.WriteLine(result);
 
 return;
 
-class FormattableStringVisitor(IRootObjectVisitor rootObjectVisitor, ICodeWriter codeWriter) : IKnownObjectVisitor
+class FormattableStringVisitor(IRootVisitor rootVisitor, ICodeWriter codeWriter) : IKnownObjectVisitor
 {
-    public string Id => "FormattableString";
     public bool IsSuitableFor(object obj, Type objectType)
     {
         return obj is FormattableString;
@@ -228,7 +226,7 @@ class FormattableStringVisitor(IRootObjectVisitor rootObjectVisitor, ICodeWriter
             () => codeWriter.WritePrimitive(formattableString.Format)
         ];
 
-        argumentActions = argumentActions.Concat(formattableString.GetArguments().Select(a => (Action)(() => rootObjectVisitor.Visit(a, context))));
+        argumentActions = argumentActions.Concat(formattableString.GetArguments().Select(a => (Action)(() => rootVisitor.Visit(a, context))));
 
         codeWriter.WriteMethodInvoke(() =>
             codeWriter.WriteMethodReference(

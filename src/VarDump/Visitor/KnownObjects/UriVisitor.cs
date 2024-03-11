@@ -2,11 +2,10 @@
 using System.Collections.Generic;
 using VarDump.CodeDom.Compiler;
 
-namespace VarDump.Visitor.KnownTypes;
+namespace VarDump.Visitor.KnownObjects;
 
 internal sealed class UriVisitor(ICodeWriter codeWriter) : IKnownObjectVisitor
 {
-    public string Id => nameof(Uri);
     public bool IsSuitableFor(object obj, Type objectType)
     {
         return obj is Uri;

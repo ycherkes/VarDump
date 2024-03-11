@@ -4,7 +4,7 @@ using System.Globalization;
 using System.Linq;
 using VarDump.CodeDom.Compiler;
 
-namespace VarDump.Visitor.KnownTypes;
+namespace VarDump.Visitor.KnownObjects;
 
 internal sealed class TimeSpanVisitor(ICodeWriter codeWriter, DateTimeInstantiation dateTimeInstantiation)
     : IKnownObjectVisitor
@@ -16,7 +16,6 @@ internal sealed class TimeSpanVisitor(ICodeWriter codeWriter, DateTimeInstantiat
         { TimeSpan.Zero, nameof(TimeSpan.Zero) }
     };
 
-    public string Id => nameof(TimeSpan);
     public bool IsSuitableFor(object obj, Type objectType)
     {
         return obj is TimeSpan;

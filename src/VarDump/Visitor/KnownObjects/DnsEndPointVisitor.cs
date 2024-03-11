@@ -4,11 +4,10 @@ using System.Net;
 using System.Net.Sockets;
 using VarDump.CodeDom.Compiler;
 
-namespace VarDump.Visitor.KnownTypes;
+namespace VarDump.Visitor.KnownObjects;
 
-internal sealed class DnsEndPointVisitor(IRootObjectVisitor rootObjectVisitor, ICodeWriter codeWriter) : IKnownObjectVisitor
+internal sealed class DnsEndPointVisitor(IRootVisitor rootVisitor, ICodeWriter codeWriter) : IKnownObjectVisitor
 {
-    public string Id => nameof(DnsEndPoint);
     public bool IsSuitableFor(object obj, Type objectType)
     {
         return obj is DnsEndPoint;
@@ -27,7 +26,7 @@ internal sealed class DnsEndPointVisitor(IRootObjectVisitor rootObjectVisitor, I
             yield return () => codeWriter.WritePrimitive(dnsEndPoint.Port);
             if (dnsEndPoint.AddressFamily != AddressFamily.Unspecified)
             {
-                yield return () => rootObjectVisitor.Visit(dnsEndPoint.AddressFamily, context);
+                yield return () => rootVisitor.Visit(dnsEndPoint.AddressFamily, context);
             }
         }
     }

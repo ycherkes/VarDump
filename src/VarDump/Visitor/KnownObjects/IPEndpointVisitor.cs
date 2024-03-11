@@ -2,11 +2,10 @@
 using System.Net;
 using VarDump.CodeDom.Compiler;
 
-namespace VarDump.Visitor.KnownTypes;
+namespace VarDump.Visitor.KnownObjects;
 
-internal sealed class IPEndpointVisitor(IRootObjectVisitor rootObjectVisitor, ICodeWriter codeWriter) : IKnownObjectVisitor
+internal sealed class IPEndpointVisitor(IRootVisitor rootVisitor, ICodeWriter codeWriter) : IKnownObjectVisitor
 {
-    public string Id => nameof(IPEndPoint);
     public bool IsSuitableFor(object obj, Type objectType)
     {
         return obj is IPEndPoint;
@@ -19,7 +18,7 @@ internal sealed class IPEndpointVisitor(IRootObjectVisitor rootObjectVisitor, IC
         codeWriter.WriteObjectCreate(
             typeof(IPEndPoint),
             [
-                () => rootObjectVisitor.Visit(ipEndPoint.Address, context),
+                () => rootVisitor.Visit(ipEndPoint.Address, context),
                 () => codeWriter.WritePrimitive(ipEndPoint.Port)
             ]);
     }

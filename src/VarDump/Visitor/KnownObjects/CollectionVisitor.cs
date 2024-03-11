@@ -8,15 +8,15 @@ using VarDump.CodeDom.Compiler;
 using VarDump.Extensions;
 using VarDump.Utils;
 
-namespace VarDump.Visitor.KnownTypes;
+namespace VarDump.Visitor.KnownObjects;
 
 internal sealed class CollectionVisitor : IKnownObjectVisitor
 {
-    private readonly IRootObjectVisitor _rootObjectVisitor;
+    private readonly IRootVisitor _rootVisitor;
     private readonly ICodeWriter _codeWriter;
     private readonly int _maxCollectionSize;
 
-    public CollectionVisitor(IRootObjectVisitor rootObjectVisitor, ICodeWriter codeWriter, int maxCollectionSize)
+    public CollectionVisitor(IRootVisitor rootVisitor, ICodeWriter codeWriter, int maxCollectionSize)
     {
         if (maxCollectionSize <= 0)
         {
@@ -24,11 +24,9 @@ internal sealed class CollectionVisitor : IKnownObjectVisitor
         }
 
         _maxCollectionSize = maxCollectionSize;
-        _rootObjectVisitor = rootObjectVisitor;
+        _rootVisitor = rootVisitor;
         _codeWriter = codeWriter;
     }
-
-    public string Id => "Collection";
 
     public bool IsSuitableFor(object obj, Type objectType)
     {
@@ -126,7 +124,7 @@ internal sealed class CollectionVisitor : IKnownObjectVisitor
 
     private void VisitSimpleCollection(IEnumerable enumerable, Type elementType, VisitContext context)
     {
-        var items = enumerable.Cast<object>().Select(item => (Action)(() => _rootObjectVisitor.Visit(item, context)));
+        var items = enumerable.Cast<object>().Select(item => (Action)(() => _rootVisitor.Visit(item, context)));
 
         if (_maxCollectionSize < int.MaxValue)
         {
@@ -199,7 +197,7 @@ internal sealed class CollectionVisitor : IKnownObjectVisitor
 
     private void VisitAnonymousCollection(IEnumerable enumerable, VisitContext context)
     {
-        var items = enumerable.Cast<object>().Select(item => (Action)(() => _rootObjectVisitor.Visit(item, context)));
+        var items = enumerable.Cast<object>().Select(item => (Action)(() => _rootVisitor.Visit(item, context)));
 
         if (_maxCollectionSize < int.MaxValue)
         {
@@ -252,6 +250,6 @@ internal sealed class CollectionVisitor : IKnownObjectVisitor
         var items = objects.Select(GetIGroupingValue)
             .SelectMany(g => g.Value.Cast<object>().Select(e => new { g.Key, Element = e }));
 
-        return items.Select(item =>(Action)(() => _rootObjectVisitor.Visit(item, context)));
+        return items.Select(item =>(Action)(() => _rootVisitor.Visit(item, context)));
     }
 }

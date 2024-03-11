@@ -7,15 +7,15 @@ using VarDump.CodeDom.Compiler;
 using VarDump.Extensions;
 using VarDump.Utils;
 
-namespace VarDump.Visitor.KnownTypes;
+namespace VarDump.Visitor.KnownObjects;
 
 internal sealed class DictionaryVisitor : IKnownObjectVisitor
 {
-    private readonly IRootObjectVisitor _rootObjectVisitor;
+    private readonly IRootVisitor _rootVisitor;
     private readonly ICodeWriter _codeWriter;
     private readonly int _maxCollectionSize;
 
-    public DictionaryVisitor(IRootObjectVisitor rootObjectVisitor, ICodeWriter codeWriter, int maxCollectionSize)
+    public DictionaryVisitor(IRootVisitor rootVisitor, ICodeWriter codeWriter, int maxCollectionSize)
     {
         if (maxCollectionSize <= 0)
         {
@@ -23,11 +23,10 @@ internal sealed class DictionaryVisitor : IKnownObjectVisitor
         }
         
         _maxCollectionSize = maxCollectionSize;
-        _rootObjectVisitor = rootObjectVisitor;
+        _rootVisitor = rootVisitor;
         _codeWriter = codeWriter;
     }
 
-    public string Id => "Dictionary";
     public bool IsSuitableFor(object obj, Type objectType)
     {
         return obj is IDictionary;
@@ -135,7 +134,7 @@ internal sealed class DictionaryVisitor : IKnownObjectVisitor
     {
         var objectType = o.GetType();
         var propertyValues = objectType.GetProperties().Select(p => ReflectionUtils.GetValue(p, o)).Take(2).ToArray();
-        _codeWriter.WriteImplicitKeyValuePairCreate(() => _rootObjectVisitor.Visit(propertyValues[0], context), () => _rootObjectVisitor.Visit(propertyValues[1], context));
+        _codeWriter.WriteImplicitKeyValuePairCreate(() => _rootVisitor.Visit(propertyValues[0], context), () => _rootVisitor.Visit(propertyValues[1], context));
     }
 
     private void VisitKeyValuePairWriteAnonymousType(object o, string keyName, string valueName, VisitContext context)
@@ -145,8 +144,8 @@ internal sealed class DictionaryVisitor : IKnownObjectVisitor
         
         _codeWriter.WriteObjectCreateAndInitialize(new CodeAnonymousTypeInfo(), [],
             [
-                () => _codeWriter.WriteAssign(() => _codeWriter.WritePropertyReference(keyName, null), () => _rootObjectVisitor.Visit(propertyValues[0], context)),
-                () => _codeWriter.WriteAssign(() => _codeWriter.WritePropertyReference(valueName, null), () => _rootObjectVisitor.Visit(propertyValues[1], context)),
+                () => _codeWriter.WriteAssign(() => _codeWriter.WritePropertyReference(keyName, null), () => _rootVisitor.Visit(propertyValues[0], context)),
+                () => _codeWriter.WriteAssign(() => _codeWriter.WritePropertyReference(valueName, null), () => _rootVisitor.Visit(propertyValues[1], context)),
             ]);
     }
 }

@@ -1,19 +1,19 @@
-﻿using System.Linq;
+﻿using System.Collections.Generic;
+using System.Linq;
 using VarDump.CodeDom.Compiler;
-using VarDump.Collections;
 using VarDump.Extensions;
 using VarDump.Visitor.Descriptors;
 using VarDump.Visitor.Descriptors.Implementation;
-using VarDump.Visitor.KnownTypes;
+using VarDump.Visitor.KnownObjects;
 
 namespace VarDump.Visitor;
 
-internal sealed class ObjectVisitor : IObjectVisitor, IRootObjectVisitor
+internal sealed class ObjectVisitor : IObjectVisitor, IRootVisitor
 {
     private readonly ICodeWriter _codeWriter;
-    private readonly OrderedDictionary<string, IKnownObjectVisitor> _knownTypes;
+    private readonly List<IKnownObjectVisitor> _knownObjects;
     private readonly int _maxDepth;
-    private readonly UnknownObjectVisitor _unknownObjectVisitor;
+    private readonly ISpecificObjectVisitor _unknownObjectVisitor;
 
     public ObjectVisitor(DumpOptions options, ICodeWriter codeWriter)
     {
@@ -36,9 +36,9 @@ internal sealed class ObjectVisitor : IObjectVisitor, IRootObjectVisitor
 
         _unknownObjectVisitor = new UnknownObjectVisitor(codeWriter, this, objectDescriptor, options);
 
-        _knownTypes = new[]
-        {
-            (IKnownObjectVisitor)new PrimitiveVisitor(codeWriter),
+        _knownObjects =
+        [
+            new PrimitiveVisitor(codeWriter),
             new TimeSpanVisitor(codeWriter, options.DateTimeInstantiation),
             new DateTimeVisitor(codeWriter, options.DateTimeInstantiation, options.DateKind),
             new DateTimeOffsetVisitor(this, codeWriter, options.DateTimeInstantiation),
@@ -53,7 +53,7 @@ internal sealed class ObjectVisitor : IObjectVisitor, IRootObjectVisitor
             new DateOnlyVisitor(codeWriter, options.DateTimeInstantiation),
             new TimeOnlyVisitor(codeWriter, options.DateTimeInstantiation),
             new RecordVisitor(this, codeWriter, options.UseNamedArgumentsInConstructors),
-            new AnonymousTypeVisitor(this, anonymousObjectDescriptor, codeWriter),
+            new AnonymousVisitor(this, anonymousObjectDescriptor, codeWriter),
             new KeyValuePairVisitor(this, codeWriter),
             new TupleVisitor(this, codeWriter),
             new ValueTupleVisitor(this, codeWriter),
@@ -61,9 +61,9 @@ internal sealed class ObjectVisitor : IObjectVisitor, IRootObjectVisitor
             new GroupingVisitor(this, codeWriter),
             new DictionaryVisitor(this, codeWriter, options.MaxCollectionSize),
             new CollectionVisitor(this, codeWriter, options.MaxCollectionSize),
-        }.ToOrderedDictionary(v => v.Id);
+        ];
 
-        options.ConfigureKnownTypes?.Invoke(_knownTypes, this, options, codeWriter);
+        options.ConfigureKnownObjects?.Invoke(_knownObjects, this, options, codeWriter);
     }
 
     public void Visit(object @object)
@@ -85,15 +85,10 @@ internal sealed class ObjectVisitor : IObjectVisitor, IRootObjectVisitor
 
             var objectType = @object?.GetType();
 
-            var knownObjectVisitor = _knownTypes.Values.FirstOrDefault(v => v.IsSuitableFor(@object, objectType));
+            var suitableVisitor = _knownObjects.FirstOrDefault(v => v.IsSuitableFor(@object, objectType))
+                                  ?? _unknownObjectVisitor;
 
-            if (knownObjectVisitor != null)
-            {
-                knownObjectVisitor.Visit(@object, objectType, context);
-                return;
-            }
-
-            _unknownObjectVisitor.Visit(@object, objectType, context);
+            suitableVisitor.Visit(@object, objectType, context);
         }
         finally
         {

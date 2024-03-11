@@ -6,11 +6,10 @@ using System.Reflection;
 using VarDump.CodeDom.Compiler;
 using VarDump.Utils;
 
-namespace VarDump.Visitor.KnownTypes;
+namespace VarDump.Visitor.KnownObjects;
 
-internal sealed class GroupingVisitor(IRootObjectVisitor rootObjectVisitor, ICodeWriter codeWriter) : IKnownObjectVisitor
+internal sealed class GroupingVisitor(IRootVisitor rootVisitor, ICodeWriter codeWriter) : IKnownObjectVisitor
 {
-    public string Id => "Grouping";
     public bool IsSuitableFor(object obj, Type objectType)
     {
         return objectType.IsGrouping();
@@ -53,6 +52,6 @@ internal sealed class GroupingVisitor(IRootObjectVisitor rootObjectVisitor, ICod
     {
         var grouping = GetIGroupingValue(o);
         var groupingValues = grouping.Value.Cast<object>().Select(e => new { grouping.Key, Element = e });
-        rootObjectVisitor.Visit(groupingValues, context);
+        rootVisitor.Visit(groupingValues, context);
     }
 }

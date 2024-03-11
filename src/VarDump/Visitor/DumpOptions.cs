@@ -4,19 +4,17 @@ using System.ComponentModel;
 using System.Linq;
 using System.Reflection;
 using VarDump.CodeDom.Compiler;
-using VarDump.Collections;
 using VarDump.Visitor.Descriptors;
-using VarDump.Visitor.KnownTypes;
 
 namespace VarDump.Visitor;
 
 public class DumpOptions
 {
-    public Action<IOrderedDictionary<string, IKnownObjectVisitor>, IRootObjectVisitor, DumpOptions, ICodeWriter> ConfigureKnownTypes { get; set; }
+    public Action<List<IKnownObjectVisitor>, IRootVisitor, DumpOptions, ICodeWriter> ConfigureKnownObjects { get; set; }
     public DateKind DateKind { get; set; } = DateKind.Original;
     public DateTimeInstantiation DateTimeInstantiation { get; set; } = DateTimeInstantiation.Parse;
-    public ICollection<IObjectDescriptorMiddleware> Descriptors { get; set; } = [];
-    public ICollection<string> ExcludeTypes { get; set; } = [];
+    public List<IObjectDescriptorMiddleware> Descriptors { get; set; } = [];
+    public List<string> ExcludeTypes { get; set; } = [];
     public bool GenerateVariableInitializer { get; set; } = true;
     public BindingFlags? GetFieldsBindingFlags { get; set; }
     public BindingFlags GetPropertiesBindingFlags { get; set; } = BindingFlags.Public | BindingFlags.Instance;
@@ -34,11 +32,11 @@ public class DumpOptions
     {
         return new DumpOptions
         {
-            ConfigureKnownTypes = ConfigureKnownTypes,
+            ConfigureKnownObjects = ConfigureKnownObjects,
             DateKind = DateKind,
             DateTimeInstantiation = DateTimeInstantiation,
-            Descriptors = Descriptors?.ToArray() ?? [],
-            ExcludeTypes = ExcludeTypes?.ToArray() ?? [],
+            Descriptors = Descriptors?.ToList() ?? [],
+            ExcludeTypes = ExcludeTypes?.ToList() ?? [],
             GenerateVariableInitializer = GenerateVariableInitializer,
             GetFieldsBindingFlags = GetFieldsBindingFlags,
             GetPropertiesBindingFlags = GetPropertiesBindingFlags,

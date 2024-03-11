@@ -1,6 +1,6 @@
 ﻿namespace VarDump.Visitor;
 
-public interface IRootObjectVisitor
+public interface IRootVisitor
 {
     void Visit(object @object, VisitContext context);
 }

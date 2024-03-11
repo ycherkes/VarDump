@@ -3,12 +3,11 @@ using System.Linq;
 using VarDump.CodeDom.Compiler;
 using VarDump.Utils;
 
-namespace VarDump.Visitor.KnownTypes;
+namespace VarDump.Visitor.KnownObjects;
 
-internal sealed class KeyValuePairVisitor(IRootObjectVisitor rootObjectVisitor, ICodeWriter codeWriter)
+internal sealed class KeyValuePairVisitor(IRootVisitor rootVisitor, ICodeWriter codeWriter)
     : IKnownObjectVisitor
 {
-    public string Id => "KeyValuePair";
     public bool IsSuitableFor(object obj, Type objectType)
     {
         return objectType.IsKeyValuePair();
@@ -16,7 +15,7 @@ internal sealed class KeyValuePairVisitor(IRootObjectVisitor rootObjectVisitor, 
 
     public void Visit(object obj, Type objectType, VisitContext context)
     {
-        var propertyValues = objectType.GetProperties().Select(p => (Action)(() => rootObjectVisitor.Visit(ReflectionUtils.GetValue(p, obj), context)));
+        var propertyValues = objectType.GetProperties().Select(p => (Action)(() => rootVisitor.Visit(ReflectionUtils.GetValue(p, obj), context)));
 
         codeWriter.WriteObjectCreate(objectType, propertyValues);
     }

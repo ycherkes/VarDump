@@ -4,7 +4,7 @@ using System.Reflection;
 using VarDump.CodeDom.Compiler;
 using VarDump.Utils;
 
-namespace VarDump.Visitor.KnownTypes;
+namespace VarDump.Visitor.KnownObjects;
 
 internal sealed class PrimitiveVisitor(ICodeWriter codeWriter) : IKnownObjectVisitor
 {
@@ -17,8 +17,6 @@ internal sealed class PrimitiveVisitor(ICodeWriter codeWriter) : IKnownObjectVis
         nameof(float.Epsilon),
         nameof(float.NaN)
     ];
-
-    public string Id => "Primitive";
 
     public bool IsSuitableFor(object obj, Type objectType)
     {

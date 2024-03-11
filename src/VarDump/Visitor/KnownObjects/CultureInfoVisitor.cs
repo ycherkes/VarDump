@@ -2,11 +2,10 @@
 using System.Globalization;
 using VarDump.CodeDom.Compiler;
 
-namespace VarDump.Visitor.KnownTypes;
+namespace VarDump.Visitor.KnownObjects;
 
 internal sealed class CultureInfoVisitor(ICodeWriter codeWriter) : IKnownObjectVisitor
 {
-    public string Id => nameof(CultureInfo);
     public bool IsSuitableFor(object obj, Type objectType)
     {
         return obj is CultureInfo;

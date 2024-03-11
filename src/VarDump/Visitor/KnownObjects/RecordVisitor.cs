@@ -4,15 +4,14 @@ using System.Reflection;
 using VarDump.CodeDom.Compiler;
 using VarDump.Utils;
 
-namespace VarDump.Visitor.KnownTypes;
+namespace VarDump.Visitor.KnownObjects;
 
 internal sealed class RecordVisitor(
-    IRootObjectVisitor rootObjectVisitor,
+    IRootVisitor rootVisitor,
     ICodeWriter codeWriter,
     bool useNamedArgumentsInConstructors)
     : IKnownObjectVisitor
 {
-    public string Id => "Record";
     public bool IsSuitableFor(object obj, Type objectType)
     {
         return objectType.IsRecord();
@@ -24,8 +23,8 @@ internal sealed class RecordVisitor(
                                                         .Where(p => p.CanWrite);
 
         var argumentValues = useNamedArgumentsInConstructors
-            ? properties.Select(p => (Action)(() => codeWriter.WriteNamedArgument(p.Name, () => rootObjectVisitor.Visit(ReflectionUtils.GetValue(p, obj), context))))
-            : properties.Select(p => (Action)(() => rootObjectVisitor.Visit(ReflectionUtils.GetValue(p, obj), context)));
+            ? properties.Select(p => (Action)(() => codeWriter.WriteNamedArgument(p.Name, () => rootVisitor.Visit(ReflectionUtils.GetValue(p, obj), context))))
+            : properties.Select(p => (Action)(() => rootVisitor.Visit(ReflectionUtils.GetValue(p, obj), context)));
 
         codeWriter.WriteObjectCreate(objectType, argumentValues);
     }

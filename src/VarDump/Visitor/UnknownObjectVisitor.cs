@@ -11,9 +11,9 @@ namespace VarDump.Visitor;
 
 internal sealed class UnknownObjectVisitor(
     ICodeWriter codeWriter,
-    IRootObjectVisitor rootObjectVisitor,
+    IRootVisitor rootObjectVisitor,
     IObjectDescriptor objectDescriptor,
-    DumpOptions dumpOptions)
+    DumpOptions dumpOptions) : ISpecificObjectVisitor
 {
     public void Visit(object o, Type objectType, VisitContext context)
     {

@@ -1,12 +1,10 @@
 ﻿using System;
 using VarDump.CodeDom.Compiler;
 
-namespace VarDump.Visitor.KnownTypes;
+namespace VarDump.Visitor.KnownObjects;
 
 internal sealed class TypeVisitor(ICodeWriter codeWriter) : IKnownObjectVisitor
 {
-    public string Id => nameof(Type);
-
     public bool IsSuitableFor(object obj, Type objectType)
     {
         return obj is Type;

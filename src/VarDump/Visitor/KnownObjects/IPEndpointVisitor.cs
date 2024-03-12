@@ -4,7 +4,7 @@ using VarDump.CodeDom.Compiler;
 
 namespace VarDump.Visitor.KnownObjects;
 
-internal sealed class IPEndpointVisitor(INextDepthVisitor nextDepthVisitor, ICodeWriter codeWriter) : IKnownObjectVisitor
+internal sealed class IPEndpointVisitor(INextLevelVisitor nextLevelVisitor, ICodeWriter codeWriter) : IKnownObjectVisitor
 {
     public bool IsSuitableFor(object obj, Type objectType)
     {
@@ -18,7 +18,7 @@ internal sealed class IPEndpointVisitor(INextDepthVisitor nextDepthVisitor, ICod
         codeWriter.WriteObjectCreate(
             typeof(IPEndPoint),
             [
-                () => nextDepthVisitor.Visit(ipEndPoint.Address, context),
+                () => nextLevelVisitor.Visit(ipEndPoint.Address, context),
                 () => codeWriter.WritePrimitive(ipEndPoint.Port)
             ]);
     }

@@ -11,9 +11,9 @@ namespace VarDump.Visitor;
 
 internal sealed class GeneralVisitor(
     ICodeWriter codeWriter,
-    INextDepthVisitor nextDepthVisitor,
+    INextLevelVisitor nextLevelVisitor,
     IObjectDescriptor objectDescriptor,
-    DumpOptions dumpOptions) : ICurrentDepthVisitor
+    DumpOptions dumpOptions) : ICurrentLevelVisitor
 {
     public void Visit(object o, Type objectType, VisitContext context)
     {
@@ -40,8 +40,8 @@ internal sealed class GeneralVisitor(
 
             var constructorArguments = objectDescription.ConstructorArguments
                 .Select(ca => !string.IsNullOrWhiteSpace(ca.Name) && dumpOptions.UseNamedArgumentsInConstructors
-                    ? () => codeWriter.WriteNamedArgument(ca.Name, () => nextDepthVisitor.Visit(ca.Value, context))
-                    : (Action)(() => nextDepthVisitor.Visit(ca.Value, context)));
+                    ? () => codeWriter.WriteNamedArgument(ca.Name, () => nextLevelVisitor.Visit(ca.Value, context))
+                    : (Action)(() => nextLevelVisitor.Visit(ca.Value, context)));
 
             var memberInitializers = members
                 .Where(m => !dumpOptions.ExcludeTypes.Contains(m.Type.FullName) &&
@@ -50,7 +50,7 @@ internal sealed class GeneralVisitor(
                                  ReflectionUtils.GetDefaultValue(m.Type)?.Equals(m.Value) != true))
                 .Select(m => (Action)(() => codeWriter.WriteAssign(
                     () => codeWriter.WritePropertyReference(m.Name, null),
-                    () => nextDepthVisitor.Visit(m.Value, context))));
+                    () => nextLevelVisitor.Visit(m.Value, context))));
 
             codeWriter.WriteObjectCreateAndInitialize
             (

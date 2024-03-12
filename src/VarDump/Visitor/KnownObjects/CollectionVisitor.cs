@@ -12,11 +12,11 @@ namespace VarDump.Visitor.KnownObjects;
 
 internal sealed class CollectionVisitor : IKnownObjectVisitor
 {
-    private readonly INextDepthVisitor _nextDepthVisitor;
+    private readonly INextLevelVisitor _nextLevelVisitor;
     private readonly ICodeWriter _codeWriter;
     private readonly int _maxCollectionSize;
 
-    public CollectionVisitor(INextDepthVisitor nextDepthVisitor, ICodeWriter codeWriter, int maxCollectionSize)
+    public CollectionVisitor(INextLevelVisitor nextLevelVisitor, ICodeWriter codeWriter, int maxCollectionSize)
     {
         if (maxCollectionSize <= 0)
         {
@@ -24,7 +24,7 @@ internal sealed class CollectionVisitor : IKnownObjectVisitor
         }
 
         _maxCollectionSize = maxCollectionSize;
-        _nextDepthVisitor = nextDepthVisitor;
+        _nextLevelVisitor = nextLevelVisitor;
         _codeWriter = codeWriter;
     }
 
@@ -124,7 +124,7 @@ internal sealed class CollectionVisitor : IKnownObjectVisitor
 
     private void VisitSimpleCollection(IEnumerable enumerable, Type elementType, VisitContext context)
     {
-        var items = enumerable.Cast<object>().Select(item => (Action)(() => _nextDepthVisitor.Visit(item, context)));
+        var items = enumerable.Cast<object>().Select(item => (Action)(() => _nextLevelVisitor.Visit(item, context)));
 
         if (_maxCollectionSize < int.MaxValue)
         {
@@ -197,7 +197,7 @@ internal sealed class CollectionVisitor : IKnownObjectVisitor
 
     private void VisitAnonymousCollection(IEnumerable enumerable, VisitContext context)
     {
-        var items = enumerable.Cast<object>().Select(item => (Action)(() => _nextDepthVisitor.Visit(item, context)));
+        var items = enumerable.Cast<object>().Select(item => (Action)(() => _nextLevelVisitor.Visit(item, context)));
 
         if (_maxCollectionSize < int.MaxValue)
         {
@@ -250,6 +250,6 @@ internal sealed class CollectionVisitor : IKnownObjectVisitor
         var items = objects.Select(GetIGroupingValue)
             .SelectMany(g => g.Value.Cast<object>().Select(e => new { g.Key, Element = e }));
 
-        return items.Select(item =>(Action)(() => _nextDepthVisitor.Visit(item, context)));
+        return items.Select(item =>(Action)(() => _nextLevelVisitor.Visit(item, context)));
     }
 }

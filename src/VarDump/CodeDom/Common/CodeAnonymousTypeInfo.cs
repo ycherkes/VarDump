@@ -1,3 +1,3 @@
 ﻿namespace VarDump.CodeDom.Common;
 
-public class CodeAnonymousTypeInfo : CodeEmptyTypeInfo;
+public sealed class CodeAnonymousTypeInfo : CodeEmptyTypeInfo;

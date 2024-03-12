@@ -1,3 +1,3 @@
 ﻿namespace VarDump.CodeDom.Common;
 
-internal class CodeVarTypeInfo : CodeEmptyTypeInfo;
+internal sealed class CodeVarTypeInfo : CodeEmptyTypeInfo;

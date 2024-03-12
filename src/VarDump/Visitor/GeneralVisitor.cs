@@ -9,11 +9,11 @@ using VarDump.Visitor.Descriptors;
 
 namespace VarDump.Visitor;
 
-internal sealed class UnknownObjectVisitor(
+internal sealed class GeneralVisitor(
     ICodeWriter codeWriter,
-    IRootVisitor rootObjectVisitor,
+    INextDepthVisitor nextDepthVisitor,
     IObjectDescriptor objectDescriptor,
-    DumpOptions dumpOptions) : ISpecificObjectVisitor
+    DumpOptions dumpOptions) : ICurrentDepthVisitor
 {
     public void Visit(object o, Type objectType, VisitContext context)
     {
@@ -40,23 +40,23 @@ internal sealed class UnknownObjectVisitor(
 
             var constructorArguments = objectDescription.ConstructorArguments
                 .Select(ca => !string.IsNullOrWhiteSpace(ca.Name) && dumpOptions.UseNamedArgumentsInConstructors
-                    ? () => codeWriter.WriteNamedArgument(ca.Name, () => rootObjectVisitor.Visit(ca.Value, context))
-                    : (Action)(() => rootObjectVisitor.Visit(ca.Value, context)));
+                    ? () => codeWriter.WriteNamedArgument(ca.Name, () => nextDepthVisitor.Visit(ca.Value, context))
+                    : (Action)(() => nextDepthVisitor.Visit(ca.Value, context)));
 
-            var initializers = members
+            var memberInitializers = members
                 .Where(m => !dumpOptions.ExcludeTypes.Contains(m.Type.FullName) &&
                              (!dumpOptions.IgnoreNullValues || dumpOptions.IgnoreNullValues && m.Value != null) &&
                              (!dumpOptions.IgnoreDefaultValues || !m.Type.IsValueType || dumpOptions.IgnoreDefaultValues &&
                                  ReflectionUtils.GetDefaultValue(m.Type)?.Equals(m.Value) != true))
                 .Select(m => (Action)(() => codeWriter.WriteAssign(
                     () => codeWriter.WritePropertyReference(m.Name, null),
-                    () => rootObjectVisitor.Visit(m.Value, context))));
+                    () => nextDepthVisitor.Visit(m.Value, context))));
 
             codeWriter.WriteObjectCreateAndInitialize
             (
                 objectDescription.Type ?? objectType,
                 constructorArguments,
-                initializers
+                memberInitializers
             );
         }
         finally

@@ -11,11 +11,11 @@ namespace VarDump.Visitor.KnownObjects;
 
 internal sealed class DictionaryVisitor : IKnownObjectVisitor
 {
-    private readonly IRootVisitor _rootVisitor;
+    private readonly INextDepthVisitor _nextDepthVisitor;
     private readonly ICodeWriter _codeWriter;
     private readonly int _maxCollectionSize;
 
-    public DictionaryVisitor(IRootVisitor rootVisitor, ICodeWriter codeWriter, int maxCollectionSize)
+    public DictionaryVisitor(INextDepthVisitor nextDepthVisitor, ICodeWriter codeWriter, int maxCollectionSize)
     {
         if (maxCollectionSize <= 0)
         {
@@ -23,7 +23,7 @@ internal sealed class DictionaryVisitor : IKnownObjectVisitor
         }
         
         _maxCollectionSize = maxCollectionSize;
-        _rootVisitor = rootVisitor;
+        _nextDepthVisitor = nextDepthVisitor;
         _codeWriter = codeWriter;
     }
 
@@ -134,7 +134,7 @@ internal sealed class DictionaryVisitor : IKnownObjectVisitor
     {
         var objectType = o.GetType();
         var propertyValues = objectType.GetProperties().Select(p => ReflectionUtils.GetValue(p, o)).Take(2).ToArray();
-        _codeWriter.WriteImplicitKeyValuePairCreate(() => _rootVisitor.Visit(propertyValues[0], context), () => _rootVisitor.Visit(propertyValues[1], context));
+        _codeWriter.WriteImplicitKeyValuePairCreate(() => _nextDepthVisitor.Visit(propertyValues[0], context), () => _nextDepthVisitor.Visit(propertyValues[1], context));
     }
 
     private void VisitKeyValuePairWriteAnonymousType(object o, string keyName, string valueName, VisitContext context)
@@ -144,8 +144,8 @@ internal sealed class DictionaryVisitor : IKnownObjectVisitor
         
         _codeWriter.WriteObjectCreateAndInitialize(new CodeAnonymousTypeInfo(), [],
             [
-                () => _codeWriter.WriteAssign(() => _codeWriter.WritePropertyReference(keyName, null), () => _rootVisitor.Visit(propertyValues[0], context)),
-                () => _codeWriter.WriteAssign(() => _codeWriter.WritePropertyReference(valueName, null), () => _rootVisitor.Visit(propertyValues[1], context)),
+                () => _codeWriter.WriteAssign(() => _codeWriter.WritePropertyReference(keyName, null), () => _nextDepthVisitor.Visit(propertyValues[0], context)),
+                () => _codeWriter.WriteAssign(() => _codeWriter.WritePropertyReference(valueName, null), () => _nextDepthVisitor.Visit(propertyValues[1], context)),
             ]);
     }
 }

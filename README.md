@@ -198,9 +198,9 @@ FormattableString str = $"Hello, {name}";
 
 var dumpOptions = new DumpOptions
 {
-    ConfigureKnownObjects = (knownObjects, rootVisitor, _, codeWriter) =>
+    ConfigureKnownObjects = (knownObjects, nextDepthVisitor, _, codeWriter) =>
     {
-        knownObjects.Add(new FormattableStringVisitor(rootVisitor, codeWriter));
+        knownObjects.Add(new FormattableStringVisitor(nextDepthVisitor, codeWriter));
     }
 };
 
@@ -210,7 +210,7 @@ Console.WriteLine(result);
 
 return;
 
-class FormattableStringVisitor(IRootVisitor rootVisitor, ICodeWriter codeWriter) : IKnownObjectVisitor
+class FormattableStringVisitor(INextDepthVisitor nextDepthVisitor, ICodeWriter codeWriter) : IKnownObjectVisitor
 {
     public bool IsSuitableFor(object obj, Type objectType)
     {
@@ -226,7 +226,7 @@ class FormattableStringVisitor(IRootVisitor rootVisitor, ICodeWriter codeWriter)
             () => codeWriter.WritePrimitive(formattableString.Format)
         ];
 
-        arguments = arguments.Concat(formattableString.GetArguments().Select(a => (Action)(() => rootVisitor.Visit(a, context))));
+        arguments = arguments.Concat(formattableString.GetArguments().Select(a => (Action)(() => nextDepthVisitor.Visit(a, context))));
 
         codeWriter.WriteMethodInvoke(() =>
             codeWriter.WriteMethodReference(

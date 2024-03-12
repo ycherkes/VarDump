@@ -4,7 +4,7 @@
 
 namespace VarDump.CodeDom.Compiler;
 
-public class CodeWriterOptions
+public sealed class CodeWriterOptions
 {
     public string IndentString { get; set; }
 

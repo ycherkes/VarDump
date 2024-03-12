@@ -26,9 +26,9 @@ public class KnownObjectsSpec
 
         var dumpOptions = new DumpOptions
         {
-            ConfigureKnownObjects = (knownObjects, rootVisitor, _, codeWriter) =>
+            ConfigureKnownObjects = (knownObjects, nextDepthVisitor, _, codeWriter) =>
             {
-                knownObjects.Add(new ServiceDescriptorVisitor(rootVisitor, codeWriter));
+                knownObjects.Add(new ServiceDescriptorVisitor(nextDepthVisitor, codeWriter));
             }
         };
 
@@ -54,9 +54,9 @@ public class KnownObjectsSpec
 
         var dumpOptions = new DumpOptions
         {
-            ConfigureKnownObjects = (knownObjects, rootVisitor, _, codeWriter) =>
+            ConfigureKnownObjects = (knownObjects, nextDepthVisitor, _, codeWriter) =>
             {
-                knownObjects.Add(new ServiceDescriptorVisitor(rootVisitor, codeWriter));
+                knownObjects.Add(new ServiceDescriptorVisitor(nextDepthVisitor, codeWriter));
             }
         };
 
@@ -79,9 +79,9 @@ public class KnownObjectsSpec
 
         var dumpOptions = new DumpOptions
         {
-            ConfigureKnownObjects = (knownObjects, rootVisitor, _, codeWriter) =>
+            ConfigureKnownObjects = (knownObjects, nextDepthVisitor, _, codeWriter) =>
             {
-                knownObjects.Add(new FormattableStringVisitor(rootVisitor, codeWriter));
+                knownObjects.Add(new FormattableStringVisitor(nextDepthVisitor, codeWriter));
             }
         };
 
@@ -104,9 +104,9 @@ public class KnownObjectsSpec
 
         var dumpOptions = new DumpOptions
         {
-            ConfigureKnownObjects = (knownObjects, rootVisitor, _, codeWriter) =>
+            ConfigureKnownObjects = (knownObjects, nextDepthVisitor, _, codeWriter) =>
             {
-                knownObjects.Add(new FormattableStringVisitor(rootVisitor, codeWriter));
+                knownObjects.Add(new FormattableStringVisitor(nextDepthVisitor, codeWriter));
             }
         };
 
@@ -121,7 +121,7 @@ public class KnownObjectsSpec
             """, result);
     }
 
-    private class ServiceDescriptorVisitor(IRootVisitor rootVisitor, ICodeWriter codeWriter) : IKnownObjectVisitor
+    private class ServiceDescriptorVisitor(INextDepthVisitor nextDepthVisitor, ICodeWriter codeWriter) : IKnownObjectVisitor
     {
         public bool IsSuitableFor(object obj, Type objectType)
         {
@@ -146,7 +146,7 @@ public class KnownObjectsSpec
 
             if (serviceDescriptor.ImplementationInstance != null)
             {
-                parameters.Add(() => rootVisitor.Visit(serviceDescriptor.ImplementationInstance, context));
+                parameters.Add(() => nextDepthVisitor.Visit(serviceDescriptor.ImplementationInstance, context));
             }
 
             if (serviceDescriptor.ImplementationFactory != null)
@@ -165,7 +165,7 @@ public class KnownObjectsSpec
         }
     }
 
-    private class FormattableStringVisitor(IRootVisitor rootVisitor, ICodeWriter codeWriter) : IKnownObjectVisitor
+    private class FormattableStringVisitor(INextDepthVisitor nextDepthVisitor, ICodeWriter codeWriter) : IKnownObjectVisitor
     {
         public bool IsSuitableFor(object obj, Type objectType)
         {
@@ -181,7 +181,7 @@ public class KnownObjectsSpec
                 () => codeWriter.WritePrimitive(formattableString.Format)
             ];
 
-            arguments = arguments.Concat(formattableString.GetArguments().Select(a => (Action)(() => rootVisitor.Visit(a, context))));
+            arguments = arguments.Concat(formattableString.GetArguments().Select(a => (Action)(() => nextDepthVisitor.Visit(a, context))));
 
             codeWriter.WriteMethodInvoke(() =>
                 codeWriter.WriteMethodReference(

@@ -6,4 +6,4 @@ using System;
 
 namespace VarDump.CodeDom.Common;
 
-public class CodeCollectionTypeInfo(Type type) : CodeTypeInfo(type);
+public sealed class CodeCollectionTypeInfo(Type type) : CodeTypeInfo(type);

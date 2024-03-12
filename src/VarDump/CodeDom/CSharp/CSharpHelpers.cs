@@ -56,7 +56,7 @@ internal static class CSharpHelpers
         //
         if (value[0] != '@')
         {
-            if (CSharpHelpers.IsKeyword(value))
+            if (IsKeyword(value))
             {
                 return false;
             }
@@ -66,7 +66,7 @@ internal static class CSharpHelpers
             value = value.Substring(1);
         }
 
-        return CSharpHelpers.IsValidTypeNameOrIdentifier(value, false);
+        return IsValidTypeNameOrIdentifier(value, false);
     }
 
     private static readonly string[][] Keywords = [

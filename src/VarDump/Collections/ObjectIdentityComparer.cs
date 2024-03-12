@@ -6,7 +6,7 @@ namespace VarDump.Collections;
 /// <summary>
 /// Source: https://stackoverflow.com/questions/11240036/what-does-runtimehelpers-gethashcode-do
 /// </summary>
-internal class ObjectIdentityComparer : IEqualityComparer<object>
+internal sealed class ObjectIdentityComparer : IEqualityComparer<object>
 {
     bool IEqualityComparer<object>.Equals(object x, object y)
     {

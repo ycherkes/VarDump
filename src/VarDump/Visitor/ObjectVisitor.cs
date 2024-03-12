@@ -8,12 +8,12 @@ using VarDump.Visitor.KnownObjects;
 
 namespace VarDump.Visitor;
 
-internal sealed class ObjectVisitor : IObjectVisitor, IRootVisitor
+internal sealed class ObjectVisitor : IObjectVisitor, INextDepthVisitor
 {
     private readonly ICodeWriter _codeWriter;
     private readonly List<IKnownObjectVisitor> _knownObjects;
     private readonly int _maxDepth;
-    private readonly ISpecificObjectVisitor _unknownObjectVisitor;
+    private readonly ICurrentDepthVisitor _generalVisitor;
 
     public ObjectVisitor(DumpOptions options, ICodeWriter codeWriter)
     {
@@ -34,7 +34,7 @@ internal sealed class ObjectVisitor : IObjectVisitor, IRootVisitor
             anonymousObjectDescriptor = anonymousObjectDescriptor.ApplyMiddleware(options.Descriptors);
         }
 
-        _unknownObjectVisitor = new UnknownObjectVisitor(codeWriter, this, objectDescriptor, options);
+        _generalVisitor = new GeneralVisitor(codeWriter, this, objectDescriptor, options);
 
         _knownObjects =
         [
@@ -86,7 +86,7 @@ internal sealed class ObjectVisitor : IObjectVisitor, IRootVisitor
             var objectType = @object?.GetType();
 
             var suitableVisitor = _knownObjects.FirstOrDefault(v => v.IsSuitableFor(@object, objectType))
-                                  ?? _unknownObjectVisitor;
+                                  ?? _generalVisitor;
 
             suitableVisitor.Visit(@object, objectType, context);
         }

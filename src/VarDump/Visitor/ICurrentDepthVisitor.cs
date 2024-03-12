@@ -2,7 +2,7 @@
 
 namespace VarDump.Visitor;
 
-public interface ISpecificObjectVisitor
+public interface ICurrentDepthVisitor
 {
     void Visit(object obj, Type objectType, VisitContext context);
 }

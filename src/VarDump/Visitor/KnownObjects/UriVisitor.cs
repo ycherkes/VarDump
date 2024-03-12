@@ -4,7 +4,7 @@ using VarDump.CodeDom.Compiler;
 
 namespace VarDump.Visitor.KnownObjects;
 
-internal sealed class UriVisitor(ICodeWriter codeWriter) : IKnownObjectVisitor
+internal sealed class UriVisitor(ICodeWriter codeWriter, bool useNamedArgumentsInConstructors) : IKnownObjectVisitor
 {
     public bool IsSuitableFor(object obj, Type objectType)
     {
@@ -15,8 +15,22 @@ internal sealed class UriVisitor(ICodeWriter codeWriter) : IKnownObjectVisitor
     {
         var uri = (Uri)obj;
 
-        codeWriter.WriteObjectCreate(typeof(Uri), GetConstructorArguments());
+        var constructorArguments = useNamedArgumentsInConstructors
+            ? GetNamedConstructorArguments()
+            : GetConstructorArguments();
+
+        codeWriter.WriteObjectCreate(typeof(Uri), constructorArguments);
+
         return;
+
+        IEnumerable<Action> GetNamedConstructorArguments()
+        {
+            yield return () => codeWriter.WriteNamedArgument("uriString", () => codeWriter.WritePrimitive(uri.OriginalString));
+            if (!uri.IsAbsoluteUri)
+            {
+                yield return () => codeWriter.WriteNamedArgument("uriKind", () => codeWriter.WriteFieldReference(nameof(UriKind.Relative), () => codeWriter.WriteType(typeof(UriKind))));
+            }
+        }
 
         IEnumerable<Action> GetConstructorArguments()
         {

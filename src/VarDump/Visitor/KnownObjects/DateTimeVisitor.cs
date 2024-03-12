@@ -7,7 +7,8 @@ namespace VarDump.Visitor.KnownObjects;
 internal sealed class DateTimeVisitor(
     ICodeWriter codeWriter,
     DateTimeInstantiation dateTimeInstantiation,
-    DateKind dateKind)
+    DateKind dateKind,
+    bool useNamedArgumentsInConstructors)
     : IKnownObjectVisitor
 {
     public bool IsSuitableFor(object obj, Type objectType)
@@ -64,17 +65,37 @@ internal sealed class DateTimeVisitor(
         codeWriter.WriteMethodInvoke(() => codeWriter.WriteMethodReference(WriteObjectCreate, nameof(DateTime.AddTicks)), [() => codeWriter.WritePrimitive(lessThanMillisecondTicks)]);
         return;
 
-        void WriteObjectCreate() => codeWriter.WriteObjectCreate(objectType, 
-            [
-                WriteYear, 
-                WriteMonth, 
-                WriteDay, 
-                WriteHour, 
-                WriteMinute, 
-                WriteSecond, 
-                WriteMillisecond, 
-                WriteKind
-            ]);
+        void WriteObjectCreate()
+        {
+            if (useNamedArgumentsInConstructors)
+            {
+                codeWriter.WriteObjectCreate(objectType,
+                [
+                    () => codeWriter.WriteNamedArgument("year", WriteYear),
+                    () => codeWriter.WriteNamedArgument("month", WriteMonth),
+                    () => codeWriter.WriteNamedArgument("day", WriteDay),
+                    () => codeWriter.WriteNamedArgument("hour", WriteHour),
+                    () => codeWriter.WriteNamedArgument("minute", WriteMinute),
+                    () => codeWriter.WriteNamedArgument("second", WriteSecond),
+                    () => codeWriter.WriteNamedArgument("millisecond", WriteMillisecond),
+                    () => codeWriter.WriteNamedArgument("kind", WriteKind)
+                ]);
+            }
+            else
+            {
+                codeWriter.WriteObjectCreate(objectType,
+                [
+                    WriteYear,
+                    WriteMonth,
+                    WriteDay,
+                    WriteHour,
+                    WriteMinute,
+                    WriteSecond,
+                    WriteMillisecond,
+                    WriteKind
+                ]);
+            }
+        }
 
         void WriteKind() => codeWriter.WriteFieldReference(dateTime.Kind.ToString(), () => codeWriter.WriteType(typeof(DateTimeKind)));
         void WriteYear() => codeWriter.WritePrimitive(dateTime.Year);

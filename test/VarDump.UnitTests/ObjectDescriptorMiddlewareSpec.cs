@@ -4,6 +4,8 @@ using System.ComponentModel;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Text.RegularExpressions;
+using System.Threading;
 using VarDump.Visitor;
 using VarDump.Visitor.Descriptors;
 using Xunit;
@@ -12,6 +14,27 @@ namespace VarDump.UnitTests;
 
 public class ObjectDescriptorMiddlewareSpec
 {
+    [Fact]
+    public void DumpRegexCsharp()
+    {
+        var currencyRegex = new Regex(@"\p{Sc}+\s*\d+", RegexOptions.Compiled, TimeSpan.FromSeconds(5));
+
+        var options = new DumpOptions
+        {
+            Descriptors = { new RegexMiddleware() }
+        };
+
+        var dumper = new CSharpDumper(options);
+
+        var result = dumper.Dump(currencyRegex);
+
+        Assert.Equal(
+            """
+            var regex = new Regex("\\p{Sc}+\\s*\\d+", RegexOptions.Compiled, TimeSpan.FromSeconds(5));
+            
+            """, result);
+    }
+
     [Fact]
     public void DumpObjectSkipWritingCardNumberCsharp()
     {
@@ -467,6 +490,53 @@ public class ObjectDescriptorMiddlewareSpec
             }
 
             return prev();
+        }
+    }
+
+    private class RegexMiddleware : IObjectDescriptorMiddleware
+    {
+        public IObjectDescription GetObjectDescription(object @object, Type objectType, Func<IObjectDescription> prev)
+        {
+            if (@object is not Regex regex)
+            {
+                return prev();
+            }
+
+            return new ObjectDescription
+            {
+                Type = objectType,
+                ConstructorArguments = GetCtorArguments()
+            };
+
+            IEnumerable<ConstructorArgumentDescription> GetCtorArguments()
+            {
+                yield return new ConstructorArgumentDescription
+                {
+                    Name = "pattern",
+                    Value = regex.ToString(),
+                    Type = typeof(string)
+                };
+
+                if (regex.Options != RegexOptions.None || regex.MatchTimeout != Timeout.InfiniteTimeSpan)
+                {
+                    yield return new ConstructorArgumentDescription
+                    {
+                        Name = "options",
+                        Value = regex.Options,
+                        Type = typeof(RegexOptions)
+                    };
+
+                    if (regex.MatchTimeout != Timeout.InfiniteTimeSpan)
+                    {
+                        yield return new ConstructorArgumentDescription
+                        {
+                            Name = "matchTimeout",
+                            Value = regex.MatchTimeout,
+                            Type = typeof(TimeSpan)
+                        };
+                    }
+                }
+            }
         }
     }
 

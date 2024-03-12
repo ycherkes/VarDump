@@ -5,8 +5,7 @@ using VarDump.Utils;
 
 namespace VarDump.Visitor.KnownObjects;
 
-internal sealed class DateOnlyVisitor(ICodeWriter codeWriter, DateTimeInstantiation dateTimeInstantiation)
-    : IKnownObjectVisitor
+internal sealed class DateOnlyVisitor(ICodeWriter codeWriter, DateTimeInstantiation dateTimeInstantiation, bool useNamedArgumentsInConstructors) : IKnownObjectVisitor
 {
     public bool IsSuitableFor(object obj, Type objectType)
     {
@@ -22,7 +21,7 @@ internal sealed class DateOnlyVisitor(ICodeWriter codeWriter, DateTimeInstantiat
             codeWriter.WriteErrorDetected("Wrong DateOnly struct");
             return;
         }
-
+        
         if (dayNumber == 3652058U)
         {
             codeWriter.WriteFieldReference(nameof(DateTime.MaxValue), () => codeWriter.WriteType(objectType));
@@ -51,12 +50,24 @@ internal sealed class DateOnlyVisitor(ICodeWriter codeWriter, DateTimeInstantiat
 
             return;
         }
-
-        codeWriter.WriteObjectCreate(objectType,
+        
+        if (useNamedArgumentsInConstructors)
+        {
+            codeWriter.WriteObjectCreate(objectType, 
+            [
+                () => codeWriter.WriteNamedArgument("year", () => codeWriter.WritePrimitive(dateTime.Year)),
+                () => codeWriter.WriteNamedArgument("month", () => codeWriter.WritePrimitive(dateTime.Month)),
+                () => codeWriter.WriteNamedArgument("day", () => codeWriter.WritePrimitive(dateTime.Day)),
+            ]);
+        }
+        else
+        {
+            codeWriter.WriteObjectCreate(objectType,
             [
                 () => codeWriter.WritePrimitive(dateTime.Year),
                 () => codeWriter.WritePrimitive(dateTime.Month),
                 () => codeWriter.WritePrimitive(dateTime.Day)
             ]);
+        }
     }
 }

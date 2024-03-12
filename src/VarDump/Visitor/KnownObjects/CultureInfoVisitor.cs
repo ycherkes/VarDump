@@ -4,7 +4,7 @@ using VarDump.CodeDom.Compiler;
 
 namespace VarDump.Visitor.KnownObjects;
 
-internal sealed class CultureInfoVisitor(ICodeWriter codeWriter) : IKnownObjectVisitor
+internal sealed class CultureInfoVisitor(ICodeWriter codeWriter, bool useNamedArgumentsInConstructors) : IKnownObjectVisitor
 {
     public bool IsSuitableFor(object obj, Type objectType)
     {
@@ -13,6 +13,13 @@ internal sealed class CultureInfoVisitor(ICodeWriter codeWriter) : IKnownObjectV
 
     public void Visit(object obj, Type objectType, VisitContext context)
     {
-        codeWriter.WriteObjectCreate(typeof(CultureInfo), [() => codeWriter.WritePrimitive(obj.ToString())]);
+        if (useNamedArgumentsInConstructors)
+        {
+            codeWriter.WriteObjectCreate(typeof(CultureInfo), [() => codeWriter.WriteNamedArgument("name", () => codeWriter.WritePrimitive(obj.ToString()))]);
+        }
+        else
+        {
+            codeWriter.WriteObjectCreate(typeof(CultureInfo), [() => codeWriter.WritePrimitive(obj.ToString())]);
+        }
     }
 }

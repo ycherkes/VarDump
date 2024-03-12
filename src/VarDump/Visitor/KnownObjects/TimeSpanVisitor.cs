@@ -6,7 +6,10 @@ using VarDump.CodeDom.Compiler;
 
 namespace VarDump.Visitor.KnownObjects;
 
-internal sealed class TimeSpanVisitor(ICodeWriter codeWriter, DateTimeInstantiation dateTimeInstantiation)
+internal sealed class TimeSpanVisitor(
+    ICodeWriter codeWriter,
+    DateTimeInstantiation dateTimeInstantiation,
+    bool useNamedArgumentsInConstructors)
     : IKnownObjectVisitor
 {
     private static readonly Dictionary<TimeSpan, string> SpecialValuesDictionary = new()
@@ -92,10 +95,64 @@ internal sealed class TimeSpanVisitor(ICodeWriter codeWriter, DateTimeInstantiat
         codeWriter.WriteObjectCreate(objectType, [WriteDays, WriteHours, WriteMinutes, WriteSeconds, WriteMilliseconds]);
         return;
 
-        void WriteSeconds() => codeWriter.WritePrimitive(timeSpan.Seconds);
-        void WriteMinutes() => codeWriter.WritePrimitive(timeSpan.Minutes);
-        void WriteHours() => codeWriter.WritePrimitive(timeSpan.Hours);
-        void WriteDays() => codeWriter.WritePrimitive(timeSpan.Days);
-        void WriteMilliseconds() => codeWriter.WritePrimitive(timeSpan.Milliseconds);
+        void WriteSeconds()
+        {
+            if (useNamedArgumentsInConstructors)
+            {
+                codeWriter.WriteNamedArgument("seconds", () => codeWriter.WritePrimitive(timeSpan.Seconds));
+            }
+            else
+            {
+                codeWriter.WritePrimitive(timeSpan.Seconds);
+            }
+        }
+
+        void WriteMinutes()
+        {
+            if (useNamedArgumentsInConstructors)
+            {
+                codeWriter.WriteNamedArgument("minutes", () => codeWriter.WritePrimitive(timeSpan.Minutes));
+            }
+            else
+            {
+                codeWriter.WritePrimitive(timeSpan.Minutes);
+            }
+        }
+
+        void WriteHours()
+        {
+            if (useNamedArgumentsInConstructors)
+            {
+                codeWriter.WriteNamedArgument("hours", () => codeWriter.WritePrimitive(timeSpan.Hours));
+            }
+            else
+            {
+                codeWriter.WritePrimitive(timeSpan.Hours);
+            }
+        }
+
+        void WriteDays()
+        {
+            if (useNamedArgumentsInConstructors)
+            {
+                codeWriter.WriteNamedArgument("days", () => codeWriter.WritePrimitive(timeSpan.Days));
+            }
+            else
+            {
+                codeWriter.WritePrimitive(timeSpan.Days);
+            }
+        }
+
+        void WriteMilliseconds()
+        {
+            if (useNamedArgumentsInConstructors)
+            {
+                codeWriter.WriteNamedArgument("milliseconds", () => codeWriter.WritePrimitive(timeSpan.Milliseconds));
+            }
+            else
+            {
+                codeWriter.WritePrimitive(timeSpan.Milliseconds);
+            }
+        }
     }
 }

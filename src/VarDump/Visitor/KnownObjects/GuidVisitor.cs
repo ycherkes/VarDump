@@ -3,7 +3,7 @@ using VarDump.CodeDom.Compiler;
 
 namespace VarDump.Visitor.KnownObjects;
 
-internal sealed class GuidVisitor(ICodeWriter codeWriter) : IKnownObjectVisitor
+internal sealed class GuidVisitor(ICodeWriter codeWriter, bool useNamedArgumentsInConstructors) : IKnownObjectVisitor
 {
     public bool IsSuitableFor(object obj, Type objectType)
     {
@@ -14,6 +14,13 @@ internal sealed class GuidVisitor(ICodeWriter codeWriter) : IKnownObjectVisitor
     {
         var guid = (Guid)obj;
 
-        codeWriter.WriteObjectCreate(objectType, [() => codeWriter.WritePrimitive(guid.ToString("D"))]);
+        if (useNamedArgumentsInConstructors)
+        {
+            codeWriter.WriteObjectCreate(objectType, [() => codeWriter.WriteNamedArgument("g", () => codeWriter.WritePrimitive(guid.ToString("D")))]);
+        }
+        else
+        {
+            codeWriter.WriteObjectCreate(objectType, [() => codeWriter.WritePrimitive(guid.ToString("D"))]);
+        }
     }
 }

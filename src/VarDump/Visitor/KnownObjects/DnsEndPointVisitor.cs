@@ -6,7 +6,7 @@ using VarDump.CodeDom.Compiler;
 
 namespace VarDump.Visitor.KnownObjects;
 
-internal sealed class DnsEndPointVisitor(INextDepthVisitor nextDepthVisitor, ICodeWriter codeWriter) : IKnownObjectVisitor
+internal sealed class DnsEndPointVisitor(INextDepthVisitor nextDepthVisitor, ICodeWriter codeWriter, bool useNamedArgumentsInConstructors) : IKnownObjectVisitor
 {
     public bool IsSuitableFor(object obj, Type objectType)
     {
@@ -17,7 +17,11 @@ internal sealed class DnsEndPointVisitor(INextDepthVisitor nextDepthVisitor, ICo
     {
         var dnsEndPoint = (DnsEndPoint)obj;
 
-        codeWriter.WriteObjectCreate(typeof(DnsEndPoint), GetConstructorArguments());
+        var constructorArguments = useNamedArgumentsInConstructors
+            ? GetNamedConstructorArguments()
+            : GetConstructorArguments();
+
+        codeWriter.WriteObjectCreate(typeof(DnsEndPoint), constructorArguments);
         return;
 
         IEnumerable<Action> GetConstructorArguments()
@@ -27,6 +31,16 @@ internal sealed class DnsEndPointVisitor(INextDepthVisitor nextDepthVisitor, ICo
             if (dnsEndPoint.AddressFamily != AddressFamily.Unspecified)
             {
                 yield return () => nextDepthVisitor.Visit(dnsEndPoint.AddressFamily, context);
+            }
+        }
+
+        IEnumerable<Action> GetNamedConstructorArguments()
+        {
+            yield return () => codeWriter.WriteNamedArgument("host", () => codeWriter.WritePrimitive(dnsEndPoint.Host));
+            yield return () => codeWriter.WriteNamedArgument("port", () => codeWriter.WritePrimitive(dnsEndPoint.Port));
+            if (dnsEndPoint.AddressFamily != AddressFamily.Unspecified)
+            {
+                yield return () => codeWriter.WriteNamedArgument("addressFamily", () => nextDepthVisitor.Visit(dnsEndPoint.AddressFamily, context));
             }
         }
     }

@@ -5,8 +5,7 @@ using VarDump.Utils;
 
 namespace VarDump.Visitor.KnownObjects;
 
-internal sealed class KeyValuePairVisitor(INextDepthVisitor nextDepthVisitor, ICodeWriter codeWriter)
-    : IKnownObjectVisitor
+internal sealed class KeyValuePairVisitor(INextDepthVisitor nextDepthVisitor, ICodeWriter codeWriter) : IKnownObjectVisitor
 {
     public bool IsSuitableFor(object obj, Type objectType)
     {

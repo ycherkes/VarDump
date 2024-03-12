@@ -7,7 +7,8 @@ namespace VarDump.Visitor.KnownObjects;
 internal sealed class DateTimeOffsetVisitor(
     INextDepthVisitor nextDepthVisitor,
     ICodeWriter codeWriter,
-    DateTimeInstantiation dateTimeInstantiation)
+    DateTimeInstantiation dateTimeInstantiation,
+    bool useNamedArgumentsInConstructors)
     : IKnownObjectVisitor
 {
     public bool IsSuitableFor(object obj, Type objectType)
@@ -62,17 +63,37 @@ internal sealed class DateTimeOffsetVisitor(
 
         return;
 
-        void WriteObjectCreate() => codeWriter.WriteObjectCreate(objectType,
-            [
-                WriteYear,
-                WriteMonth,
-                WriteDay,
-                WriteHour,
-                WriteMinute,
-                WriteSecond,
-                WriteMillisecond,
-                WriteOffset
-            ]);
+        void WriteObjectCreate()
+        {
+            if(useNamedArgumentsInConstructors)
+            {
+                codeWriter.WriteObjectCreate(objectType,
+                [
+                    () => codeWriter.WriteNamedArgument("year", WriteYear),
+                    () => codeWriter.WriteNamedArgument("month", WriteMonth),
+                    () => codeWriter.WriteNamedArgument("day", WriteDay),
+                    () => codeWriter.WriteNamedArgument("hour", WriteHour),
+                    () => codeWriter.WriteNamedArgument("minute", WriteMinute),
+                    () => codeWriter.WriteNamedArgument("second", WriteSecond),
+                    () => codeWriter.WriteNamedArgument("millisecond", WriteMillisecond),
+                    () => codeWriter.WriteNamedArgument("offset", WriteOffset)
+                ]);
+            }
+            else
+            {
+                codeWriter.WriteObjectCreate(objectType,
+                [
+                    WriteYear,
+                    WriteMonth,
+                    WriteDay,
+                    WriteHour,
+                    WriteMinute,
+                    WriteSecond,
+                    WriteMillisecond,
+                    WriteOffset
+                ]);
+            }
+        }
 
         void WriteYear() => codeWriter.WritePrimitive(dateTimeOffset.Year);
         void WriteMonth() => codeWriter.WritePrimitive(dateTimeOffset.Month);

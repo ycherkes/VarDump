@@ -8,12 +8,12 @@ using VarDump.Visitor.KnownObjects;
 
 namespace VarDump.Visitor;
 
-internal sealed class ObjectVisitor : IObjectVisitor, INextLevelVisitor
+internal sealed class ObjectVisitor : IObjectVisitor, INextDepthVisitor
 {
     private readonly ICodeWriter _codeWriter;
     private readonly List<IKnownObjectVisitor> _knownObjects;
     private readonly int _maxDepth;
-    private readonly ICurrentLevelVisitor _generalVisitor;
+    private readonly ICurrentDepthVisitor _generalVisitor;
 
     public ObjectVisitor(DumpOptions options, ICodeWriter codeWriter)
     {

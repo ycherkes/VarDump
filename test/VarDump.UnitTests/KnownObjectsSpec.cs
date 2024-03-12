@@ -121,7 +121,7 @@ public class KnownObjectsSpec
             """, result);
     }
 
-    private class ServiceDescriptorVisitor(INextLevelVisitor nextLevelVisitor, ICodeWriter codeWriter) : IKnownObjectVisitor
+    private class ServiceDescriptorVisitor(INextDepthVisitor nextDepthVisitor, ICodeWriter codeWriter) : IKnownObjectVisitor
     {
         public bool IsSuitableFor(object obj, Type objectType)
         {
@@ -146,7 +146,7 @@ public class KnownObjectsSpec
 
             if (serviceDescriptor.ImplementationInstance != null)
             {
-                parameters.Add(() => nextLevelVisitor.Visit(serviceDescriptor.ImplementationInstance, context));
+                parameters.Add(() => nextDepthVisitor.Visit(serviceDescriptor.ImplementationInstance, context));
             }
 
             if (serviceDescriptor.ImplementationFactory != null)
@@ -165,7 +165,7 @@ public class KnownObjectsSpec
         }
     }
 
-    private class FormattableStringVisitor(INextLevelVisitor nextLevelVisitor, ICodeWriter codeWriter) : IKnownObjectVisitor
+    private class FormattableStringVisitor(INextDepthVisitor nextDepthVisitor, ICodeWriter codeWriter) : IKnownObjectVisitor
     {
         public bool IsSuitableFor(object obj, Type objectType)
         {
@@ -181,7 +181,7 @@ public class KnownObjectsSpec
                 () => codeWriter.WritePrimitive(formattableString.Format)
             ];
 
-            arguments = arguments.Concat(formattableString.GetArguments().Select(a => (Action)(() => nextLevelVisitor.Visit(a, context))));
+            arguments = arguments.Concat(formattableString.GetArguments().Select(a => (Action)(() => nextDepthVisitor.Visit(a, context))));
 
             codeWriter.WriteMethodInvoke(() =>
                 codeWriter.WriteMethodReference(

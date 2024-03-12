@@ -7,7 +7,7 @@ using VarDump.Utils;
 namespace VarDump.Visitor.KnownObjects;
 
 internal sealed class RecordVisitor(
-    INextLevelVisitor nextLevelVisitor,
+    INextDepthVisitor nextDepthVisitor,
     ICodeWriter codeWriter,
     bool useNamedArgumentsInConstructors)
     : IKnownObjectVisitor
@@ -23,8 +23,8 @@ internal sealed class RecordVisitor(
                                                         .Where(p => p.CanWrite);
 
         var argumentValues = useNamedArgumentsInConstructors
-            ? properties.Select(p => (Action)(() => codeWriter.WriteNamedArgument(p.Name, () => nextLevelVisitor.Visit(ReflectionUtils.GetValue(p, obj), context))))
-            : properties.Select(p => (Action)(() => nextLevelVisitor.Visit(ReflectionUtils.GetValue(p, obj), context)));
+            ? properties.Select(p => (Action)(() => codeWriter.WriteNamedArgument(p.Name, () => nextDepthVisitor.Visit(ReflectionUtils.GetValue(p, obj), context))))
+            : properties.Select(p => (Action)(() => nextDepthVisitor.Visit(ReflectionUtils.GetValue(p, obj), context)));
 
         codeWriter.WriteObjectCreate(objectType, argumentValues);
     }

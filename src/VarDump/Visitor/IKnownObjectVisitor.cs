@@ -2,7 +2,7 @@
 
 namespace VarDump.Visitor;
 
-public interface IKnownObjectVisitor : ICurrentLevelVisitor
+public interface IKnownObjectVisitor : ICurrentDepthVisitor
 {
     bool IsSuitableFor(object obj, Type objectType);
 }

@@ -8,7 +8,7 @@ using VarDump.Utils;
 
 namespace VarDump.Visitor.KnownObjects;
 
-internal sealed class GroupingVisitor(INextLevelVisitor nextLevelVisitor, ICodeWriter codeWriter) : IKnownObjectVisitor
+internal sealed class GroupingVisitor(INextDepthVisitor nextDepthVisitor, ICodeWriter codeWriter) : IKnownObjectVisitor
 {
     public bool IsSuitableFor(object obj, Type objectType)
     {
@@ -52,6 +52,6 @@ internal sealed class GroupingVisitor(INextLevelVisitor nextLevelVisitor, ICodeW
     {
         var grouping = GetIGroupingValue(o);
         var groupingValues = grouping.Value.Cast<object>().Select(e => new { grouping.Key, Element = e });
-        nextLevelVisitor.Visit(groupingValues, context);
+        nextDepthVisitor.Visit(groupingValues, context);
     }
 }

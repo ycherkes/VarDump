@@ -11,7 +11,7 @@ namespace VarDump.Visitor;
 internal sealed class ObjectVisitor : IObjectVisitor, INextDepthVisitor
 {
     private readonly ICodeWriter _codeWriter;
-    private readonly IKnownObjectsOrderedDictionary _knownObjects;
+    private readonly IKnownObjectsCollection _knownObjects;
     private readonly int _maxDepth;
     private readonly ICurrentDepthVisitor _generalVisitor;
 
@@ -36,7 +36,7 @@ internal sealed class ObjectVisitor : IObjectVisitor, INextDepthVisitor
 
         _generalVisitor = new GeneralVisitor(codeWriter, this, objectDescriptor, options);
 
-        _knownObjects = new KnownObjectsOrderedDictionary
+        _knownObjects = new KnownObjectsCollection
         {
             new PrimitiveVisitor(codeWriter, options.Clone()),
             new TimeSpanVisitor(codeWriter, options.Clone()),
@@ -64,7 +64,7 @@ internal sealed class ObjectVisitor : IObjectVisitor, INextDepthVisitor
             new CollectionVisitor(this, codeWriter, options.Clone()),
         };
 
-        options.ConfigureKnownObjects?.Invoke(_knownObjects, this, options, codeWriter);
+        options.ConfigureKnownObjects?.Invoke(_knownObjects, this, options.Clone(), codeWriter);
     }
 
     public void Visit(object @object)

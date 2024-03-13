@@ -11,7 +11,7 @@ namespace VarDump.Visitor;
 
 public sealed class DumpOptions
 {
-    public Action<IKnownObjectsOrderedDictionary, INextDepthVisitor, DumpOptions, ICodeWriter> ConfigureKnownObjects { get; set; }
+    public Action<IKnownObjectsCollection, INextDepthVisitor, DumpOptions, ICodeWriter> ConfigureKnownObjects { get; set; }
     public DateKind DateKind { get; set; } = DateKind.Original;
     public DateTimeInstantiation DateTimeInstantiation { get; set; } = DateTimeInstantiation.Parse;
     public List<IObjectDescriptorMiddleware> Descriptors { get; set; } = [];

@@ -6,7 +6,7 @@ using VarDump.Visitor;
 
 namespace VarDump.Collections;
 
-public sealed class KnownObjectsOrderedDictionary : OrderedDictionary<string, IKnownObjectVisitor>, IKnownObjectsOrderedDictionary
+internal sealed class KnownObjectsCollection : OrderedDictionary<string, IKnownObjectVisitor>, IKnownObjectsCollection
 {
     public void Add(IKnownObjectVisitor knownObject)
     {
@@ -14,15 +14,13 @@ public sealed class KnownObjectsOrderedDictionary : OrderedDictionary<string, IK
     }
 }
 
-public interface IKnownObjectsOrderedDictionary : IOrderedDictionary<string, IKnownObjectVisitor>
+public interface IKnownObjectsCollection : IOrderedDictionary<string, IKnownObjectVisitor>
 {
     void Add(IKnownObjectVisitor knownObject);
 }
 
 // original version see https://github.com/jehugaleahsa/truncon.collections.OrderedDictionary
-public interface IOrderedDictionary<TKey, TValue> : IDictionary<TKey, TValue>, IList<KeyValuePair<TKey, TValue>>
-{
-}
+public interface IOrderedDictionary<TKey, TValue> : IDictionary<TKey, TValue>, IList<KeyValuePair<TKey, TValue>>;
 
 /// <summary>
 /// Represents a dictionary that tracks the order that items were added.
@@ -35,7 +33,7 @@ public interface IOrderedDictionary<TKey, TValue> : IDictionary<TKey, TValue>, I
 /// It can be costly to insert a key/value pair because other key's indexes must be adjusted.
 /// It can be costly to remove a key/value pair because other keys' indexes must be adjusted.
 /// </remarks>
-public class OrderedDictionary<TKey, TValue> : IOrderedDictionary<TKey, TValue>
+internal class OrderedDictionary<TKey, TValue> : IOrderedDictionary<TKey, TValue>
 {
     private const string EditReadOnlyList = "An attempt was made to edit a read-only list.";
     private readonly Dictionary<TKey, int> _dictionary;

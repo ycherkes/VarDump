@@ -92,19 +92,19 @@ internal sealed class TimeSpanVisitor(
 
         if (options.UseNamedArgumentsInConstructors)
         {
-            writeSeconds = () => codeWriter.WriteNamedArgument("seconds", () => codeWriter.WritePrimitive(timeSpan.Seconds));
-            writeMinutes = () => codeWriter.WriteNamedArgument("minutes", () => codeWriter.WritePrimitive(timeSpan.Minutes));
-            writeHours = () => codeWriter.WriteNamedArgument("hours", () => codeWriter.WritePrimitive(timeSpan.Hours));
-            writeDays = () => codeWriter.WriteNamedArgument("days", () => codeWriter.WritePrimitive(timeSpan.Days));
-            writeMilliseconds = () => codeWriter.WriteNamedArgument("milliseconds", () => codeWriter.WritePrimitive(timeSpan.Milliseconds));
+            writeSeconds = () => codeWriter.WriteNamedArgument("seconds", WriteSeconds);
+            writeMinutes = () => codeWriter.WriteNamedArgument("minutes", WriteMinutes);
+            writeHours = () => codeWriter.WriteNamedArgument("hours", WriteHours);
+            writeDays = () => codeWriter.WriteNamedArgument("days", WriteDays);
+            writeMilliseconds = () => codeWriter.WriteNamedArgument("milliseconds", WriteMilliseconds);
         }
         else
         {
-            writeSeconds = () => codeWriter.WritePrimitive(timeSpan.Seconds);
-            writeMinutes = () => codeWriter.WritePrimitive(timeSpan.Minutes);
-            writeHours = () => codeWriter.WritePrimitive(timeSpan.Hours);
-            writeDays = () => codeWriter.WritePrimitive(timeSpan.Days);
-            writeMilliseconds = () => codeWriter.WritePrimitive(timeSpan.Milliseconds);
+            writeSeconds = WriteSeconds;
+            writeMinutes = WriteMinutes;
+            writeHours = WriteHours;
+            writeDays = WriteDays;
+            writeMilliseconds = WriteMilliseconds;
         }
 
         if (timeSpan is { Days: 0, Milliseconds: 0 })
@@ -119,5 +119,12 @@ internal sealed class TimeSpanVisitor(
         }
 
         codeWriter.WriteObjectCreate(objectType, [writeDays, writeHours, writeMinutes, writeSeconds, writeMilliseconds]);
+        return;
+
+        void WriteSeconds() => codeWriter.WritePrimitive(timeSpan.Seconds);
+        void WriteMinutes() => codeWriter.WritePrimitive(timeSpan.Minutes);
+        void WriteHours() => codeWriter.WritePrimitive(timeSpan.Hours);
+        void WriteDays() => codeWriter.WritePrimitive(timeSpan.Days);
+        void WriteMilliseconds() => codeWriter.WritePrimitive(timeSpan.Milliseconds);
     }
 }

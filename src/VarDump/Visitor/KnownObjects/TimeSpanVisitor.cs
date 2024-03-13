@@ -84,78 +84,40 @@ internal sealed class TimeSpanVisitor(
             return;
         }
 
+        Action writeSeconds;
+        Action writeMinutes;
+        Action writeHours;
+        Action writeDays;
+        Action writeMilliseconds;
+
+        if (options.UseNamedArgumentsInConstructors)
+        {
+            writeSeconds = () => codeWriter.WriteNamedArgument("seconds", () => codeWriter.WritePrimitive(timeSpan.Seconds));
+            writeMinutes = () => codeWriter.WriteNamedArgument("minutes", () => codeWriter.WritePrimitive(timeSpan.Minutes));
+            writeHours = () => codeWriter.WriteNamedArgument("hours", () => codeWriter.WritePrimitive(timeSpan.Hours));
+            writeDays = () => codeWriter.WriteNamedArgument("days", () => codeWriter.WritePrimitive(timeSpan.Days));
+            writeMilliseconds = () => codeWriter.WriteNamedArgument("milliseconds", () => codeWriter.WritePrimitive(timeSpan.Milliseconds));
+        }
+        else
+        {
+            writeSeconds = () => codeWriter.WritePrimitive(timeSpan.Seconds);
+            writeMinutes = () => codeWriter.WritePrimitive(timeSpan.Minutes);
+            writeHours = () => codeWriter.WritePrimitive(timeSpan.Hours);
+            writeDays = () => codeWriter.WritePrimitive(timeSpan.Days);
+            writeMilliseconds = () => codeWriter.WritePrimitive(timeSpan.Milliseconds);
+        }
+
         if (timeSpan is { Days: 0, Milliseconds: 0 })
         {
-            codeWriter.WriteObjectCreate(objectType, [WriteHours, WriteMinutes, WriteSeconds]);
+            codeWriter.WriteObjectCreate(objectType, [writeHours, writeMinutes, writeSeconds]);
             return;
         }
 
         if (timeSpan.Milliseconds == 0)
         {
-            codeWriter.WriteObjectCreate(objectType, [WriteDays, WriteHours, WriteMinutes, WriteSeconds]);
+            codeWriter.WriteObjectCreate(objectType, [writeDays, writeHours, writeMinutes, writeSeconds]);
         }
 
-        codeWriter.WriteObjectCreate(objectType, [WriteDays, WriteHours, WriteMinutes, WriteSeconds, WriteMilliseconds]);
-        return;
-
-        void WriteSeconds()
-        {
-            if (options.UseNamedArgumentsInConstructors)
-            {
-                codeWriter.WriteNamedArgument("seconds", () => codeWriter.WritePrimitive(timeSpan.Seconds));
-            }
-            else
-            {
-                codeWriter.WritePrimitive(timeSpan.Seconds);
-            }
-        }
-
-        void WriteMinutes()
-        {
-            if (options.UseNamedArgumentsInConstructors)
-            {
-                codeWriter.WriteNamedArgument("minutes", () => codeWriter.WritePrimitive(timeSpan.Minutes));
-            }
-            else
-            {
-                codeWriter.WritePrimitive(timeSpan.Minutes);
-            }
-        }
-
-        void WriteHours()
-        {
-            if (options.UseNamedArgumentsInConstructors)
-            {
-                codeWriter.WriteNamedArgument("hours", () => codeWriter.WritePrimitive(timeSpan.Hours));
-            }
-            else
-            {
-                codeWriter.WritePrimitive(timeSpan.Hours);
-            }
-        }
-
-        void WriteDays()
-        {
-            if (options.UseNamedArgumentsInConstructors)
-            {
-                codeWriter.WriteNamedArgument("days", () => codeWriter.WritePrimitive(timeSpan.Days));
-            }
-            else
-            {
-                codeWriter.WritePrimitive(timeSpan.Days);
-            }
-        }
-
-        void WriteMilliseconds()
-        {
-            if (options.UseNamedArgumentsInConstructors)
-            {
-                codeWriter.WriteNamedArgument("milliseconds", () => codeWriter.WritePrimitive(timeSpan.Milliseconds));
-            }
-            else
-            {
-                codeWriter.WritePrimitive(timeSpan.Milliseconds);
-            }
-        }
+        codeWriter.WriteObjectCreate(objectType, [writeDays, writeHours, writeMinutes, writeSeconds, writeMilliseconds]);
     }
 }

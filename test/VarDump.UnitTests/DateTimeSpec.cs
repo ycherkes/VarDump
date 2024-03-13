@@ -34,6 +34,27 @@ public class DateTimeSpec
     }
 
     [Fact]
+    public void DumpDateTimeWithArgumentNamesCsharp()
+    {
+        var dateTime = DateTime.ParseExact("2023-08-05T12:47:09.9361937+02:00", "O", CultureInfo.InvariantCulture, DateTimeStyles.RoundtripKind);
+
+        var dumper = new CSharpDumper(new DumpOptions
+        {
+            UseTypeFullName = false,
+            DateTimeInstantiation = DateTimeInstantiation.New,
+            DateKind = DateKind.ConvertToUtc,
+            GenerateVariableInitializer = false,
+            UseNamedArgumentsInConstructors = true
+        });
+
+        var expectedResult = "new DateTime(year: 2023, month: 8, day: 5, hour: 10, minute: 47, second: 9, millisecond: 936, kind: DateTimeKind.Utc).AddTicks(1937)";
+
+        var result = dumper.Dump(dateTime);
+
+        Assert.Equal(expectedResult, result);
+    }
+
+    [Fact]
     public async Task DumpDateTimeOffsetNewCsharp()
     {
         var dateTimeOffset = DateTimeOffset.ParseExact("2022-06-24T11:59:21.7961218+03:00", "O", CultureInfo.InvariantCulture, DateTimeStyles.RoundtripKind);
@@ -52,6 +73,26 @@ public class DateTimeSpec
         var evaluatedResult = await CSharpScript.EvaluateAsync<DateTimeOffset>(result, ScriptOptions.Default.WithImports("System"));
 
         Assert.Equal(dateTimeOffset, evaluatedResult);
+        Assert.Equal(expectedResult, result);
+    }
+
+    [Fact]
+    public void DumpDateTimeOffsetWithArgumentNamesNewCsharp()
+    {
+        var dateTimeOffset = DateTimeOffset.ParseExact("2022-06-24T11:59:21.7961218+03:00", "O", CultureInfo.InvariantCulture, DateTimeStyles.RoundtripKind);
+
+        var dumper = new CSharpDumper(new DumpOptions
+        {
+            UseTypeFullName = false,
+            DateTimeInstantiation = DateTimeInstantiation.New,
+            GenerateVariableInitializer = false,
+            UseNamedArgumentsInConstructors = true
+        });
+
+        var expectedResult = "new DateTimeOffset(year: 2022, month: 6, day: 24, hour: 11, minute: 59, second: 21, millisecond: 796, offset: TimeSpan.FromHours(3)).AddTicks(1218)";
+
+        var result = dumper.Dump(dateTimeOffset);
+        
         Assert.Equal(expectedResult, result);
     }
 

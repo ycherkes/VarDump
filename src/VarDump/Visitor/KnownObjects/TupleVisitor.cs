@@ -29,9 +29,13 @@ internal sealed class TupleVisitor(INextDepthVisitor nextDepthVisitor, ICodeWrit
 
         try
         {
-            var propertyValues = objectType.GetProperties().Select(p => (Action)(() => nextDepthVisitor.Visit(ReflectionUtils.GetValue(p, o), context)));
+            var objectProperties = objectType.GetProperties();
 
-            codeWriter.WriteObjectCreate(objectType, propertyValues);
+            var constructorArguments = options.UseNamedArgumentsInConstructors 
+                ? objectProperties.Select(p => (Action)(() => codeWriter.WriteNamedArgument(p.Name.ToLowerInvariant() ,() => nextDepthVisitor.Visit(ReflectionUtils.GetValue(p, o), context)))) 
+                : objectProperties.Select(p => (Action)(() => nextDepthVisitor.Visit(ReflectionUtils.GetValue(p, o), context)));
+
+            codeWriter.WriteObjectCreate(objectType, constructorArguments);
         }
         finally
         {

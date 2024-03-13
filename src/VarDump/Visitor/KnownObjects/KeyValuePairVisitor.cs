@@ -18,8 +18,12 @@ internal sealed class KeyValuePairVisitor(INextDepthVisitor nextDepthVisitor, IC
 
     public void Visit(object obj, Type objectType, VisitContext context)
     {
-        var propertyValues = objectType.GetProperties().Select(p => (Action)(() => nextDepthVisitor.Visit(ReflectionUtils.GetValue(p, obj), context)));
+        var objectProperties = objectType.GetProperties();
 
-        codeWriter.WriteObjectCreate(objectType, propertyValues);
+        var constructorArguments = options.UseNamedArgumentsInConstructors
+            ? objectProperties.Select(p => (Action)(() => codeWriter.WriteNamedArgument(p.Name.ToLowerInvariant(), () => nextDepthVisitor.Visit(ReflectionUtils.GetValue(p, obj), context))))
+            : objectProperties.Select(p => (Action)(() => nextDepthVisitor.Visit(ReflectionUtils.GetValue(p, obj), context)));
+
+        codeWriter.WriteObjectCreate(objectType, constructorArguments);
     }
 }

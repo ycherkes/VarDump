@@ -18,8 +18,12 @@ internal sealed class ValueTupleVisitor(INextDepthVisitor nextDepthVisitor, ICod
 
     public void Visit(object obj, Type objectType, VisitContext context)
     {
-        var propertyValues = objectType.GetFields().Select(f => (Action)(() => nextDepthVisitor.Visit(ReflectionUtils.GetValue(f, obj), context)));
+        var objectFields = objectType.GetFields();
 
-        codeWriter.WriteValueTupleCreate(propertyValues);
+        var constructorArguments = options.UseNamedArgumentsInConstructors
+            ? objectFields.Select(f => (Action)(() => codeWriter.WriteNamedArgument(f.Name.ToLowerInvariant(), () => nextDepthVisitor.Visit(ReflectionUtils.GetValue(f, obj), context))))
+            : objectFields.Select(f => (Action)(() => nextDepthVisitor.Visit(ReflectionUtils.GetValue(f, obj), context)));
+
+        codeWriter.WriteValueTupleCreate(constructorArguments);
     }
 }

@@ -400,7 +400,7 @@ public class ObjectDescriptorMiddlewareSpec
 
             if (typeof(MemberInfo).IsAssignableFrom(objectType))
             {
-                objectDescription.Properties = objectDescription.Properties.Where(m => _includeProperties.Contains(m.Name)).ToList();
+                objectDescription.Properties = objectDescription.Properties.Where(m => _includeProperties.Contains(m.Name));
                 objectDescription.Fields = [];
             }
 
@@ -423,7 +423,7 @@ public class ObjectDescriptorMiddlewareSpec
 
             if (typeof(FileSystemInfo).IsAssignableFrom(objectType))
             {
-                objectDescription.Properties = objectDescription.Properties.Where(m => !_excludeProperties.Contains(m.Name)).ToList();
+                objectDescription.Properties = objectDescription.Properties.Where(m => !_excludeProperties.Contains(m.Name));
                 objectDescription.Fields = [];
             }
 

@@ -260,16 +260,30 @@ internal static class ReflectionUtils
 
     public static bool IsTuple(this Type type)
     {
-        var typeFullName = type.FullName ?? "";
+        if (!type.IsGenericType)
+            return false;
 
-        return typeFullName.StartsWith("System.Tuple");
+        var openType = type.GetGenericTypeDefinition();
+
+        return openType == typeof(Tuple<>)
+               || openType == typeof(Tuple<,>)
+               || openType == typeof(Tuple<,,>)
+               || openType == typeof(Tuple<,,,>)
+               || openType == typeof(Tuple<,,,,>)
+               || openType == typeof(Tuple<,,,,,>)
+               || openType == typeof(Tuple<,,,,,,>)
+               || (openType == typeof(Tuple<,,,,,,,>) && IsTuple(type.GetGenericArguments()[7]));
     }
 
     public static bool IsValueTuple(this Type type)
     {
-        var typeFullName = type.FullName ?? "";
+        if (!type.IsGenericType || !type.IsValueType())
+            return false;
 
-        return type.IsValueType() && typeFullName.StartsWith("System.ValueTuple");
+        var openType = type.GetGenericTypeDefinition();
+        var openTypeFullName = openType.FullName ?? "";
+
+        return openTypeFullName.StartsWith("System.ValueTuple`");
     }
 
     public static bool IsKeyValuePair(this Type type)

@@ -4,11 +4,11 @@ using VarDump.CodeDom.Compiler;
 
 namespace VarDump.Visitor.KnownObjects;
 
-internal sealed class CultureInfoVisitor(ICodeWriter codeWriter, DumpOptions dumpOptions) : IKnownObjectVisitor
+internal sealed class CultureInfoVisitor(ICodeWriter codeWriter, DumpOptions options) : IKnownObjectVisitor
 {
     public string Id => nameof(CultureInfo);
 
-    public DumpOptions Options => dumpOptions;
+    public DumpOptions Options => options;
 
     public bool IsSuitableFor(object obj, Type objectType)
     {
@@ -17,7 +17,7 @@ internal sealed class CultureInfoVisitor(ICodeWriter codeWriter, DumpOptions dum
 
     public void Visit(object obj, Type objectType, VisitContext context)
     {
-        if (dumpOptions.UseNamedArgumentsInConstructors)
+        if (options.UseNamedArgumentsInConstructors)
         {
             codeWriter.WriteObjectCreate(objectType, [() => codeWriter.WriteNamedArgument("name", WriteCultureName)]);
         }

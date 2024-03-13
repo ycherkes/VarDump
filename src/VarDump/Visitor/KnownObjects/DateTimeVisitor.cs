@@ -6,12 +6,12 @@ namespace VarDump.Visitor.KnownObjects;
 
 internal sealed class DateTimeVisitor(
     ICodeWriter codeWriter,
-    DumpOptions dumpOptions)
+    DumpOptions options)
     : IKnownObjectVisitor
 {
     public string Id => nameof(DateTime);
 
-    public DumpOptions Options => dumpOptions;
+    public DumpOptions Options => options;
 
     public bool IsSuitableFor(object obj, Type objectType)
     {
@@ -34,12 +34,12 @@ internal sealed class DateTimeVisitor(
             return;
         }
 
-        if (dumpOptions.DateKind == DateKind.ConvertToUtc)
+        if (options.DateKind == DateKind.ConvertToUtc)
         {
             dateTime = dateTime.ToUniversalTime();
         }
 
-        if (dumpOptions.DateTimeInstantiation == DateTimeInstantiation.Parse)
+        if (options.DateTimeInstantiation == DateTimeInstantiation.Parse)
         {
             codeWriter.WriteMethodInvoke(
                 () => codeWriter.WriteMethodReference(
@@ -69,7 +69,7 @@ internal sealed class DateTimeVisitor(
 
         void WriteObjectCreate()
         {
-            if (dumpOptions.UseNamedArgumentsInConstructors)
+            if (options.UseNamedArgumentsInConstructors)
             {
                 codeWriter.WriteObjectCreate(objectType,
                 [

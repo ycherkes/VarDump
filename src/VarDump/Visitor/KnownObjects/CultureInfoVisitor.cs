@@ -19,11 +19,15 @@ internal sealed class CultureInfoVisitor(ICodeWriter codeWriter, DumpOptions dum
     {
         if (dumpOptions.UseNamedArgumentsInConstructors)
         {
-            codeWriter.WriteObjectCreate(typeof(CultureInfo), [() => codeWriter.WriteNamedArgument("name", () => codeWriter.WritePrimitive(obj.ToString()))]);
+            codeWriter.WriteObjectCreate(objectType, [() => codeWriter.WriteNamedArgument("name", WriteCultureName)]);
         }
         else
         {
-            codeWriter.WriteObjectCreate(typeof(CultureInfo), [() => codeWriter.WritePrimitive(obj.ToString())]);
+            codeWriter.WriteObjectCreate(objectType, [WriteCultureName]);
         }
+
+        return;
+
+        void WriteCultureName() => codeWriter.WritePrimitive(obj.ToString());
     }
 }

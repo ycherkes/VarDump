@@ -20,11 +20,15 @@ internal sealed class GuidVisitor(ICodeWriter codeWriter, DumpOptions options) :
 
         if (options.UseNamedArgumentsInConstructors)
         {
-            codeWriter.WriteObjectCreate(objectType, [() => codeWriter.WriteNamedArgument("g", () => codeWriter.WritePrimitive(guid.ToString("D")))]);
+            codeWriter.WriteObjectCreate(objectType, [() => codeWriter.WriteNamedArgument("g", WriteGuidString)]);
         }
         else
         {
-            codeWriter.WriteObjectCreate(objectType, [() => codeWriter.WritePrimitive(guid.ToString("D"))]);
+            codeWriter.WriteObjectCreate(objectType, [WriteGuidString]);
         }
+
+        return;
+
+        void WriteGuidString() => codeWriter.WritePrimitive(guid.ToString("D"));
     }
 }

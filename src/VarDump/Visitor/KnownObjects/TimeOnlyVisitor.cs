@@ -64,21 +64,28 @@ internal sealed class TimeOnlyVisitor(ICodeWriter codeWriter, DumpOptions option
         {
             codeWriter.WriteObjectCreate(objectType,
             [
-                () => codeWriter.WriteNamedArgument("hour", () => codeWriter.WritePrimitive(timeSpan.Hours)),
-                () => codeWriter.WriteNamedArgument("minute", () => codeWriter.WritePrimitive(timeSpan.Minutes)),
-                () => codeWriter.WriteNamedArgument("second", () => codeWriter.WritePrimitive(timeSpan.Seconds)),
-                () => codeWriter.WriteNamedArgument("millisecond", () => codeWriter.WritePrimitive(timeSpan.Milliseconds))
+                () => codeWriter.WriteNamedArgument("hour", WriteHours),
+                () => codeWriter.WriteNamedArgument("minute", WriteMinutes),
+                () => codeWriter.WriteNamedArgument("second", WriteSeconds),
+                () => codeWriter.WriteNamedArgument("millisecond", WriteMilliseconds)
             ]);
         }
         else
         {
             codeWriter.WriteObjectCreate(objectType,
             [
-                () => codeWriter.WritePrimitive(timeSpan.Hours),
-                () => codeWriter.WritePrimitive(timeSpan.Minutes),
-                () => codeWriter.WritePrimitive(timeSpan.Seconds),
-                () => codeWriter.WritePrimitive(timeSpan.Milliseconds)
+                WriteHours,
+                WriteMinutes,
+                WriteSeconds,
+                WriteMilliseconds
             ]);
         }
+
+        return;
+
+        void WriteHours() => codeWriter.WritePrimitive(timeSpan.Hours);
+        void WriteMinutes() => codeWriter.WritePrimitive(timeSpan.Minutes);
+        void WriteSeconds() => codeWriter.WritePrimitive(timeSpan.Seconds);
+        void WriteMilliseconds() => codeWriter.WritePrimitive(timeSpan.Milliseconds);
     }
 }

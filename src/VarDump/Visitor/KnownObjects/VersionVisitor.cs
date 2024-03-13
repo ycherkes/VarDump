@@ -18,11 +18,15 @@ internal sealed class VersionVisitor(ICodeWriter codeWriter, DumpOptions options
     {
         if (options.UseNamedArgumentsInConstructors)
         {
-            codeWriter.WriteObjectCreate(typeof(Version), [() => codeWriter.WriteNamedArgument("version", () => codeWriter.WritePrimitive(obj.ToString()))]);
+            codeWriter.WriteObjectCreate(typeof(Version), [() => codeWriter.WriteNamedArgument("version", WriteVersionString)]);
         }
         else
         {
-            codeWriter.WriteObjectCreate(typeof(Version), [() => codeWriter.WritePrimitive(obj.ToString())]);
+            codeWriter.WriteObjectCreate(typeof(Version), [WriteVersionString]);
         }
+
+        return;
+
+        void WriteVersionString() => codeWriter.WritePrimitive(obj.ToString());
     }
 }

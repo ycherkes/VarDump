@@ -29,20 +29,23 @@ internal sealed class UriVisitor(ICodeWriter codeWriter, DumpOptions options) : 
 
         IEnumerable<Action> GetNamedConstructorArguments()
         {
-            yield return () => codeWriter.WriteNamedArgument("uriString", () => codeWriter.WritePrimitive(uri.OriginalString));
+            yield return () => codeWriter.WriteNamedArgument("uriString", WriteUriString);
             if (!uri.IsAbsoluteUri)
             {
-                yield return () => codeWriter.WriteNamedArgument("uriKind", () => codeWriter.WriteFieldReference(nameof(UriKind.Relative), () => codeWriter.WriteType(typeof(UriKind))));
+                yield return () => codeWriter.WriteNamedArgument("uriKind", WriteUriKind);
             }
         }
 
         IEnumerable<Action> GetConstructorArguments()
         {
-            yield return () => codeWriter.WritePrimitive(uri.OriginalString);
+            yield return WriteUriString;
             if (!uri.IsAbsoluteUri)
             {
-                yield return () => codeWriter.WriteFieldReference(nameof(UriKind.Relative), () => codeWriter.WriteType(typeof(UriKind)));
+                yield return WriteUriKind;
             }
         }
+
+        void WriteUriString() => codeWriter.WritePrimitive(uri.OriginalString);
+        void WriteUriKind() => codeWriter.WriteFieldReference(nameof(UriKind.Relative), () => codeWriter.WriteType(typeof(UriKind)));
     }
 }

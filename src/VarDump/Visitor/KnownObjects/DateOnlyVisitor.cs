@@ -59,19 +59,25 @@ internal sealed class DateOnlyVisitor(ICodeWriter codeWriter, DumpOptions dumpOp
         {
             codeWriter.WriteObjectCreate(objectType, 
             [
-                () => codeWriter.WriteNamedArgument("year", () => codeWriter.WritePrimitive(dateTime.Year)),
-                () => codeWriter.WriteNamedArgument("month", () => codeWriter.WritePrimitive(dateTime.Month)),
-                () => codeWriter.WriteNamedArgument("day", () => codeWriter.WritePrimitive(dateTime.Day)),
+                () => codeWriter.WriteNamedArgument("year", WriteYear),
+                () => codeWriter.WriteNamedArgument("month", WriteMonth),
+                () => codeWriter.WriteNamedArgument("day", WriteDay)
             ]);
         }
         else
         {
             codeWriter.WriteObjectCreate(objectType,
             [
-                () => codeWriter.WritePrimitive(dateTime.Year),
-                () => codeWriter.WritePrimitive(dateTime.Month),
-                () => codeWriter.WritePrimitive(dateTime.Day)
+                WriteYear,
+                WriteMonth,
+                WriteDay
             ]);
         }
+
+        return;
+
+        void WriteYear() => codeWriter.WritePrimitive(dateTime.Year);
+        void WriteMonth() => codeWriter.WritePrimitive(dateTime.Month);
+        void WriteDay() => codeWriter.WritePrimitive(dateTime.Day);
     }
 }

@@ -31,28 +31,32 @@ internal sealed class RegexVisitor(ICodeWriter codeWriter, INextDepthVisitor nex
 
         IEnumerable<Action> GetNamedConstructorArguments()
         {
-            yield return () => codeWriter.WriteNamedArgument("pattern", () => codeWriter.WritePrimitive(regex.ToString()));
+            yield return () => codeWriter.WriteNamedArgument("pattern", WritePattern);
             if (regex.Options != RegexOptions.None || regex.MatchTimeout != Timeout.InfiniteTimeSpan)
             {
-                yield return () => codeWriter.WriteNamedArgument("options", () => nextDepthVisitor.Visit(regex.Options, context));
+                yield return () => codeWriter.WriteNamedArgument("options",WriteOptions);
                 if (regex.MatchTimeout != Timeout.InfiniteTimeSpan)
                 {
-                    yield return () => codeWriter.WriteNamedArgument("matchTimeout", () => nextDepthVisitor.Visit(regex.MatchTimeout, context));
+                    yield return () => codeWriter.WriteNamedArgument("matchTimeout", WriteMatchTimeout);
                 }
             }
         }
 
         IEnumerable<Action> GetConstructorArguments()
         {
-            yield return () => codeWriter.WritePrimitive(regex.ToString());
+            yield return WritePattern;
             if (regex.Options != RegexOptions.None || regex.MatchTimeout != Timeout.InfiniteTimeSpan)
             {
-                yield return () => nextDepthVisitor.Visit(regex.Options, context);
+                yield return WriteOptions;
                 if (regex.MatchTimeout != Timeout.InfiniteTimeSpan)
                 {
-                    yield return () => nextDepthVisitor.Visit(regex.MatchTimeout, context);
+                    yield return WriteMatchTimeout;
                 }
             }
         }
+
+        void WritePattern() => codeWriter.WritePrimitive(regex.ToString());
+        void WriteOptions() => nextDepthVisitor.Visit(regex.Options, context);
+        void WriteMatchTimeout() => nextDepthVisitor.Visit(regex.MatchTimeout, context);
     }
 }

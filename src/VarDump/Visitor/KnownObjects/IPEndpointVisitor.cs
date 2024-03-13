@@ -29,14 +29,17 @@ internal sealed class IPEndpointVisitor(INextDepthVisitor nextDepthVisitor, ICod
 
         IEnumerable<Action> GetConstructorArguments()
         {
-            yield return () => nextDepthVisitor.Visit(ipEndPoint.Address, context);
-            yield return () => codeWriter.WritePrimitive(ipEndPoint.Port);
+            yield return WriteAddress;
+            yield return WritePort;
         }
 
         IEnumerable<Action> GetNamedConstructorArguments()
         {
-            yield return () => codeWriter.WriteNamedArgument("address", () => nextDepthVisitor.Visit(ipEndPoint.Address, context));
-            yield return () => codeWriter.WriteNamedArgument("port", () => codeWriter.WritePrimitive(ipEndPoint.Port));
+            yield return () => codeWriter.WriteNamedArgument("address", WriteAddress);
+            yield return () => codeWriter.WriteNamedArgument("port", WritePort);
         }
+
+        void WriteAddress() => nextDepthVisitor.Visit(ipEndPoint.Address, context);
+        void WritePort() => codeWriter.WritePrimitive(ipEndPoint.Port);
     }
 }

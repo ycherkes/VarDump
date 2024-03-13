@@ -58,6 +58,7 @@ internal sealed class ObjectVisitor : IObjectVisitor, INextDepthVisitor
             new TupleVisitor(this, codeWriter, options.Clone()),
             new ValueTupleVisitor(this, codeWriter, options.Clone()),
             new UriVisitor(codeWriter, options.Clone()),
+            new RegexVisitor(codeWriter, this, options.Clone()),
             new GroupingVisitor(this, codeWriter, options.Clone()),
             new DictionaryVisitor(this, codeWriter, options.Clone()),
             new CollectionVisitor(this, codeWriter, options.Clone()),

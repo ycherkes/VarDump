@@ -21,7 +21,11 @@ public class ObjectDescriptorMiddlewareSpec
 
         var options = new DumpOptions
         {
-            Descriptors = { new RegexMiddleware() }
+            Descriptors = { new RegexMiddleware() },
+            ConfigureKnownObjects = (knownObjects, visitor, options, codeWriter) =>
+            {
+                knownObjects.Remove(nameof(Regex));
+            }
         };
 
         var dumper = new CSharpDumper(options);

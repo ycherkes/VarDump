@@ -1,6 +1,6 @@
-﻿using System.Collections.Generic;
-using System.Linq;
+﻿using System.Linq;
 using VarDump.CodeDom.Compiler;
+using VarDump.Collections;
 using VarDump.Extensions;
 using VarDump.Visitor.Descriptors;
 using VarDump.Visitor.Descriptors.Implementation;
@@ -11,7 +11,7 @@ namespace VarDump.Visitor;
 internal sealed class ObjectVisitor : IObjectVisitor, INextDepthVisitor
 {
     private readonly ICodeWriter _codeWriter;
-    private readonly List<IKnownObjectVisitor> _knownObjects;
+    private readonly IKnownObjectsOrderedDictionary _knownObjects;
     private readonly int _maxDepth;
     private readonly ICurrentDepthVisitor _generalVisitor;
 
@@ -36,32 +36,32 @@ internal sealed class ObjectVisitor : IObjectVisitor, INextDepthVisitor
 
         _generalVisitor = new GeneralVisitor(codeWriter, this, objectDescriptor, options);
 
-        _knownObjects =
-        [
-            new PrimitiveVisitor(codeWriter),
-            new TimeSpanVisitor(codeWriter, options.DateTimeInstantiation, options.UseNamedArgumentsInConstructors),
-            new DateTimeVisitor(codeWriter, options.DateTimeInstantiation, options.DateKind, options.UseNamedArgumentsInConstructors),
-            new DateTimeOffsetVisitor(this, codeWriter, options.DateTimeInstantiation, options.UseNamedArgumentsInConstructors),
-            new EnumVisitor(codeWriter),
-            new GuidVisitor(codeWriter, options.UseNamedArgumentsInConstructors),
-            new CultureInfoVisitor(codeWriter, options.UseNamedArgumentsInConstructors),
-            new TypeVisitor(codeWriter),
-            new IPAddressVisitor(codeWriter),
-            new IPEndpointVisitor(this, codeWriter, options.UseNamedArgumentsInConstructors),
-            new DnsEndPointVisitor(this, codeWriter, options.UseNamedArgumentsInConstructors),
-            new VersionVisitor(codeWriter, options.UseNamedArgumentsInConstructors),
-            new DateOnlyVisitor(codeWriter, options.DateTimeInstantiation, options.UseNamedArgumentsInConstructors),
-            new TimeOnlyVisitor(codeWriter, options.DateTimeInstantiation, options.UseNamedArgumentsInConstructors),
-            new RecordVisitor(this, codeWriter, options.UseNamedArgumentsInConstructors),
-            new AnonymousVisitor(this, anonymousObjectDescriptor, codeWriter),
-            new KeyValuePairVisitor(this, codeWriter),
-            new TupleVisitor(this, codeWriter),
-            new ValueTupleVisitor(this, codeWriter),
-            new UriVisitor(codeWriter, options.UseNamedArgumentsInConstructors),
-            new GroupingVisitor(this, codeWriter),
-            new DictionaryVisitor(this, codeWriter, options.MaxCollectionSize),
-            new CollectionVisitor(this, codeWriter, options.MaxCollectionSize),
-        ];
+        _knownObjects = new KnownObjectsOrderedDictionary
+        {
+            new PrimitiveVisitor(codeWriter, options.Clone()),
+            new TimeSpanVisitor(codeWriter, options.Clone()),
+            new DateTimeVisitor(codeWriter, options.Clone()),
+            new DateTimeOffsetVisitor(this, codeWriter, options.Clone()),
+            new EnumVisitor(codeWriter, options.Clone()),
+            new GuidVisitor(codeWriter, options.Clone()),
+            new CultureInfoVisitor(codeWriter, options.Clone()),
+            new TypeVisitor(codeWriter, options.Clone()),
+            new IPAddressVisitor(codeWriter, options.Clone()),
+            new IPEndpointVisitor(this, codeWriter, options.Clone()),
+            new DnsEndPointVisitor(this, codeWriter, options.Clone()),
+            new VersionVisitor(codeWriter, options.Clone()),
+            new DateOnlyVisitor(codeWriter, options.Clone()),
+            new TimeOnlyVisitor(codeWriter, options.Clone()),
+            new RecordVisitor(this, codeWriter, options.Clone()),
+            new AnonymousVisitor(this, anonymousObjectDescriptor, codeWriter, options.Clone()),
+            new KeyValuePairVisitor(this, codeWriter, options.Clone()),
+            new TupleVisitor(this, codeWriter, options.Clone()),
+            new ValueTupleVisitor(this, codeWriter, options.Clone()),
+            new UriVisitor(codeWriter, options.Clone()),
+            new GroupingVisitor(this, codeWriter, options.Clone()),
+            new DictionaryVisitor(this, codeWriter, options.Clone()),
+            new CollectionVisitor(this, codeWriter, options.Clone()),
+        };
 
         options.ConfigureKnownObjects?.Invoke(_knownObjects, this, options, codeWriter);
     }
@@ -85,7 +85,7 @@ internal sealed class ObjectVisitor : IObjectVisitor, INextDepthVisitor
 
             var objectType = @object?.GetType();
 
-            var suitableVisitor = _knownObjects.FirstOrDefault(v => v.IsSuitableFor(@object, objectType))
+            var suitableVisitor = _knownObjects.Values.FirstOrDefault(v => v.IsSuitableFor(@object, objectType))
                                   ?? _generalVisitor;
 
             suitableVisitor.Visit(@object, objectType, context);

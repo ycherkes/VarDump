@@ -6,7 +6,7 @@ using VarDump.Utils;
 
 namespace VarDump.Visitor.KnownObjects;
 
-internal sealed class PrimitiveVisitor(ICodeWriter codeWriter) : IKnownObjectVisitor
+internal sealed class PrimitiveVisitor(ICodeWriter codeWriter, DumpOptions options) : IKnownObjectVisitor
 {
     private static readonly string[] SpecialValueNames =
     [
@@ -17,6 +17,10 @@ internal sealed class PrimitiveVisitor(ICodeWriter codeWriter) : IKnownObjectVis
         nameof(float.Epsilon),
         nameof(float.NaN)
     ];
+
+    public string Id => "Primitive";
+
+    public DumpOptions Options => options;
 
     public bool IsSuitableFor(object obj, Type objectType)
     {

@@ -10,9 +10,14 @@ namespace VarDump.Visitor.KnownObjects;
 internal sealed class AnonymousVisitor(
     INextDepthVisitor nextDepthVisitor,
     IObjectDescriptor anonymousObjectDescriptor,
-    ICodeWriter codeWriter)
+    ICodeWriter codeWriter,
+    DumpOptions options)
     : IKnownObjectVisitor
 {
+    public string Id => "Anonymous";
+
+    public DumpOptions Options => options;
+
     public bool IsSuitableFor(object obj, Type objectType)
     {
         return objectType.IsAnonymousType();

@@ -26,9 +26,9 @@ public class KnownObjectsSpec
 
         var dumpOptions = new DumpOptions
         {
-            ConfigureKnownObjects = (knownObjects, nextLevelVisitor, _, codeWriter) =>
+            ConfigureKnownObjects = (knownObjects, nextLevelVisitor, options, codeWriter) =>
             {
-                knownObjects.Add(new ServiceDescriptorVisitor(nextLevelVisitor, codeWriter));
+                knownObjects.Add(new ServiceDescriptorVisitor(nextLevelVisitor, codeWriter, options.Clone()));
             }
         };
 
@@ -54,9 +54,9 @@ public class KnownObjectsSpec
 
         var dumpOptions = new DumpOptions
         {
-            ConfigureKnownObjects = (knownObjects, nextLevelVisitor, _, codeWriter) =>
+            ConfigureKnownObjects = (knownObjects, nextLevelVisitor, options, codeWriter) =>
             {
-                knownObjects.Add(new ServiceDescriptorVisitor(nextLevelVisitor, codeWriter));
+                knownObjects.Add(new ServiceDescriptorVisitor(nextLevelVisitor, codeWriter, options.Clone()));
             }
         };
 
@@ -79,9 +79,9 @@ public class KnownObjectsSpec
 
         var dumpOptions = new DumpOptions
         {
-            ConfigureKnownObjects = (knownObjects, nextLevelVisitor, _, codeWriter) =>
+            ConfigureKnownObjects = (knownObjects, nextLevelVisitor, options, codeWriter) =>
             {
-                knownObjects.Add(new FormattableStringVisitor(nextLevelVisitor, codeWriter));
+                knownObjects.Add(new FormattableStringVisitor(nextLevelVisitor, codeWriter, options.Clone()));
             }
         };
 
@@ -104,9 +104,9 @@ public class KnownObjectsSpec
 
         var dumpOptions = new DumpOptions
         {
-            ConfigureKnownObjects = (knownObjects, nextLevelVisitor, _, codeWriter) =>
+            ConfigureKnownObjects = (knownObjects, nextLevelVisitor, options, codeWriter) =>
             {
-                knownObjects.Add(new FormattableStringVisitor(nextLevelVisitor, codeWriter));
+                knownObjects.Add(new FormattableStringVisitor(nextLevelVisitor, codeWriter, options.Clone()));
             }
         };
 
@@ -121,8 +121,12 @@ public class KnownObjectsSpec
             """, result);
     }
 
-    private class ServiceDescriptorVisitor(INextDepthVisitor nextDepthVisitor, ICodeWriter codeWriter) : IKnownObjectVisitor
+    private class ServiceDescriptorVisitor(INextDepthVisitor nextDepthVisitor, ICodeWriter codeWriter, DumpOptions options) : IKnownObjectVisitor
     {
+        public string Id => nameof(ServiceDescriptor);
+
+        public DumpOptions Options => options;
+
         public bool IsSuitableFor(object obj, Type objectType)
         {
             return obj is ServiceDescriptor;
@@ -165,8 +169,12 @@ public class KnownObjectsSpec
         }
     }
 
-    private class FormattableStringVisitor(INextDepthVisitor nextDepthVisitor, ICodeWriter codeWriter) : IKnownObjectVisitor
+    private class FormattableStringVisitor(INextDepthVisitor nextDepthVisitor, ICodeWriter codeWriter, DumpOptions options) : IKnownObjectVisitor
     {
+        public string Id => nameof(FormattableString);
+
+        public DumpOptions Options => options;
+
         public bool IsSuitableFor(object obj, Type objectType)
         {
             return obj is FormattableString;

@@ -1,13 +1,16 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Net;
-using System.Net.Sockets;
 using VarDump.CodeDom.Compiler;
 
 namespace VarDump.Visitor.KnownObjects;
 
-internal sealed class IPEndpointVisitor(INextDepthVisitor nextDepthVisitor, ICodeWriter codeWriter, bool useNamedArgumentsInConstructors) : IKnownObjectVisitor
+internal sealed class IPEndpointVisitor(INextDepthVisitor nextDepthVisitor, ICodeWriter codeWriter, DumpOptions options) : IKnownObjectVisitor
 {
+    public string Id => nameof(IPEndPoint);
+
+    public DumpOptions Options => options;
+
     public bool IsSuitableFor(object obj, Type objectType)
     {
         return obj is IPEndPoint;
@@ -17,7 +20,7 @@ internal sealed class IPEndpointVisitor(INextDepthVisitor nextDepthVisitor, ICod
     {
         var ipEndPoint = (IPEndPoint)obj;
 
-        var constructorArguments = useNamedArgumentsInConstructors
+        var constructorArguments = options.UseNamedArgumentsInConstructors
             ? GetNamedConstructorArguments()
             : GetConstructorArguments();
 

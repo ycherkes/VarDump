@@ -9,9 +9,13 @@ namespace VarDump.Visitor.KnownObjects;
 internal sealed class RecordVisitor(
     INextDepthVisitor nextDepthVisitor,
     ICodeWriter codeWriter,
-    bool useNamedArgumentsInConstructors)
+    DumpOptions options)
     : IKnownObjectVisitor
 {
+    public string Id => "Record";
+
+    public DumpOptions Options => options;
+
     public bool IsSuitableFor(object obj, Type objectType)
     {
         return objectType.IsRecord();
@@ -22,7 +26,7 @@ internal sealed class RecordVisitor(
         var properties = objectType.GetProperties(BindingFlags.Public | BindingFlags.Instance | BindingFlags.NonPublic)
                                                         .Where(p => p.CanWrite);
 
-        var argumentValues = useNamedArgumentsInConstructors
+        var argumentValues = options.UseNamedArgumentsInConstructors
             ? properties.Select(p => (Action)(() => codeWriter.WriteNamedArgument(p.Name, () => nextDepthVisitor.Visit(ReflectionUtils.GetValue(p, obj), context))))
             : properties.Select(p => (Action)(() => nextDepthVisitor.Visit(ReflectionUtils.GetValue(p, obj), context)));
 

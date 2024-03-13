@@ -14,19 +14,23 @@ internal sealed class CollectionVisitor : IKnownObjectVisitor
 {
     private readonly INextDepthVisitor _nextDepthVisitor;
     private readonly ICodeWriter _codeWriter;
-    private readonly int _maxCollectionSize;
+    private readonly DumpOptions _options;
 
-    public CollectionVisitor(INextDepthVisitor nextDepthVisitor, ICodeWriter codeWriter, int maxCollectionSize)
+    public CollectionVisitor(INextDepthVisitor nextDepthVisitor, ICodeWriter codeWriter, DumpOptions options)
     {
-        if (maxCollectionSize <= 0)
+        if (options.MaxCollectionSize <= 0)
         {
-            throw new ArgumentOutOfRangeException(nameof(maxCollectionSize));
+            throw new ArgumentOutOfRangeException(nameof(options.MaxCollectionSize));
         }
 
-        _maxCollectionSize = maxCollectionSize;
         _nextDepthVisitor = nextDepthVisitor;
         _codeWriter = codeWriter;
+        _options = options;
     }
+
+    public string Id => "Collection";
+
+    public DumpOptions Options => _options;
 
     public bool IsSuitableFor(object obj, Type objectType)
     {
@@ -74,9 +78,9 @@ internal sealed class CollectionVisitor : IKnownObjectVisitor
 
         var items = VisitGroupings(collection.Cast<object>(), context);
 
-        if (_maxCollectionSize < int.MaxValue)
+        if (_options.MaxCollectionSize < int.MaxValue)
         {
-            items = items.Take(_maxCollectionSize + 1).Replace(_maxCollectionSize, () => _codeWriter.WriteTooManyItems(_maxCollectionSize));
+            items = items.Take(_options.MaxCollectionSize + 1).Replace(_options.MaxCollectionSize, () => _codeWriter.WriteTooManyItems(_options.MaxCollectionSize));
         }
 
         var isLookup = type.IsLookup();
@@ -126,9 +130,9 @@ internal sealed class CollectionVisitor : IKnownObjectVisitor
     {
         var items = enumerable.Cast<object>().Select(item => (Action)(() => _nextDepthVisitor.Visit(item, context)));
 
-        if (_maxCollectionSize < int.MaxValue)
+        if (_options.MaxCollectionSize < int.MaxValue)
         {
-            items = items.Take(_maxCollectionSize + 1).Replace(_maxCollectionSize, () => _codeWriter.WriteTooManyItems(_maxCollectionSize));
+            items = items.Take(_options.MaxCollectionSize + 1).Replace(_options.MaxCollectionSize, () => _codeWriter.WriteTooManyItems(_options.MaxCollectionSize));
         }
 
         var type = enumerable.GetType();
@@ -199,9 +203,9 @@ internal sealed class CollectionVisitor : IKnownObjectVisitor
     {
         var items = enumerable.Cast<object>().Select(item => (Action)(() => _nextDepthVisitor.Visit(item, context)));
 
-        if (_maxCollectionSize < int.MaxValue)
+        if (_options.MaxCollectionSize < int.MaxValue)
         {
-            items = items.Take(_maxCollectionSize + 1).Replace(_maxCollectionSize, () => _codeWriter.WriteTooManyItems(_maxCollectionSize));
+            items = items.Take(_options.MaxCollectionSize + 1).Replace(_options.MaxCollectionSize, () => _codeWriter.WriteTooManyItems(_options.MaxCollectionSize));
         }
 
         var type = enumerable.GetType();

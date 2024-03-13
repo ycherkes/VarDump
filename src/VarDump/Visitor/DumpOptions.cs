@@ -4,13 +4,14 @@ using System.ComponentModel;
 using System.Linq;
 using System.Reflection;
 using VarDump.CodeDom.Compiler;
+using VarDump.Collections;
 using VarDump.Visitor.Descriptors;
 
 namespace VarDump.Visitor;
 
 public sealed class DumpOptions
 {
-    public Action<List<IKnownObjectVisitor>, INextDepthVisitor, DumpOptions, ICodeWriter> ConfigureKnownObjects { get; set; }
+    public Action<IKnownObjectsOrderedDictionary, INextDepthVisitor, DumpOptions, ICodeWriter> ConfigureKnownObjects { get; set; }
     public DateKind DateKind { get; set; } = DateKind.Original;
     public DateTimeInstantiation DateTimeInstantiation { get; set; } = DateTimeInstantiation.Parse;
     public List<IObjectDescriptorMiddleware> Descriptors { get; set; } = [];

@@ -3,8 +3,12 @@ using VarDump.CodeDom.Compiler;
 
 namespace VarDump.Visitor.KnownObjects;
 
-internal sealed class GuidVisitor(ICodeWriter codeWriter, bool useNamedArgumentsInConstructors) : IKnownObjectVisitor
+internal sealed class GuidVisitor(ICodeWriter codeWriter, DumpOptions options) : IKnownObjectVisitor
 {
+    public string Id => nameof(Guid);
+
+    public DumpOptions Options => options;
+
     public bool IsSuitableFor(object obj, Type objectType)
     {
         return obj is Guid;
@@ -14,7 +18,7 @@ internal sealed class GuidVisitor(ICodeWriter codeWriter, bool useNamedArguments
     {
         var guid = (Guid)obj;
 
-        if (useNamedArgumentsInConstructors)
+        if (options.UseNamedArgumentsInConstructors)
         {
             codeWriter.WriteObjectCreate(objectType, [() => codeWriter.WriteNamedArgument("g", () => codeWriter.WritePrimitive(guid.ToString("D")))]);
         }

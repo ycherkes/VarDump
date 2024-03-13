@@ -8,8 +8,7 @@ namespace VarDump.Visitor.KnownObjects;
 
 internal sealed class TimeSpanVisitor(
     ICodeWriter codeWriter,
-    DateTimeInstantiation dateTimeInstantiation,
-    bool useNamedArgumentsInConstructors)
+    DumpOptions options)
     : IKnownObjectVisitor
 {
     private static readonly Dictionary<TimeSpan, string> SpecialValuesDictionary = new()
@@ -18,6 +17,10 @@ internal sealed class TimeSpanVisitor(
         { TimeSpan.MinValue, nameof(TimeSpan.MinValue) },
         { TimeSpan.Zero, nameof(TimeSpan.Zero) }
     };
+
+    public string Id => nameof(TimeSpan);
+
+    public DumpOptions Options => options;
 
     public bool IsSuitableFor(object obj, Type objectType)
     {
@@ -65,7 +68,7 @@ internal sealed class TimeSpanVisitor(
             return;
         }
 
-        if (dateTimeInstantiation == DateTimeInstantiation.Parse)
+        if (options.DateTimeInstantiation == DateTimeInstantiation.Parse)
         {
             codeWriter.WriteMethodInvoke(() => codeWriter.WriteMethodReference(
                     () => codeWriter.WriteType(objectType), nameof(TimeSpan.ParseExact)),
@@ -97,7 +100,7 @@ internal sealed class TimeSpanVisitor(
 
         void WriteSeconds()
         {
-            if (useNamedArgumentsInConstructors)
+            if (options.UseNamedArgumentsInConstructors)
             {
                 codeWriter.WriteNamedArgument("seconds", () => codeWriter.WritePrimitive(timeSpan.Seconds));
             }
@@ -109,7 +112,7 @@ internal sealed class TimeSpanVisitor(
 
         void WriteMinutes()
         {
-            if (useNamedArgumentsInConstructors)
+            if (options.UseNamedArgumentsInConstructors)
             {
                 codeWriter.WriteNamedArgument("minutes", () => codeWriter.WritePrimitive(timeSpan.Minutes));
             }
@@ -121,7 +124,7 @@ internal sealed class TimeSpanVisitor(
 
         void WriteHours()
         {
-            if (useNamedArgumentsInConstructors)
+            if (options.UseNamedArgumentsInConstructors)
             {
                 codeWriter.WriteNamedArgument("hours", () => codeWriter.WritePrimitive(timeSpan.Hours));
             }
@@ -133,7 +136,7 @@ internal sealed class TimeSpanVisitor(
 
         void WriteDays()
         {
-            if (useNamedArgumentsInConstructors)
+            if (options.UseNamedArgumentsInConstructors)
             {
                 codeWriter.WriteNamedArgument("days", () => codeWriter.WritePrimitive(timeSpan.Days));
             }
@@ -145,7 +148,7 @@ internal sealed class TimeSpanVisitor(
 
         void WriteMilliseconds()
         {
-            if (useNamedArgumentsInConstructors)
+            if (options.UseNamedArgumentsInConstructors)
             {
                 codeWriter.WriteNamedArgument("milliseconds", () => codeWriter.WritePrimitive(timeSpan.Milliseconds));
             }

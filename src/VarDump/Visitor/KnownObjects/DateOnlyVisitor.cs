@@ -5,8 +5,12 @@ using VarDump.Utils;
 
 namespace VarDump.Visitor.KnownObjects;
 
-internal sealed class DateOnlyVisitor(ICodeWriter codeWriter, DateTimeInstantiation dateTimeInstantiation, bool useNamedArgumentsInConstructors) : IKnownObjectVisitor
+internal sealed class DateOnlyVisitor(ICodeWriter codeWriter, DumpOptions dumpOptions) : IKnownObjectVisitor
 {
+    public string Id => "DateOnly";
+
+    public DumpOptions Options => dumpOptions;
+
     public bool IsSuitableFor(object obj, Type objectType)
     {
         return objectType.IsDateOnly();
@@ -38,7 +42,7 @@ internal sealed class DateOnlyVisitor(ICodeWriter codeWriter, DateTimeInstantiat
 
         var dateTime = new DateTime((long)dayNumber * 864000000000L);
 
-        if (dateTimeInstantiation == DateTimeInstantiation.Parse)
+        if (dumpOptions.DateTimeInstantiation == DateTimeInstantiation.Parse)
         {
             codeWriter.WriteMethodInvoke(
                 () => codeWriter.WriteMethodReference(
@@ -51,7 +55,7 @@ internal sealed class DateOnlyVisitor(ICodeWriter codeWriter, DateTimeInstantiat
             return;
         }
         
-        if (useNamedArgumentsInConstructors)
+        if (dumpOptions.UseNamedArgumentsInConstructors)
         {
             codeWriter.WriteObjectCreate(objectType, 
             [

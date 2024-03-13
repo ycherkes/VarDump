@@ -7,10 +7,13 @@ namespace VarDump.Visitor.KnownObjects;
 internal sealed class DateTimeOffsetVisitor(
     INextDepthVisitor nextDepthVisitor,
     ICodeWriter codeWriter,
-    DateTimeInstantiation dateTimeInstantiation,
-    bool useNamedArgumentsInConstructors)
+    DumpOptions dumpOptions)
     : IKnownObjectVisitor
 {
+    public string Id => nameof(DateTimeOffset);
+
+    public DumpOptions Options => dumpOptions;
+
     public bool IsSuitableFor(object obj, Type objectType)
     {
         return obj is DateTimeOffset;
@@ -32,7 +35,7 @@ internal sealed class DateTimeOffsetVisitor(
             return;
         }
 
-        if (dateTimeInstantiation == DateTimeInstantiation.Parse)
+        if (dumpOptions.DateTimeInstantiation == DateTimeInstantiation.Parse)
         {
             codeWriter.WriteMethodInvoke(
                 () => codeWriter.WriteMethodReference(
@@ -65,7 +68,7 @@ internal sealed class DateTimeOffsetVisitor(
 
         void WriteObjectCreate()
         {
-            if(useNamedArgumentsInConstructors)
+            if(dumpOptions.UseNamedArgumentsInConstructors)
             {
                 codeWriter.WriteObjectCreate(objectType,
                 [

@@ -4,8 +4,12 @@ using VarDump.CodeDom.Compiler;
 
 namespace VarDump.Visitor.KnownObjects;
 
-internal sealed class IPAddressVisitor(ICodeWriter codeWriter) : IKnownObjectVisitor
+internal sealed class IPAddressVisitor(ICodeWriter codeWriter, DumpOptions options) : IKnownObjectVisitor
 {
+    public string Id => nameof(IPAddress);
+
+    public DumpOptions Options => options;
+
     public bool IsSuitableFor(object obj, Type objectType)
     {
         return obj is IPAddress;

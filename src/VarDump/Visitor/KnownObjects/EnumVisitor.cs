@@ -4,8 +4,12 @@ using VarDump.CodeDom.Compiler;
 
 namespace VarDump.Visitor.KnownObjects;
 
-internal sealed class EnumVisitor(ICodeWriter codeWriter) : IKnownObjectVisitor
+internal sealed class EnumVisitor(ICodeWriter codeWriter, DumpOptions options) : IKnownObjectVisitor
 {
+    public string Id => nameof(Enum);
+
+    public DumpOptions Options => options;
+
     public bool IsSuitableFor(object obj, Type objectType)
     {
         return obj is Enum;

@@ -6,8 +6,12 @@ using VarDump.CodeDom.Compiler;
 
 namespace VarDump.Visitor.KnownObjects;
 
-internal sealed class DnsEndPointVisitor(INextDepthVisitor nextDepthVisitor, ICodeWriter codeWriter, bool useNamedArgumentsInConstructors) : IKnownObjectVisitor
+internal sealed class DnsEndPointVisitor(INextDepthVisitor nextDepthVisitor, ICodeWriter codeWriter, DumpOptions options) : IKnownObjectVisitor
 {
+    public string Id => nameof(DnsEndPoint);
+
+    public DumpOptions Options => options;
+
     public bool IsSuitableFor(object obj, Type objectType)
     {
         return obj is DnsEndPoint;
@@ -17,7 +21,7 @@ internal sealed class DnsEndPointVisitor(INextDepthVisitor nextDepthVisitor, ICo
     {
         var dnsEndPoint = (DnsEndPoint)obj;
 
-        var constructorArguments = useNamedArgumentsInConstructors
+        var constructorArguments = options.UseNamedArgumentsInConstructors
             ? GetNamedConstructorArguments()
             : GetConstructorArguments();
 

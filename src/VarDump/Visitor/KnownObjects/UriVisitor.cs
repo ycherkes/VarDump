@@ -4,8 +4,12 @@ using VarDump.CodeDom.Compiler;
 
 namespace VarDump.Visitor.KnownObjects;
 
-internal sealed class UriVisitor(ICodeWriter codeWriter, bool useNamedArgumentsInConstructors) : IKnownObjectVisitor
+internal sealed class UriVisitor(ICodeWriter codeWriter, DumpOptions options) : IKnownObjectVisitor
 {
+    public string Id => nameof(Uri);
+
+    public DumpOptions Options => options;
+
     public bool IsSuitableFor(object obj, Type objectType)
     {
         return obj is Uri;
@@ -15,7 +19,7 @@ internal sealed class UriVisitor(ICodeWriter codeWriter, bool useNamedArgumentsI
     {
         var uri = (Uri)obj;
 
-        var constructorArguments = useNamedArgumentsInConstructors
+        var constructorArguments = options.UseNamedArgumentsInConstructors
             ? GetNamedConstructorArguments()
             : GetConstructorArguments();
 

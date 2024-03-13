@@ -3,8 +3,12 @@ using VarDump.CodeDom.Compiler;
 
 namespace VarDump.Visitor.KnownObjects;
 
-internal sealed class VersionVisitor(ICodeWriter codeWriter, bool useNamedArgumentsInConstructors) : IKnownObjectVisitor
+internal sealed class VersionVisitor(ICodeWriter codeWriter, DumpOptions options) : IKnownObjectVisitor
 {
+    public string Id => nameof(Version);
+
+    public DumpOptions Options => options;
+
     public bool IsSuitableFor(object obj, Type objectType)
     {
         return obj is Version;
@@ -12,7 +16,7 @@ internal sealed class VersionVisitor(ICodeWriter codeWriter, bool useNamedArgume
 
     public void Visit(object obj, Type objectType, VisitContext context)
     {
-        if (useNamedArgumentsInConstructors)
+        if (options.UseNamedArgumentsInConstructors)
         {
             codeWriter.WriteObjectCreate(typeof(Version), [() => codeWriter.WriteNamedArgument("version", () => codeWriter.WritePrimitive(obj.ToString()))]);
         }

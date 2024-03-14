@@ -404,7 +404,6 @@ internal sealed class VBCodeWriter : ICodeWriter
         {
             OutputActions(enumerator, newlineBetweenItems, newLineContinuation);
         }
-        
     }
 
     public void OutputActions(IEnumerator<Action> actions, bool newlineBetweenItems,

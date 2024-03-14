@@ -10,7 +10,7 @@ namespace VarDump.UnitTests
     {
 
         [Fact]
-        public void DumpFrozenSetCsharp()
+        public void DumpFrozenSetCSharp()
         {
             FrozenSet<int> frozenSet = new[] { 1 }.ToFrozenSet();
 
@@ -45,7 +45,7 @@ namespace VarDump.UnitTests
         }
 
         [Fact]
-        public void DumpFrozenDictionaryCsharp()
+        public void DumpFrozenDictionaryCSharp()
         {
             var frozenDictionary = new Dictionary<string, string>
             {

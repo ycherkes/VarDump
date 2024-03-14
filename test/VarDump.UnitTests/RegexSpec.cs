@@ -8,7 +8,7 @@ namespace VarDump.UnitTests
     public class RegexSpec
     {
         [Fact]
-        public void DumpRegexCsharp()
+        public void DumpRegexCSharp()
         {
             var currencyRegex = new Regex(@"\p{Sc}+\s*\d+", RegexOptions.Compiled, TimeSpan.FromSeconds(5));
 
@@ -24,7 +24,7 @@ namespace VarDump.UnitTests
         }
 
         [Fact]
-        public void DumpRegexWithNamedArgumentsCsharp()
+        public void DumpRegexWithNamedArgumentsCSharp()
         {
             var currencyRegex = new Regex(@"\p{Sc}+\s*\d+", RegexOptions.Compiled, TimeSpan.FromSeconds(5));
 

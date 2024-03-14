@@ -6,7 +6,7 @@ namespace VarDump.UnitTests;
 public class VersionSpec
 {
     [Fact]
-    public void DumpVersionSpecCsharp()
+    public void DumpVersionCSharp()
     {
         var version = new Version("1.2.3.4");
 
@@ -23,7 +23,7 @@ public class VersionSpec
 
 
     [Fact]
-    public void DumpVersionSpecVb()
+    public void DumpVersionVb()
     {
         var version = new Version("1.2.3.4");
 

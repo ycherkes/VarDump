@@ -6,7 +6,7 @@ namespace VarDump.UnitTests;
 public class DnsEndPointSpec
 {
     [Fact]
-    public void DumpDnsEndPointCsharp()
+    public void DumpDnsEndPointCSharp()
     {
         var dnsEndPoint = new DnsEndPoint("google.com", 12345);
 

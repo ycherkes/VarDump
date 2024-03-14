@@ -7,7 +7,7 @@ public class InheritanceSpec
 {
 
     [Fact]
-    public void DumpClassCsharp()
+    public void DumpClassCSharp()
     {
         var person = new Person
         {

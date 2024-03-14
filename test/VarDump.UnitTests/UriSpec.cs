@@ -6,7 +6,7 @@ namespace VarDump.UnitTests;
 public class UriSpec
 {
     [Fact]
-    public void DumpAbsoluteUriCsharp()
+    public void DumpAbsoluteUriCSharp()
     {
         var uri = new Uri("https://user:password@www.contoso.com:80/Home/Index.htm?q1=v1&q2=v2#FragmentName");
         var dumper = new CSharpDumper();
@@ -37,7 +37,7 @@ public class UriSpec
     }
 
     [Fact]
-    public void DumpRelativeUriCsharp()
+    public void DumpRelativeUriCSharp()
     {
         var address1 = new Uri("http://www.contoso.com/");
         var address2 = new Uri("http://www.contoso.com/index.htm?date=today");

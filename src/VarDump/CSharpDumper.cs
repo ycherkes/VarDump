@@ -24,13 +24,13 @@ public sealed class CSharpDumper : IDumper
 
     public string Dump(object obj)
     {
-        using var sourceWriter = new StringWriter();
+        using var writer = new StringWriter();
 
-        DumpImpl(obj, sourceWriter);
+        DumpImpl(obj, writer);
 
-        var csCodeString = sourceWriter.ToString();
+        var codeString = writer.ToString();
 
-        return csCodeString;
+        return codeString;
     }
 
     public void Dump(object obj, TextWriter textWriter)
@@ -58,7 +58,7 @@ public sealed class CSharpDumper : IDumper
         if (_options.GenerateVariableInitializer)
         {
             codeWriter.WriteVariableDeclarationStatement(new CodeVarTypeInfo(),
-                obj != null ? ReflectionUtils.ComposeCsharpVariableName(obj.GetType()) : "nullValue", () => objectVisitor.Visit(obj));
+                obj != null ? ReflectionUtils.ComposeCSharpVariableName(obj.GetType()) : "nullValue", () => objectVisitor.Visit(obj));
         }
         else
         {

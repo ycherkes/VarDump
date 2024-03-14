@@ -6,7 +6,7 @@ namespace VarDump.UnitTests;
 public class IpAddressSpec
 {
     [Fact]
-    public void DumpIpAddressCsharp()
+    public void DumpIpAddressCSharp()
     {
         var ipAddress = IPAddress.Parse("142.250.74.110");
 

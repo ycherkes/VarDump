@@ -7,7 +7,7 @@ namespace VarDump.Extensions.UnitTests;
 public class VarDumpExtensionsSpec
 {
     [Fact]
-    public void DumpAnonymousTypeCsharp()
+    public void DumpAnonymousTypeCSharp()
     {
         var anonymous = new[]
         {
@@ -41,7 +41,7 @@ public class VarDumpExtensionsSpec
     }
 
     [Fact]
-    public void DumpAnonymousTypeCustomOptionsCsharp()
+    public void DumpAnonymousTypeCustomOptionsCSharp()
     {
         var anonymous = new[]
         {

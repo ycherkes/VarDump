@@ -6,7 +6,7 @@ namespace VarDump.UnitTests;
 public class IpEndPointSpec
 {
     [Fact]
-    public void DumpIpEndPointCsharp()
+    public void DumpIpEndPointCSharp()
     {
         var ipEndPoint = new IPEndPoint(IPAddress.Parse("142.250.74.110"), 12345);
 

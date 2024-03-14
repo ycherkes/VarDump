@@ -15,7 +15,7 @@ namespace VarDump.UnitTests;
 public class ObjectDescriptorMiddlewareSpec
 {
     [Fact]
-    public void DumpRegexCsharp()
+    public void DumpRegexCSharp()
     {
         var currencyRegex = new Regex(@"\p{Sc}+\s*\d+", RegexOptions.Compiled, TimeSpan.FromSeconds(5));
 
@@ -40,7 +40,7 @@ public class ObjectDescriptorMiddlewareSpec
     }
 
     [Fact]
-    public void DumpRegexWithNamedArgumentsCsharp()
+    public void DumpRegexWithNamedArgumentsCSharp()
     {
         var currencyRegex = new Regex(@"\p{Sc}+\s*\d+", RegexOptions.Compiled, TimeSpan.FromSeconds(5));
 
@@ -66,7 +66,7 @@ public class ObjectDescriptorMiddlewareSpec
     }
 
     [Fact]
-    public void DumpObjectSkipWritingCardNumberCsharp()
+    public void DumpObjectSkipWritingCardNumberCSharp()
     {
         var obj = new
         {
@@ -103,7 +103,7 @@ public class ObjectDescriptorMiddlewareSpec
     }
 
     [Fact]
-    public void DumpObjectMaskCardNumberCsharp()
+    public void DumpObjectMaskCardNumberCSharp()
     {
         var obj = new
         {
@@ -140,7 +140,7 @@ public class ObjectDescriptorMiddlewareSpec
     }
 
     [Fact]
-    public void DumpFormattableStringCsharp()
+    public void DumpFormattableStringCSharp()
     {
         const string name = "World";
         FormattableString str = $"Hello, {name}";
@@ -176,7 +176,7 @@ public class ObjectDescriptorMiddlewareSpec
     }
 
     [Fact]
-    public void DumpDelegateCsharp()
+    public void DumpDelegateCSharp()
     {
         static void EventHandler(object sender, EventArgs args)
         {
@@ -233,7 +233,7 @@ public class ObjectDescriptorMiddlewareSpec
     }
 
     [Fact]
-    public void DumpDirectoryInfoCsharp()
+    public void DumpDirectoryInfoCSharp()
     {
         var options = new DumpOptions
         {
@@ -296,7 +296,7 @@ public class ObjectDescriptorMiddlewareSpec
     }
 
     [Fact]
-    public void DumpFileInfoCsharp()
+    public void DumpFileInfoCSharp()
     {
         var options = new DumpOptions
         {
@@ -316,7 +316,7 @@ public class ObjectDescriptorMiddlewareSpec
     }
 
     [Fact]
-    public void DumpDriveInfoCsharp()
+    public void DumpDriveInfoCSharp()
     {
         var options = new DumpOptions
         {
@@ -335,7 +335,7 @@ public class ObjectDescriptorMiddlewareSpec
     }
 
     [Fact]
-    public void DumpDriveInfoWithNamedArgumentsCsharp()
+    public void DumpDriveInfoWithNamedArgumentsCSharp()
     {
         var options = new DumpOptions
         {

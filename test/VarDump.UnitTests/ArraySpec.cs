@@ -6,7 +6,7 @@ namespace VarDump.UnitTests;
 public class ArraySpec
 {
     [Fact]
-    public void DumpArrayOfArraysCsharp()
+    public void DumpArrayOfArraysCSharp()
     {
         int[][] array = [[1]];
 
@@ -28,7 +28,7 @@ public class ArraySpec
     }
 
     [Fact]
-    public void DumpImmutableArrayOfArraysCsharp()
+    public void DumpImmutableArrayOfArraysCSharp()
     {
         var array = new[] { new[] { 1 } }.ToImmutableArray();
 
@@ -50,7 +50,7 @@ public class ArraySpec
     }
 
     [Fact]
-    public void Dump2DimensionalArrayCsharp()
+    public void Dump2DimensionalArrayCSharp()
     {
         var array = new[,] { { 2, 3, 4 }, { 5, 6, 7 } };
         var dumper = new CSharpDumper();
@@ -77,7 +77,7 @@ public class ArraySpec
     }
 
     [Fact]
-    public void Dump2DimensionalAnonymousArrayCsharp()
+    public void Dump2DimensionalAnonymousArrayCSharp()
     {
         var array = new[,] { { new { Name = "Test1" } }, { new { Name = "Test2" } } };
         var dumper = new CSharpDumper();
@@ -106,7 +106,7 @@ public class ArraySpec
     }
 
     [Fact]
-    public void DumpArrayOfArraysAnonymousCsharp()
+    public void DumpArrayOfArraysAnonymousCSharp()
     {
         var array = new[] { new[] { new { Name = "Clark" } } };
 

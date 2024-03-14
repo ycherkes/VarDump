@@ -8,7 +8,7 @@ namespace VarDump.UnitTests;
 public class AnonymousTypeSpec
 {
     [Fact]
-    public void DumpAnonymousTypeCsharp()
+    public void DumpAnonymousTypeCSharp()
     {
         var anonymous = new[]
         {

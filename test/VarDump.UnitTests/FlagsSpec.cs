@@ -6,7 +6,7 @@ namespace VarDump.UnitTests;
 public class FlagsSpec
 {
     [Fact]
-    public void DumpFlagsCsharp()
+    public void DumpFlagsCSharp()
     {
         var flagsVar = TestEnum.First | TestEnum.Third;
 

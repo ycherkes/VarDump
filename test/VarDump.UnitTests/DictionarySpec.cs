@@ -165,7 +165,7 @@ public class DictionarySpec
     }
 
     [Fact]
-    public void DumpImmutableDictionaryCsharp()
+    public void DumpImmutableDictionaryCSharp()
     {
         var immutableDictionary = new Dictionary<string, string>
         {

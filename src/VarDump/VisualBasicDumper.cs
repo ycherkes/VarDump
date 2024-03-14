@@ -24,13 +24,13 @@ public sealed class VisualBasicDumper : IDumper
 
     public string Dump(object obj)
     {
-        using var sourceWriter = new StringWriter();
+        using var writer = new StringWriter();
 
-        DumpImpl(obj, sourceWriter);
+        DumpImpl(obj, writer);
 
-        var vbCodeString = sourceWriter.ToString();
+        var codeString = writer.ToString();
 
-        return vbCodeString;
+        return codeString;
     }
 
     public void Dump(object obj, TextWriter textWriter)

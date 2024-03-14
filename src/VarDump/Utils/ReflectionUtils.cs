@@ -14,9 +14,9 @@ namespace VarDump.Utils;
 
 internal static class ReflectionUtils
 {
-    public static string ComposeCsharpVariableName(Type type)
+    public static string ComposeCSharpVariableName(Type type)
     {
-        var result = ComposeVariableName(type, GetFormattedCsharpTypeName);
+        var result = ComposeVariableName(type, GetFormattedCSharpTypeName);
 
         if (CSharpHelpers.IsKeyword(result) || string.Equals(type.Name, result, StringComparison.Ordinal))
         {
@@ -95,7 +95,7 @@ internal static class ReflectionUtils
         { "single", "float" }
     };
 
-    private static string GetFormattedCsharpTypeName(Type type)
+    private static string GetFormattedCSharpTypeName(Type type)
     {
         var result = GetFormattedTypeName(type);
 

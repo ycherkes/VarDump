@@ -5,7 +5,7 @@ namespace VarDump.UnitTests;
 public class IgnoreIndexersSpec
 {
     [Fact]
-    public void IgnoreIndexersCsharp()
+    public void IgnoreIndexersCSharp()
     {
         var index = new MyClassWithIndexer();
 

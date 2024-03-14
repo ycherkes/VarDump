@@ -15,7 +15,7 @@ namespace VarDump.UnitTests;
 public class KnownObjectsSpec
 {
     [Fact]
-    public void DumpServiceDescriptorSpecCsharp()
+    public void DumpServiceDescriptorSpecCSharp()
     {
         var serviceCollection = new ServiceCollection
         {
@@ -72,7 +72,7 @@ public class KnownObjectsSpec
     }
 
     [Fact]
-    public void DumpFormattableStringCsharp()
+    public void DumpFormattableStringCSharp()
     {
         const string name = "World";
         FormattableString str = $"Hello, {name}";

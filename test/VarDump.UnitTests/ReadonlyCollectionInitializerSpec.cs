@@ -6,7 +6,7 @@ namespace VarDump.UnitTests;
 public class ReadonlyCollectionInitializerSpec
 {
     [Fact(Skip = "Not implemented yet")]
-    public void DumpReadonlyPropertyCollectionInitializerCsharp()
+    public void DumpReadonlyPropertyCollectionInitializerCSharp()
     {
         CatOwner owner = new CatOwner
         {
@@ -36,7 +36,7 @@ public class ReadonlyCollectionInitializerSpec
     }
 
     [Fact(Skip = "Not implemented yet")]
-    public void DumpReadonlyPropertyDictionaryInitializerCsharp()
+    public void DumpReadonlyPropertyDictionaryInitializerCSharp()
     {
         var owner = new CatDictionaryOwner
         {

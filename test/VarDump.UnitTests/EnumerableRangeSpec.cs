@@ -6,7 +6,7 @@ namespace VarDump.UnitTests;
 public class EnumerableRangeSpec
 {
     [Fact]
-    public void DumpAnonymousTypeCsharp()
+    public void DumpAnonymousTypeCSharp()
     {
         var range = Enumerable.Range(5, 2).Select((x, i) => new { i, x });
 

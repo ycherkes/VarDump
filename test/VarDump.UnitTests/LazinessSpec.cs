@@ -7,7 +7,7 @@ namespace VarDump.UnitTests;
 public class LazinessSpec
 {
     [Fact]
-    public void DumpEnumerableCsharp()
+    public void DumpEnumerableCSharp()
     {
         var dumper = new CSharpDumper();
         using var writer = new StringWriter();
@@ -18,7 +18,7 @@ public class LazinessSpec
 
         Assert.Equal(
             """
-            var dumpEnumerableCsharpOfInt = new int[]
+            var dumpEnumerableCSharpOfInt = new int[]
             {
                 1,
                 2,

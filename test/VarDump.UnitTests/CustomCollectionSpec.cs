@@ -40,7 +40,7 @@ public class CustomCollectionSpec
     }
 
     [Fact]
-    public void DumpCustomPublicCollectionCsharp()
+    public void DumpCustomPublicCollectionCSharp()
     {
         var collection = new CatPublicCollection
         {
@@ -112,7 +112,7 @@ public class CustomCollectionSpec
     }
 
     [Fact]
-    public void DumpCustomNonPublicCollectionCsharp()
+    public void DumpCustomNonPublicCollectionCSharp()
     {
         var collection = new CatNonPublicCollection
         {

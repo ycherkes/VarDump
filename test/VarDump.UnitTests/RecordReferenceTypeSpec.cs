@@ -6,7 +6,7 @@ namespace VarDump.UnitTests;
 public class RecordReferenceTypeSpec
 {
     [Fact]
-    public void DumpRecordWithConstructorCsharp()
+    public void DumpRecordWithConstructorCSharp()
     {
         var person = new Person("Boris", "Johnson");
 
@@ -30,7 +30,7 @@ public class RecordReferenceTypeSpec
     }
 
     [Fact]
-    public void DumpRecordWithoutConstructorCsharp()
+    public void DumpRecordWithoutConstructorCSharp()
     {
         var person1 = new Person1
         {

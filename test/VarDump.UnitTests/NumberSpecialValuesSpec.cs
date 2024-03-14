@@ -5,7 +5,7 @@ namespace VarDump.UnitTests;
 public class NumberSpecialValuesSpec
 {
     [Fact]
-    public void DumpMaxValueFloatCsharp()
+    public void DumpMaxValueFloatCSharp()
     {
         const float max = float.MaxValue;
 
@@ -17,7 +17,7 @@ public class NumberSpecialValuesSpec
     }
 
     [Fact]
-    public void DumpMinValueFloatCsharp()
+    public void DumpMinValueFloatCSharp()
     {
         const float min = float.MinValue;
 
@@ -28,7 +28,7 @@ public class NumberSpecialValuesSpec
     }
 
     [Fact]
-    public void DumpNaNValueFloatCsharp()
+    public void DumpNaNValueFloatCSharp()
     {
         const float nan = float.NaN;
 
@@ -50,7 +50,7 @@ public class NumberSpecialValuesSpec
     }
 
     [Fact]
-    public void DumpZeroValueByteCsharp()
+    public void DumpZeroValueByteCSharp()
     {
         const byte zero = 0;
 
@@ -74,7 +74,7 @@ public class NumberSpecialValuesSpec
     }
 
     [Fact]
-    public void DumpZeroValueUShortCsharp()
+    public void DumpZeroValueUShortCSharp()
     {
         const ushort zero = 0;
 

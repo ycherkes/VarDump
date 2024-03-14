@@ -11,7 +11,7 @@ namespace VarDump.UnitTests;
 public class DateTimeSpec
 {
     [Fact]
-    public async Task DumpDateTimeCsharp()
+    public async Task DumpDateTimeCSharp()
     {
         var dateTime = DateTime.ParseExact("2023-08-05T12:47:09.9361937+02:00", "O", CultureInfo.InvariantCulture, DateTimeStyles.RoundtripKind);
 
@@ -34,7 +34,7 @@ public class DateTimeSpec
     }
 
     [Fact]
-    public void DumpDateTimeWithArgumentNamesCsharp()
+    public void DumpDateTimeWithArgumentNamesCSharp()
     {
         var dateTime = DateTime.ParseExact("2023-08-05T12:47:09.9361937+02:00", "O", CultureInfo.InvariantCulture, DateTimeStyles.RoundtripKind);
 
@@ -55,7 +55,7 @@ public class DateTimeSpec
     }
 
     [Fact]
-    public async Task DumpDateTimeOffsetNewCsharp()
+    public async Task DumpDateTimeOffsetNewCSharp()
     {
         var dateTimeOffset = DateTimeOffset.ParseExact("2022-06-24T11:59:21.7961218+03:00", "O", CultureInfo.InvariantCulture, DateTimeStyles.RoundtripKind);
 
@@ -77,7 +77,7 @@ public class DateTimeSpec
     }
 
     [Fact]
-    public void DumpDateTimeOffsetWithArgumentNamesNewCsharp()
+    public void DumpDateTimeOffsetWithArgumentNamesNewCSharp()
     {
         var dateTimeOffset = DateTimeOffset.ParseExact("2022-06-24T11:59:21.7961218+03:00", "O", CultureInfo.InvariantCulture, DateTimeStyles.RoundtripKind);
 
@@ -117,7 +117,7 @@ public class DateTimeSpec
     }
 
     [Fact]
-    public void DumpDateTimeOffsetCsharp()
+    public void DumpDateTimeOffsetCSharp()
     {
         var dto = DateTimeOffset.ParseExact("2022-06-24T11:59:21.7961218+03:00", "O", CultureInfo.InvariantCulture, DateTimeStyles.RoundtripKind);
             
@@ -133,7 +133,7 @@ public class DateTimeSpec
     }
 
     [Fact]
-    public void DumpDateOnlyCsharp()
+    public void DumpDateOnlyCSharp()
     {
         var anonymous = new
         {
@@ -159,7 +159,7 @@ public class DateTimeSpec
     }
 
     [Fact]
-    public void DumpTimeOnlyCsharp()
+    public void DumpTimeOnlyCSharp()
     {
         var anonymous = new
         {

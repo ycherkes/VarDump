@@ -14,7 +14,7 @@ namespace VarDump.UnitTests;
 public class DiagnosticsSpec
 {
     [Fact(Skip = "Skip")]
-    public void DumpDiagnosticsCsharp()
+    public void DumpDiagnosticsCSharp()
     {
         var code =
             """

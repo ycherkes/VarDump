@@ -126,7 +126,7 @@ public class KnownObjectsSpec
 
         var dumpOptions = new DumpOptions
         {
-            ConfigureKnownObjects = (knownObjects, nextLevelVisitor, options, codeWriter) =>
+            ConfigureKnownObjects = (knownObjects, nextLevelVisitor, _, codeWriter) =>
             {
                 knownObjects.Add(new FormattableStringVisitor(nextLevelVisitor, codeWriter));
             }
@@ -151,7 +151,7 @@ public class KnownObjectsSpec
 
         var dumpOptions = new DumpOptions
         {
-            ConfigureKnownObjects = (knownObjects, nextLevelVisitor, options, codeWriter) =>
+            ConfigureKnownObjects = (knownObjects, nextLevelVisitor, _, codeWriter) =>
             {
                 knownObjects.Add(new FormattableStringVisitor(nextLevelVisitor, codeWriter));
             }

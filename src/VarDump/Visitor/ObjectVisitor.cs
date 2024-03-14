@@ -61,7 +61,7 @@ internal sealed class ObjectVisitor : IObjectVisitor, INextDepthVisitor
             new RegexVisitor(codeWriter, this, options),
             new GroupingVisitor(this, codeWriter),
             new DictionaryVisitor(this, codeWriter, options),
-            new CollectionVisitor(this, codeWriter, options),
+            new CollectionVisitor(this, codeWriter, options)
         };
 
         options.ConfigureKnownObjects?.Invoke(_knownObjects, this, options.Clone(), codeWriter);

@@ -7,11 +7,15 @@ internal sealed class VersionVisitor(ICodeWriter codeWriter, DumpOptions options
 {
     public string Id => nameof(Version);
 
-    public DumpOptions Options => options;
-
     public bool IsSuitableFor(object obj, Type objectType)
     {
         return obj is Version;
+    }
+
+    public void ConfigureOptions(Action<DumpOptions> configure)
+    {
+        options = options.Clone();
+        configure?.Invoke(options);
     }
 
     public void Visit(object obj, Type objectType, VisitContext context)

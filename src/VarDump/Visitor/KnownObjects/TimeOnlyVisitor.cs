@@ -9,11 +9,15 @@ internal sealed class TimeOnlyVisitor(ICodeWriter codeWriter, DumpOptions option
 {
     public string Id => "TimeOnly";
 
-    public DumpOptions Options => options;
-
     public bool IsSuitableFor(object obj, Type objectType)
     {
         return objectType.IsTimeOnly();
+    }
+
+    public void ConfigureOptions(Action<DumpOptions> configure)
+    {
+        options = options.Clone();
+        configure?.Invoke(options);
     }
 
     public void Visit(object timeOnly, Type objectType, VisitContext context)

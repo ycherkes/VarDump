@@ -8,11 +8,15 @@ internal sealed class CultureInfoVisitor(ICodeWriter codeWriter, DumpOptions opt
 {
     public string Id => nameof(CultureInfo);
 
-    public DumpOptions Options => options;
-
     public bool IsSuitableFor(object obj, Type objectType)
     {
         return obj is CultureInfo;
+    }
+
+    public void ConfigureOptions(Action<DumpOptions> configure)
+    {
+        options = options.Clone();
+        configure?.Invoke(options);
     }
 
     public void Visit(object obj, Type objectType, VisitContext context)

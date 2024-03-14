@@ -14,7 +14,7 @@ internal sealed class CollectionVisitor : IKnownObjectVisitor
 {
     private readonly INextDepthVisitor _nextDepthVisitor;
     private readonly ICodeWriter _codeWriter;
-    private readonly DumpOptions _options;
+    private DumpOptions _options;
 
     public CollectionVisitor(INextDepthVisitor nextDepthVisitor, ICodeWriter codeWriter, DumpOptions options)
     {
@@ -30,11 +30,15 @@ internal sealed class CollectionVisitor : IKnownObjectVisitor
 
     public string Id => "Collection";
 
-    public DumpOptions Options => _options;
-
     public bool IsSuitableFor(object obj, Type objectType)
     {
         return obj is IEnumerable;
+    }
+
+    public void ConfigureOptions(Action<DumpOptions> configure)
+    {
+        _options = _options.Clone();
+        configure?.Invoke(_options);
     }
 
     public void Visit(object obj, Type collectionType, VisitContext context)

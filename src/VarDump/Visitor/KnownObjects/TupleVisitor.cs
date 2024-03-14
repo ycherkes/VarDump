@@ -10,11 +10,15 @@ internal sealed class TupleVisitor(INextDepthVisitor nextDepthVisitor, ICodeWrit
 {
     public string Id => "Tuple";
 
-    public DumpOptions Options => options;
-
     public bool IsSuitableFor(object obj, Type objectType)
     {
         return objectType.IsTuple();
+    }
+
+    public void ConfigureOptions(Action<DumpOptions> configure)
+    {
+        options = options.Clone();
+        configure?.Invoke(options);
     }
 
     public void Visit(object o, Type objectType, VisitContext context)

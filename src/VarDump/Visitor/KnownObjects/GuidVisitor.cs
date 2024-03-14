@@ -7,11 +7,15 @@ internal sealed class GuidVisitor(ICodeWriter codeWriter, DumpOptions options) :
 {
     public string Id => nameof(Guid);
 
-    public DumpOptions Options => options;
-
     public bool IsSuitableFor(object obj, Type objectType)
     {
         return obj is Guid;
+    }
+
+    public void ConfigureOptions(Action<DumpOptions> configure)
+    {
+        options = options.Clone();
+        configure?.Invoke(options);
     }
 
     public void Visit(object obj, Type objectType, VisitContext context)

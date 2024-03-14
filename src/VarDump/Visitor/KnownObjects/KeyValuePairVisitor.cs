@@ -9,11 +9,15 @@ internal sealed class KeyValuePairVisitor(INextDepthVisitor nextDepthVisitor, IC
 {
     public string Id => "KeyValuePair";
 
-    public DumpOptions Options => options;
-
     public bool IsSuitableFor(object obj, Type objectType)
     {
         return objectType.IsKeyValuePair();
+    }
+
+    public void ConfigureOptions(Action<DumpOptions> configure)
+    {
+        options = options.Clone();
+        configure?.Invoke(options);
     }
 
     public void Visit(object obj, Type objectType, VisitContext context)

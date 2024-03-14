@@ -8,15 +8,17 @@ using VarDump.Utils;
 
 namespace VarDump.Visitor.KnownObjects;
 
-internal sealed class GroupingVisitor(INextDepthVisitor nextDepthVisitor, ICodeWriter codeWriter, DumpOptions options) : IKnownObjectVisitor
+internal sealed class GroupingVisitor(INextDepthVisitor nextDepthVisitor, ICodeWriter codeWriter) : IKnownObjectVisitor
 {
     public string Id => "Grouping";
-
-    public DumpOptions Options => options;
 
     public bool IsSuitableFor(object obj, Type objectType)
     {
         return objectType.IsGrouping();
+    }
+
+    public void ConfigureOptions(Action<DumpOptions> configure)
+    {
     }
 
     public void Visit(object o, Type objectType, VisitContext context)

@@ -12,11 +12,15 @@ internal sealed class DateTimeOffsetVisitor(
 {
     public string Id => nameof(DateTimeOffset);
 
-    public DumpOptions Options => options;
-
     public bool IsSuitableFor(object obj, Type objectType)
     {
         return obj is DateTimeOffset;
+    }
+
+    public void ConfigureOptions(Action<DumpOptions> configure)
+    {
+        options = options.Clone();
+        configure?.Invoke(options);
     }
 
     public void Visit(object obj, Type objectType, VisitContext context)

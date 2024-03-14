@@ -13,6 +13,7 @@ internal sealed class DictionaryVisitor : IKnownObjectVisitor
 {
     private readonly INextDepthVisitor _nextDepthVisitor;
     private readonly ICodeWriter _codeWriter;
+    private DumpOptions _options;
 
     public DictionaryVisitor(INextDepthVisitor nextDepthVisitor, ICodeWriter codeWriter, DumpOptions options)
     {
@@ -23,16 +24,20 @@ internal sealed class DictionaryVisitor : IKnownObjectVisitor
 
         _nextDepthVisitor = nextDepthVisitor;
         _codeWriter = codeWriter;
-        Options = options;
+        _options = options;
     }
 
     public string Id => "Dictionary";
 
-    public DumpOptions Options { get; }
-
     public bool IsSuitableFor(object obj, Type objectType)
     {
         return obj is IDictionary;
+    }
+
+    public void ConfigureOptions(Action<DumpOptions> configure)
+    {
+        _options = _options.Clone();
+        configure?.Invoke(_options);
     }
 
     public void Visit(object obj, Type objectType, VisitContext context)
@@ -70,9 +75,9 @@ internal sealed class DictionaryVisitor : IKnownObjectVisitor
     {
         var items = dict.Cast<object>().Select(item => (Action)(() => VisitKeyValuePairWriteImplicitly(item, context)));
 
-        if (Options.MaxCollectionSize < int.MaxValue)
+        if (_options.MaxCollectionSize < int.MaxValue)
         {
-            items = items.Take(Options.MaxCollectionSize + 1).Replace(Options.MaxCollectionSize, () => _codeWriter.WriteTooManyItems(Options.MaxCollectionSize));
+            items = items.Take(_options.MaxCollectionSize + 1).Replace(_options.MaxCollectionSize, () => _codeWriter.WriteTooManyItems(_options.MaxCollectionSize));
         }
 
         var type = dict.GetType();
@@ -103,9 +108,9 @@ internal sealed class DictionaryVisitor : IKnownObjectVisitor
         const string valueName = "Value";
         var items = dictionary.Cast<object>().Select(o => (Action)(() => VisitKeyValuePairWriteAnonymousType(o, keyName, valueName, context)));
 
-        if (Options.MaxCollectionSize < int.MaxValue)
+        if (_options.MaxCollectionSize < int.MaxValue)
         {
-            items = items.Take(Options.MaxCollectionSize + 1).Replace(Options.MaxCollectionSize, () => _codeWriter.WriteTooManyItems(Options.MaxCollectionSize));
+            items = items.Take(_options.MaxCollectionSize + 1).Replace(_options.MaxCollectionSize, () => _codeWriter.WriteTooManyItems(_options.MaxCollectionSize));
         }
         
         var type = dictionary.GetType();

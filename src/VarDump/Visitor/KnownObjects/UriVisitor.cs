@@ -8,11 +8,15 @@ internal sealed class UriVisitor(ICodeWriter codeWriter, DumpOptions options) : 
 {
     public string Id => nameof(Uri);
 
-    public DumpOptions Options => options;
-
     public bool IsSuitableFor(object obj, Type objectType)
     {
         return obj is Uri;
+    }
+
+    public void ConfigureOptions(Action<DumpOptions> configure)
+    {
+        options = options.Clone();
+        configure?.Invoke(options);
     }
 
     public void Visit(object obj, Type objectType, VisitContext context)

@@ -9,11 +9,15 @@ internal sealed class ValueTupleVisitor(INextDepthVisitor nextDepthVisitor, ICod
 {
     public string Id => "ValueTuple";
 
-    public DumpOptions Options => options;
-
     public bool IsSuitableFor(object obj, Type objectType)
     {
         return objectType.IsValueTuple();
+    }
+
+    public void ConfigureOptions(Action<DumpOptions> configure)
+    {
+        options = options.Clone();
+        configure?.Invoke(options);
     }
 
     public void Visit(object obj, Type objectType, VisitContext context)

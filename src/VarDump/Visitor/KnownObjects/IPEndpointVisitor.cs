@@ -9,11 +9,15 @@ internal sealed class IPEndpointVisitor(INextDepthVisitor nextDepthVisitor, ICod
 {
     public string Id => nameof(IPEndPoint);
 
-    public DumpOptions Options => options;
-
     public bool IsSuitableFor(object obj, Type objectType)
     {
         return obj is IPEndPoint;
+    }
+
+    public void ConfigureOptions(Action<DumpOptions> configure)
+    {
+        options = options.Clone();
+        configure?.Invoke(options);
     }
 
     public void Visit(object obj, Type objectType, VisitContext context)

@@ -10,11 +10,15 @@ internal sealed class RegexVisitor(ICodeWriter codeWriter, INextDepthVisitor nex
 {
     public string Id => nameof(Regex);
 
-    public DumpOptions Options => options;
-
     public bool IsSuitableFor(object obj, Type objectType)
     {
         return obj is Regex;
+    }
+
+    public void ConfigureOptions(Action<DumpOptions> configure)
+    {
+        options = options.Clone();
+        configure?.Invoke(options);
     }
 
     public void Visit(object obj, Type objectType, VisitContext context)

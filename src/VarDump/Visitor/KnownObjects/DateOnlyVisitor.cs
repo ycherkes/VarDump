@@ -9,11 +9,15 @@ internal sealed class DateOnlyVisitor(ICodeWriter codeWriter, DumpOptions option
 {
     public string Id => "DateOnly";
 
-    public DumpOptions Options => options;
-
     public bool IsSuitableFor(object obj, Type objectType)
     {
         return objectType.IsDateOnly();
+    }
+
+    public void ConfigureOptions(Action<DumpOptions> configure)
+    {
+        options = options.Clone();
+        configure?.Invoke(options);
     }
 
     public void Visit(object dateOnly, Type objectType, VisitContext context)

@@ -10,11 +10,15 @@ internal sealed class DnsEndPointVisitor(INextDepthVisitor nextDepthVisitor, ICo
 {
     public string Id => nameof(DnsEndPoint);
 
-    public DumpOptions Options => options;
-
     public bool IsSuitableFor(object obj, Type objectType)
     {
         return obj is DnsEndPoint;
+    }
+
+    public void ConfigureOptions(Action<DumpOptions> configure)
+    {
+        options = options.Clone();
+        configure?.Invoke(options);
     }
 
     public void Visit(object obj, Type objectType, VisitContext context)

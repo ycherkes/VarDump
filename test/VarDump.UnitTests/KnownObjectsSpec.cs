@@ -2,9 +2,9 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using System;
 using System.Collections.Generic;
-using System.Globalization;
 using System.Linq;
 using System.Runtime.CompilerServices;
+using System.Text.RegularExpressions;
 using VarDump.CodeDom.Common;
 using VarDump.CodeDom.Compiler;
 using VarDump.UnitTests.TestModel;
@@ -20,26 +20,22 @@ public class KnownObjectsSpec
     {
         var anonymous = new
         {
-            DateTime = DateTime.ParseExact("2023-08-05T12:47:09.9361937+02:00", "O", CultureInfo.InvariantCulture, DateTimeStyles.RoundtripKind),
-            TimeSpan = new TimeSpan(12, 11, 10)
+            Version = new Version("1.2.3.4"),
+            Regex = new Regex("\\D{4}", RegexOptions.Compiled),
+            KeyValuePair = new KeyValuePair<string, string>("1", "2"),
+            Tuple = new Tuple<string, string>("3","4"),
+            ValueTuple = new ValueTuple<string, string>("5", "6")
         };
 
         var dumpOptions = new DumpOptions
         {
             ConfigureKnownObjects = (knownObjects, _, _, _) =>
             {
-                var dateTimeVisitor = knownObjects[nameof(DateTime)];
-                dateTimeVisitor.ConfigureOptions(dateTimeOptions =>
-                {
-                    dateTimeOptions.DateTimeInstantiation = DateTimeInstantiation.New;
-                    dateTimeOptions.DateKind = DateKind.ConvertToUtc;
-                });
-                var timeSpanVisitor = knownObjects[nameof(TimeSpan)];
-                timeSpanVisitor.ConfigureOptions(timeSpanOptions =>
-                {
-                    timeSpanOptions.DateTimeInstantiation = DateTimeInstantiation.Parse;
-                });
-            }
+                knownObjects["KeyValuePair"].ConfigureOptions(DisableNamedArguments);
+                knownObjects["Tuple"].ConfigureOptions(DisableNamedArguments);
+                knownObjects["ValueTuple"].ConfigureOptions(DisableNamedArguments);
+            },
+            UseNamedArgumentsInConstructors = true
         };
 
         var dumper = new CSharpDumper(dumpOptions);
@@ -49,11 +45,20 @@ public class KnownObjectsSpec
         Assert.Equal("""
                      var anonymousType = new 
                      {
-                         DateTime = new DateTime(2023, 8, 5, 10, 47, 9, 936, DateTimeKind.Utc).AddTicks(1937),
-                         TimeSpan = TimeSpan.ParseExact("12:11:10", "c", CultureInfo.InvariantCulture, TimeSpanStyles.None)
+                         Version = new Version(version: "1.2.3.4"),
+                         Regex = new Regex(pattern: "\\D{4}", options: RegexOptions.Compiled),
+                         KeyValuePair = new KeyValuePair<string, string>("1", "2"),
+                         Tuple = new Tuple<string, string>("3", "4"),
+                         ValueTuple = ("5", "6")
                      };
                      
                      """, result);
+        return;
+
+        static void DisableNamedArguments(DumpOptions opts)
+        {
+            opts.UseNamedArgumentsInConstructors = false;
+        }
     }
 
     [Fact]

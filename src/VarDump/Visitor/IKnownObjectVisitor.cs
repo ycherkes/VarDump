@@ -2,7 +2,7 @@
 
 namespace VarDump.Visitor;
 
-public interface IKnownObjectVisitor : ICurrentDepthVisitor
+public interface IKnownObjectVisitor : ISpecificVisitor
 {
     public string Id { get; }
     public DumpOptions Options { get; }

@@ -13,7 +13,7 @@ internal sealed class DescriptionBasedVisitor(
     ICodeWriter codeWriter,
     INextDepthVisitor nextDepthVisitor,
     IObjectDescriptor objectDescriptor,
-    DumpOptions dumpOptions) : ICurrentDepthVisitor
+    DumpOptions dumpOptions) : ISpecificVisitor
 {
     public void Visit(object o, Type objectType, VisitContext context)
     {

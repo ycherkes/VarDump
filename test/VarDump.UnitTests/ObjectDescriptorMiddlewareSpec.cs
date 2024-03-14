@@ -22,7 +22,7 @@ public class ObjectDescriptorMiddlewareSpec
         var options = new DumpOptions
         {
             Descriptors = { new RegexMiddleware() },
-            ConfigureKnownObjects = (knownObjects, visitor, options, codeWriter) =>
+            ConfigureKnownObjects = (knownObjects, _, _, _) =>
             {
                 knownObjects.Remove(nameof(Regex));
             }
@@ -35,6 +35,32 @@ public class ObjectDescriptorMiddlewareSpec
         Assert.Equal(
             """
             var regex = new Regex("\\p{Sc}+\\s*\\d+", RegexOptions.Compiled, TimeSpan.FromSeconds(5));
+            
+            """, result);
+    }
+
+    [Fact]
+    public void DumpRegexWithNamedArgumentsCsharp()
+    {
+        var currencyRegex = new Regex(@"\p{Sc}+\s*\d+", RegexOptions.Compiled, TimeSpan.FromSeconds(5));
+
+        var options = new DumpOptions
+        {
+            Descriptors = { new RegexMiddleware() },
+            ConfigureKnownObjects = (knownObjects, _, _, _) =>
+            {
+                knownObjects.Remove(nameof(Regex));
+            },
+            UseNamedArgumentsInConstructors = true
+        };
+
+        var dumper = new CSharpDumper(options);
+
+        var result = dumper.Dump(currencyRegex);
+
+        Assert.Equal(
+            """
+            var regex = new Regex(pattern: "\\p{Sc}+\\s*\\d+", options: RegexOptions.Compiled, matchTimeout: TimeSpan.FromSeconds(5));
             
             """, result);
     }

@@ -13,7 +13,7 @@ internal sealed class ObjectVisitor : IObjectVisitor, INextDepthVisitor
     private readonly ICodeWriter _codeWriter;
     private readonly IKnownObjectsCollection _knownObjects;
     private readonly int _maxDepth;
-    private readonly ICurrentDepthVisitor _generalVisitor;
+    private readonly ICurrentDepthVisitor _descriptionBasedVisitor;
 
     public ObjectVisitor(DumpOptions options, ICodeWriter codeWriter)
     {
@@ -34,7 +34,7 @@ internal sealed class ObjectVisitor : IObjectVisitor, INextDepthVisitor
             anonymousObjectDescriptor = anonymousObjectDescriptor.ApplyMiddleware(options.Descriptors);
         }
 
-        _generalVisitor = new GeneralVisitor(codeWriter, this, objectDescriptor, options);
+        _descriptionBasedVisitor = new DescriptionBasedVisitor(codeWriter, this, objectDescriptor, options);
 
         _knownObjects = new KnownObjectsCollection
         {
@@ -87,7 +87,7 @@ internal sealed class ObjectVisitor : IObjectVisitor, INextDepthVisitor
             var objectType = @object?.GetType();
 
             var suitableVisitor = _knownObjects.Values.FirstOrDefault(v => v.IsSuitableFor(@object, objectType))
-                                  ?? _generalVisitor;
+                                  ?? _descriptionBasedVisitor;
 
             suitableVisitor.Visit(@object, objectType, context);
         }

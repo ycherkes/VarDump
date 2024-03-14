@@ -9,7 +9,7 @@ using VarDump.Visitor.Descriptors;
 
 namespace VarDump.Visitor;
 
-internal sealed class GeneralVisitor(
+internal sealed class DescriptionBasedVisitor(
     ICodeWriter codeWriter,
     INextDepthVisitor nextDepthVisitor,
     IObjectDescriptor objectDescriptor,

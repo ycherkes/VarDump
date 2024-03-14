@@ -10,11 +10,11 @@ public class LazinessSpec
     public void DumpEnumerableCsharp()
     {
         var dumper = new CSharpDumper();
-        using var sourceWriter = new StringWriter();
+        using var writer = new StringWriter();
 
-        dumper.Dump(GetItems(), sourceWriter);
+        dumper.Dump(GetItems(writer), writer);
 
-        var result = sourceWriter.ToString();
+        var result = writer.ToString();
 
         Assert.Equal(
             """
@@ -28,14 +28,14 @@ public class LazinessSpec
             """, result);
         return;
 
-        IEnumerable<int> GetItems()
+        static IEnumerable<int> GetItems(StringWriter writer)
         {
             yield return 1;
-            Assert.Contains("1", sourceWriter.ToString());
+            Assert.Contains("1", writer.ToString());
             yield return 2;
-            Assert.Contains("2", sourceWriter.ToString());
+            Assert.Contains("2", writer.ToString());
             yield return 3;
-            Assert.Contains("3", sourceWriter.ToString());
+            Assert.Contains("3", writer.ToString());
         }
     }
 }

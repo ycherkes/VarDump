@@ -15,6 +15,49 @@ namespace VarDump.UnitTests;
 public class ObjectDescriptorMiddlewareSpec
 {
     [Fact]
+    public void DumpExcludeTypesCSharp()
+    {
+        var anonymous = new
+        {
+            Version = new Version("1.2.3.4"),
+            Regex = new Regex("\\D{4}", RegexOptions.Compiled),
+            KeyValuePair = new KeyValuePair<string, string>("1", "2"),
+            Tuple = new Tuple<string, string>("3", "4"),
+            ValueTuple = new ValueTuple<string, string>("5", "6")
+        };
+
+        var options = new DumpOptions
+        {
+            Descriptors =
+            { 
+                new ExcludeMemberTypesMiddleware
+                {
+                    Types =
+                    [
+                        anonymous.Version.GetType(),
+                        anonymous.Regex.GetType(),
+                        anonymous.KeyValuePair.GetType(),
+                        anonymous.Tuple.GetType()
+                    ]
+                }
+            }
+        };
+
+        var dumper = new CSharpDumper(options);
+
+        var result = dumper.Dump(anonymous);
+
+        Assert.Equal(
+            """
+            var anonymousType = new 
+            {
+                ValueTuple = ("5", "6")
+            };
+            
+            """, result);
+    }
+
+    [Fact]
     public void DumpRegexCSharp()
     {
         var currencyRegex = new Regex(@"\p{Sc}+\s*\d+", RegexOptions.Compiled, TimeSpan.FromSeconds(5));
@@ -630,6 +673,29 @@ public class ObjectDescriptorMiddlewareSpec
             {
                 Value = maskedValue
             };
+        }
+    }
+
+    private class ExcludeMemberTypesMiddleware : IObjectDescriptorMiddleware
+    {
+        public List<Type> Types { get; set; } = [];
+
+        public IObjectDescription GetObjectDescription(object @object, Type objectType, Func<IObjectDescription> prev)
+        {
+            var objectDescription = prev();
+
+            return new ObjectDescription
+            {
+                Type = objectDescription.Type,
+                ConstructorArguments = objectDescription.ConstructorArguments,
+                Properties = objectDescription.Properties.Where(FilterByTypeName),
+                Fields = objectDescription.Fields.Where(FilterByTypeName)
+            };
+        }
+
+        private bool FilterByTypeName<T>(T member) where T : ReflectionDescription
+        {
+            return !Types.Contains(member.Type);
         }
     }
 }

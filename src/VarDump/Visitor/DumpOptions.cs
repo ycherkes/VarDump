@@ -15,7 +15,6 @@ public sealed class DumpOptions
     public DateKind DateKind { get; set; } = DateKind.Original;
     public DateTimeInstantiation DateTimeInstantiation { get; set; } = DateTimeInstantiation.Parse;
     public List<IObjectDescriptorMiddleware> Descriptors { get; set; } = [];
-    public List<string> ExcludeTypes { get; set; } = [];
     public bool GenerateVariableInitializer { get; set; } = true;
     public BindingFlags? GetFieldsBindingFlags { get; set; }
     public BindingFlags GetPropertiesBindingFlags { get; set; } = BindingFlags.Public | BindingFlags.Instance;
@@ -37,7 +36,6 @@ public sealed class DumpOptions
             DateKind = DateKind,
             DateTimeInstantiation = DateTimeInstantiation,
             Descriptors = Descriptors?.ToList() ?? [],
-            ExcludeTypes = ExcludeTypes?.ToList() ?? [],
             GenerateVariableInitializer = GenerateVariableInitializer,
             GetFieldsBindingFlags = GetFieldsBindingFlags,
             GetPropertiesBindingFlags = GetPropertiesBindingFlags,

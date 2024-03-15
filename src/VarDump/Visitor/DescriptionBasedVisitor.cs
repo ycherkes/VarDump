@@ -44,8 +44,7 @@ internal sealed class DescriptionBasedVisitor(
                     : (Action)(() => nextDepthVisitor.Visit(ca.Value, context)));
 
             var memberInitializers = members
-                .Where(m => !dumpOptions.ExcludeTypes.Contains(m.Type.FullName) &&
-                             (!dumpOptions.IgnoreNullValues || dumpOptions.IgnoreNullValues && m.Value != null) &&
+                .Where(m => (!dumpOptions.IgnoreNullValues || dumpOptions.IgnoreNullValues && m.Value != null) &&
                              (!dumpOptions.IgnoreDefaultValues || !m.Type.IsValueType || dumpOptions.IgnoreDefaultValues &&
                                  ReflectionUtils.GetDefaultValue(m.Type)?.Equals(m.Value) != true))
                 .Select(m => (Action)(() => codeWriter.WriteAssign(

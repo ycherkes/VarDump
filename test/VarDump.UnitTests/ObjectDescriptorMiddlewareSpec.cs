@@ -678,7 +678,7 @@ public class ObjectDescriptorMiddlewareSpec
 
     private class ExcludeMemberTypesMiddleware : IObjectDescriptorMiddleware
     {
-        public List<Type> Types { get; set; } = [];
+        public HashSet<Type> Types { get; set; } = [];
 
         public IObjectDescription GetObjectDescription(object @object, Type objectType, Func<IObjectDescription> prev)
         {

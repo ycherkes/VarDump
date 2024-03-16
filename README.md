@@ -102,7 +102,6 @@ Console.WriteLine(dictionary.Dump(new DumpOptions()));
 
 ```csharp
 using System;
-using System.Linq;
 using VarDump;
 using VarDump.Visitor;
 using VarDump.Visitor.Descriptors;
@@ -124,7 +123,7 @@ var options = new DumpOptions
 {
     Descriptors = 
     { 
-        new ObjectMembersReplacer { Replacement = MaskCardNumber }
+        new ObjectContentReplacer { Replacement = MaskCardNumber }
     }
 };
 
@@ -177,7 +176,6 @@ using System.Runtime.CompilerServices;
 using VarDump;
 using VarDump.CodeDom.Compiler;
 using VarDump.Visitor;
-using VarDump.Visitor.KnownObjects;
 
 // For more examples see https://github.com/ycherkes/VarDump/blob/main/test/VarDump.UnitTests/KnownObjectsSpec.cs
 
@@ -200,28 +198,34 @@ return;
 
 class FormattableStringVisitor(INextDepthVisitor nextDepthVisitor, ICodeWriter codeWriter) : IKnownObjectVisitor
 {
-    public bool IsSuitableFor(object obj, Type objectType)
-    {
-        return obj is FormattableString;
-    }
+	public string Id => nameof(FormattableString);
 
-    public void Visit(object obj, Type objectType, VisitContext context)
-    {
-        var formattableString = (FormattableString)obj;
+	public bool IsSuitableFor(object obj, Type objectType)
+	{
+		return obj is FormattableString;
+	}
 
-        IEnumerable<Action> arguments =
-        [
-            () => codeWriter.WritePrimitive(formattableString.Format)
-        ];
+	public void ConfigureOptions(Action<DumpOptions> configure)
+	{
+	}
 
-        arguments = arguments.Concat(formattableString.GetArguments().Select(a => (Action)(() => nextDepthVisitor.Visit(a, context))));
+	public void Visit(object obj, Type objectType, VisitContext context)
+	{
+		var formattableString = (FormattableString)obj;
 
-        codeWriter.WriteMethodInvoke(() =>
-            codeWriter.WriteMethodReference(
-                () => codeWriter.WriteType(typeof(FormattableStringFactory)),
-                nameof(FormattableStringFactory.Create)),
-            arguments);
-    }
+		IEnumerable<Action> arguments =
+		[
+			() => codeWriter.WritePrimitive(formattableString.Format)
+		];
+
+		arguments = arguments.Concat(formattableString.GetArguments().Select(a => (Action)(() => nextDepthVisitor.Visit(a, context))));
+
+		codeWriter.WriteMethodInvoke(() =>
+			codeWriter.WriteMethodReference(
+				() => codeWriter.WriteType(typeof(FormattableStringFactory)),
+				nameof(FormattableStringFactory.Create)),
+			arguments);
+	}
 }
 ```
 

@@ -8,6 +8,7 @@ using System.Text.RegularExpressions;
 using System.Threading;
 using VarDump.Visitor;
 using VarDump.Visitor.Descriptors;
+using VarDump.Visitor.Descriptors.Specific;
 using Xunit;
 
 namespace VarDump.UnitTests;
@@ -15,7 +16,7 @@ namespace VarDump.UnitTests;
 public class ObjectDescriptorMiddlewareSpec
 {
     [Fact]
-    public void DumpExcludeTypesCSharp()
+    public void ExcludeTypesCSharp()
     {
         var anonymous = new
         {
@@ -26,19 +27,21 @@ public class ObjectDescriptorMiddlewareSpec
             ValueTuple = new ValueTuple<string, string>("5", "6")
         };
 
+        var typesToExclude = new HashSet<Type>
+        {
+            typeof(Version),
+            typeof(Regex),
+            typeof(KeyValuePair<string, string>),
+            typeof(Tuple<string, string>)
+        };
+
         var options = new DumpOptions
         {
             Descriptors =
             { 
-                new ExcludeMemberTypesMiddleware
+                new ObjectMembersFilter
                 {
-                    Types =
-                    [
-                        anonymous.Version.GetType(),
-                        anonymous.Regex.GetType(),
-                        anonymous.KeyValuePair.GetType(),
-                        anonymous.Tuple.GetType()
-                    ]
+                    Condition = member => !typesToExclude.Contains(member.Type)
                 }
             }
         };
@@ -58,7 +61,7 @@ public class ObjectDescriptorMiddlewareSpec
     }
 
     [Fact]
-    public void DumpRegexCSharp()
+    public void RegexCSharp()
     {
         var currencyRegex = new Regex(@"\p{Sc}+\s*\d+", RegexOptions.Compiled, TimeSpan.FromSeconds(5));
 
@@ -83,7 +86,7 @@ public class ObjectDescriptorMiddlewareSpec
     }
 
     [Fact]
-    public void DumpRegexWithNamedArgumentsCSharp()
+    public void RegexWithNamedArgumentsCSharp()
     {
         var currencyRegex = new Regex(@"\p{Sc}+\s*\d+", RegexOptions.Compiled, TimeSpan.FromSeconds(5));
 
@@ -109,7 +112,7 @@ public class ObjectDescriptorMiddlewareSpec
     }
 
     [Fact]
-    public void DumpObjectSkipWritingCardNumberCSharp()
+    public void SkipWritingCardNumberCSharp()
     {
         var obj = new
         {
@@ -146,7 +149,119 @@ public class ObjectDescriptorMiddlewareSpec
     }
 
     [Fact]
-    public void DumpObjectMaskCardNumberCSharp()
+    public void SkipWritingCardNumberWithObjectMembersFilterCSharp()
+    {
+        var obj = new
+        {
+            FullName = "BRUCE LEE",
+            CardNumber = "4953089013607",
+            OtherInfo = new
+            {
+                FullName = "BRUCE LEE",
+                CardNumber = "5201294442453002",
+            }
+        };
+
+        var options = new DumpOptions
+        {
+            Descriptors =
+            {
+                new ObjectMembersFilter { Condition = IsNotCardNumber }
+            }
+        };
+
+        var dumper = new CSharpDumper(options);
+
+        var result = dumper.Dump(obj);
+
+        Assert.Equal(
+            """
+            var anonymousType = new 
+            {
+                FullName = "BRUCE LEE",
+                OtherInfo = new 
+                {
+                    FullName = "BRUCE LEE"
+                }
+            };
+            
+            """, result);
+
+        static bool IsNotCardNumber(ReflectionDescription description)
+        {
+            return description.Type != typeof(string)
+                   || description.Name?.EndsWith("cardnumber", StringComparison.OrdinalIgnoreCase) != true;
+        }
+    }
+
+    [Fact]
+    public void MaskCardNumberWithObjectContentReplacerCSharp()
+    {
+        var obj = new
+        {
+            FullName = "BRUCE LEE",
+            CardNumber = "4953089013607",
+            OtherInfo = new
+            {
+                CardNumber = "5201294442453002",
+            }
+        };
+
+        var options = new DumpOptions
+        {
+            Descriptors = 
+            { 
+                new ObjectContentReplacer { Replacement = MaskCardNumber }
+            }
+        };
+
+        var dumper = new CSharpDumper(options);
+
+        var result = dumper.Dump(obj);
+
+        Assert.Equal(
+            """
+            var anonymousType = new 
+            {
+                FullName = "BRUCE LEE",
+                CardNumber = "*********3607",
+                OtherInfo = new 
+                {
+                    CardNumber = "************3002"
+                }
+            };
+            
+            """, result);
+        return;
+
+        static ReflectionDescription MaskCardNumber(ReflectionDescription description)
+        {
+            if (!IsCardNumber(description) || string.IsNullOrWhiteSpace((string)description.Value))
+            {
+                return description;
+            }
+
+            var stringValue = (string)description.Value;
+
+            var maskedValue = stringValue.Length - 4 > 0
+                ? new string('*', stringValue.Length - 4) + stringValue.Substring(stringValue.Length - 4)
+                : stringValue;
+
+            return description with
+            {
+                Value = maskedValue
+            };
+
+            static bool IsCardNumber(ReflectionDescription description)
+            {
+                return description.Type == typeof(string)
+                       && description.Name?.EndsWith("cardnumber", StringComparison.OrdinalIgnoreCase) == true;
+            }
+        }
+    }
+
+    [Fact]
+    public void MaskCardNumberCSharp()
     {
         var obj = new
         {
@@ -183,7 +298,7 @@ public class ObjectDescriptorMiddlewareSpec
     }
 
     [Fact]
-    public void DumpFormattableStringCSharp()
+    public void FormattableStringCSharp()
     {
         const string name = "World";
         FormattableString str = $"Hello, {name}";
@@ -219,7 +334,7 @@ public class ObjectDescriptorMiddlewareSpec
     }
 
     [Fact]
-    public void DumpDelegateCSharp()
+    public void DelegateCSharp()
     {
         static void EventHandler(object sender, EventArgs args)
         {
@@ -276,7 +391,7 @@ public class ObjectDescriptorMiddlewareSpec
     }
 
     [Fact]
-    public void DumpDirectoryInfoCSharp()
+    public void DirectoryInfoCSharp()
     {
         var options = new DumpOptions
         {
@@ -339,7 +454,7 @@ public class ObjectDescriptorMiddlewareSpec
     }
 
     [Fact]
-    public void DumpFileInfoCSharp()
+    public void FileInfoCSharp()
     {
         var options = new DumpOptions
         {
@@ -359,7 +474,7 @@ public class ObjectDescriptorMiddlewareSpec
     }
 
     [Fact]
-    public void DumpDriveInfoCSharp()
+    public void DriveInfoCSharp()
     {
         var options = new DumpOptions
         {
@@ -378,7 +493,7 @@ public class ObjectDescriptorMiddlewareSpec
     }
 
     [Fact]
-    public void DumpDriveInfoWithNamedArgumentsCSharp()
+    public void DriveInfoWithNamedArgumentsCSharp()
     {
         var options = new DumpOptions
         {
@@ -399,7 +514,7 @@ public class ObjectDescriptorMiddlewareSpec
 
 
     [Fact]
-    public void DumpDelegateVb()
+    public void DelegateVb()
     {
         static void EventHandler(object sender, EventArgs args)
         {
@@ -628,7 +743,7 @@ public class ObjectDescriptorMiddlewareSpec
             };
         }
 
-        private static bool IsNotCardNumber<T>(T description) where T : ReflectionDescription
+        private static bool IsNotCardNumber(ReflectionDescription description)
         {
             return description.Type != typeof(string)
                    || description.Name?.EndsWith("cardnumber", StringComparison.OrdinalIgnoreCase) != true;
@@ -650,7 +765,7 @@ public class ObjectDescriptorMiddlewareSpec
             };
         }
 
-        private static bool IsCardNumber<T>(T description) where T : ReflectionDescription
+        private static bool IsCardNumber(ReflectionDescription description)
         {
             return description.Type == typeof(string)
                    && description.Name?.EndsWith("cardnumber", StringComparison.OrdinalIgnoreCase) == true;
@@ -673,29 +788,6 @@ public class ObjectDescriptorMiddlewareSpec
             {
                 Value = maskedValue
             };
-        }
-    }
-
-    private class ExcludeMemberTypesMiddleware : IObjectDescriptorMiddleware
-    {
-        public HashSet<Type> Types { get; init; } = [];
-
-        public IObjectDescription GetObjectDescription(object @object, Type objectType, Func<IObjectDescription> prev)
-        {
-            var objectDescription = prev();
-
-            return new ObjectDescription
-            {
-                Type = objectDescription.Type,
-                ConstructorArguments = objectDescription.ConstructorArguments,
-                Properties = objectDescription.Properties.Where(FilterByTypeName),
-                Fields = objectDescription.Fields.Where(FilterByTypeName)
-            };
-        }
-
-        private bool FilterByTypeName<T>(T member) where T : ReflectionDescription
-        {
-            return !Types.Contains(member.Type);
         }
     }
 }

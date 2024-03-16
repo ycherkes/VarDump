@@ -5,7 +5,7 @@ VarDump is a utility for serialization of runtime objects to C# or Visual Basic 
 
 Developed as a free alternative to [ObjectDumper.NET](https://github.com/thomasgalliker/ObjectDumper), which is not free for commercial use.
 
-[![nuget version](https://img.shields.io/badge/Nuget-v0.3.7.alpha-blue)](https://www.nuget.org/packages/VarDump)
+[![nuget version](https://img.shields.io/badge/Nuget-v0.3.8.alpha-blue)](https://www.nuget.org/packages/VarDump)
 [![nuget downloads](https://img.shields.io/nuget/dt/VarDump?label=Downloads)](https://www.nuget.org/packages/VarDump)
 
 ## C# & VB Dumper:
@@ -106,6 +106,7 @@ using System.Linq;
 using VarDump;
 using VarDump.Visitor;
 using VarDump.Visitor.Descriptors;
+using VarDump.Visitor.Descriptors.Specific;
 
 // For more examples see https://github.com/ycherkes/VarDump/blob/main/test/VarDump.UnitTests/ObjectDescriptorMiddlewareSpec.cs
 
@@ -119,15 +120,18 @@ var obj = new
     }
 };
 
-var dumpOptions = new DumpOptions
+var options = new DumpOptions
 {
-    Descriptors = { new CardNumberMaskingMiddleware() }
+    Descriptors = 
+    { 
+        new ObjectMembersReplacer { Replacement = MaskCardNumber }
+    }
 };
 
-var csDumper = new CSharpDumper(dumpOptions);
+var csDumper = new CSharpDumper(options);
 var cs = csDumper.Dump(obj);
 
-var vbDumper = new VisualBasicDumper(dumpOptions);
+var vbDumper = new VisualBasicDumper(options);
 var vb = vbDumper.Dump(obj);
 
 // C# string
@@ -136,44 +140,28 @@ Console.WriteLine(cs);
 // VB string
 Console.WriteLine(vb);
 
-class CardNumberMaskingMiddleware : IObjectDescriptorMiddleware
+static ReflectionDescription MaskCardNumber(ReflectionDescription description)
 {
-    public IObjectDescription GetObjectDescription(object @object, Type objectType, Func<IObjectDescription> prev)
+    if (!IsCardNumber(description) || string.IsNullOrWhiteSpace((string)description.Value))
     {
-        var objectDescription = prev();
-
-        return new ObjectDescription
-        {
-            Type = objectDescription.Type,
-            ConstructorArguments = objectDescription.ConstructorArguments.Select(MaskCardNumber),
-            Properties = objectDescription.Properties.Select(MaskCardNumber),
-            Fields = objectDescription.Fields.Select(MaskCardNumber)
-        };
+        return description;
     }
 
-    private static bool IsCardNumber<T>(T description) where T : ReflectionDescription
+    var stringValue = (string)description.Value;
+
+    var maskedValue = stringValue.Length - 4 > 0
+        ? new string('*', stringValue.Length - 4) + stringValue.Substring(stringValue.Length - 4)
+        : stringValue;
+
+    return description with
+    {
+        Value = maskedValue
+    };
+
+    static bool IsCardNumber(ReflectionDescription description)
     {
         return description.Type == typeof(string)
                && description.Name?.EndsWith("cardnumber", StringComparison.OrdinalIgnoreCase) == true;
-    }
-
-    private static T MaskCardNumber<T>(T description) where T : ReflectionDescription
-    {
-        if (!IsCardNumber(description) || string.IsNullOrWhiteSpace((string)description.Value))
-        {
-            return description;
-        }
-
-        var stringValue = (string)description.Value;
-
-        var maskedValue = stringValue.Length - 4 > 0
-                ? new string('*', stringValue.Length - 4) + stringValue.Substring(stringValue.Length - 4)
-                : stringValue;
-
-        return description with
-        {
-            Value = maskedValue
-        };
     }
 }
 ```
@@ -196,7 +184,7 @@ using VarDump.Visitor.KnownObjects;
 const string name = "World";
 FormattableString str = $"Hello, {name}";
 
-var dumpOptions = new DumpOptions
+var options = new DumpOptions
 {
     ConfigureKnownObjects = (knownObjects, nextDepthVisitor, _, codeWriter) =>
     {
@@ -204,7 +192,7 @@ var dumpOptions = new DumpOptions
     }
 };
 
-var dumper = new CSharpDumper(dumpOptions);
+var dumper = new CSharpDumper(options);
 var result = dumper.Dump(str);
 Console.WriteLine(result);
 

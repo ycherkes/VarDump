@@ -31,12 +31,12 @@ using VarDump;
 using VarDump.Visitor;
 
 var person = new Person { Name = "Nick", Age = 23 };
-var dumpOptions = new DumpOptions { SortDirection = ListSortDirection.Ascending };
+var options = new DumpOptions { SortDirection = ListSortDirection.Ascending };
 
-var csDumper = new CSharpDumper(dumpOptions);
+var csDumper = new CSharpDumper(options);
 var cs = csDumper.Dump(person);
 
-var vbDumper = new VisualBasicDumper(dumpOptions);
+var vbDumper = new VisualBasicDumper(options);
 var vb = vbDumper.Dump(person);
 
 // C# string

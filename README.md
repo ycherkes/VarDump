@@ -198,34 +198,34 @@ return;
 
 class FormattableStringVisitor(INextDepthVisitor nextDepthVisitor, ICodeWriter codeWriter) : IKnownObjectVisitor
 {
-	public string Id => nameof(FormattableString);
+    public string Id => nameof(FormattableString);
 
-	public bool IsSuitableFor(object obj, Type objectType)
-	{
-		return obj is FormattableString;
-	}
+    public bool IsSuitableFor(object obj, Type objectType)
+    {
+        return obj is FormattableString;
+    }
 
-	public void ConfigureOptions(Action<DumpOptions> configure)
-	{
-	}
+    public void ConfigureOptions(Action<DumpOptions> configure)
+    {
+    }
 
-	public void Visit(object obj, Type objectType, VisitContext context)
-	{
-		var formattableString = (FormattableString)obj;
+    public void Visit(object obj, Type objectType, VisitContext context)
+    {
+        var formattableString = (FormattableString)obj;
 
-		IEnumerable<Action> arguments =
-		[
-			() => codeWriter.WritePrimitive(formattableString.Format)
-		];
+        IEnumerable<Action> arguments =
+        [
+            () => codeWriter.WritePrimitive(formattableString.Format)
+        ];
 
-		arguments = arguments.Concat(formattableString.GetArguments().Select(a => (Action)(() => nextDepthVisitor.Visit(a, context))));
+        arguments = arguments.Concat(formattableString.GetArguments().Select(a => (Action)(() => nextDepthVisitor.Visit(a, context))));
 
-		codeWriter.WriteMethodInvoke(() =>
-			codeWriter.WriteMethodReference(
-				() => codeWriter.WriteType(typeof(FormattableStringFactory)),
-				nameof(FormattableStringFactory.Create)),
-			arguments);
-	}
+        codeWriter.WriteMethodInvoke(() =>
+            codeWriter.WriteMethodReference(
+                () => codeWriter.WriteType(typeof(FormattableStringFactory)),
+                nameof(FormattableStringFactory.Create)),
+            arguments);
+    }
 }
 ```
 

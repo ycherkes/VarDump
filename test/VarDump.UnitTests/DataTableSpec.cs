@@ -14,7 +14,7 @@ namespace VarDump.UnitTests;
 public class DataTableSpec
 {
     [Fact(Skip = "Skip")]
-    public void DumpDataTableCsharp()
+    public void DumpDataTableCSharp()
     {
         var products = new DataTable
         {

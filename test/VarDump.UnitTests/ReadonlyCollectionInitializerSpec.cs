@@ -6,7 +6,7 @@ namespace VarDump.UnitTests;
 public class ReadonlyCollectionInitializerSpec
 {
     [Fact(Skip = "Not implemented yet")]
-    public void DumpReadonlyPropertyCollectionInitializerCsharp()
+    public void DumpReadonlyPropertyCollectionInitializerCSharp()
     {
         CatOwner owner = new CatOwner
         {
@@ -23,18 +23,20 @@ public class ReadonlyCollectionInitializerSpec
         var result = dumper.Dump(owner);
 
         Assert.Equal(
-            @"var arrayOfArrayOfInt = new int[][]
-{
-    new int[]
-    {
-        1
-    }
-};
-", result);
+            """
+            var arrayOfArrayOfInt = new int[][]
+            {
+                new int[]
+                {
+                    1
+                }
+            };
+
+            """, result);
     }
 
     [Fact(Skip = "Not implemented yet")]
-    public void DumpReadonlyPropertyDictionaryInitializerCsharp()
+    public void DumpReadonlyPropertyDictionaryInitializerCSharp()
     {
         var owner = new CatDictionaryOwner
         {
@@ -51,13 +53,15 @@ public class ReadonlyCollectionInitializerSpec
         var result = dumper.Dump(owner);
 
         Assert.Equal(
-            @"var arrayOfArrayOfInt = new int[][]
-{
-    new int[]
-    {
-        1
-    }
-};
-", result);
+            """
+            var arrayOfArrayOfInt = new int[][]
+            {
+                new int[]
+                {
+                    1
+                }
+            };
+
+            """, result);
     }
 }

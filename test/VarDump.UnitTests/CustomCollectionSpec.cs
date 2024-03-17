@@ -20,25 +20,27 @@ public class CustomCollectionSpec
         var result = dumper.Dump(collection);
 
         Assert.Equal(
-            @"Dim catPublicCollectionOfObject = New CatPublicCollection{
-    New Cat With {
-        .Age = 8,
-        .Name = ""Sylvester""
-    },
-    New Cat With {
-        .Age = 2,
-        .Name = ""Whiskers""
-    },
-    New Cat With {
-        .Age = 14,
-        .Name = ""Sasha""
-    }
-}
-", result);
+            """
+            Dim catPublicCollectionOfObject = New CatPublicCollection{
+                New Cat With {
+                    .Age = 8,
+                    .Name = "Sylvester"
+                },
+                New Cat With {
+                    .Age = 2,
+                    .Name = "Whiskers"
+                },
+                New Cat With {
+                    .Age = 14,
+                    .Name = "Sasha"
+                }
+            }
+
+            """, result);
     }
 
     [Fact]
-    public void DumpCustomPublicCollectionCsharp()
+    public void DumpCustomPublicCollectionCSharp()
     {
         var collection = new CatPublicCollection
         {
@@ -52,25 +54,27 @@ public class CustomCollectionSpec
         var result = dumper.Dump(collection);
 
         Assert.Equal(
-            @"var catPublicCollectionOfObject = new CatPublicCollection
-{
-    new Cat
-    {
-        Age = 8,
-        Name = ""Sylvester""
-    },
-    new Cat
-    {
-        Age = 2,
-        Name = ""Whiskers""
-    },
-    new Cat
-    {
-        Age = 14,
-        Name = ""Sasha""
-    }
-};
-", result);
+            """
+            var catPublicCollectionOfObject = new CatPublicCollection
+            {
+                new Cat
+                {
+                    Age = 8,
+                    Name = "Sylvester"
+                },
+                new Cat
+                {
+                    Age = 2,
+                    Name = "Whiskers"
+                },
+                new Cat
+                {
+                    Age = 14,
+                    Name = "Sasha"
+                }
+            };
+
+            """, result);
     }
 
     [Fact]
@@ -88,25 +92,27 @@ public class CustomCollectionSpec
         var result = dumper.Dump(collection);
 
         Assert.Equal(
-            @"Dim catNonPublicCollectionOfObject = New Object(){
-    New Cat With {
-        .Age = 8,
-        .Name = ""Sylvester""
-    },
-    New Cat With {
-        .Age = 2,
-        .Name = ""Whiskers""
-    },
-    New Cat With {
-        .Age = 14,
-        .Name = ""Sasha""
-    }
-}
-", result);
+            """
+            Dim catNonPublicCollectionOfObject = New Object(){
+                New Cat With {
+                    .Age = 8,
+                    .Name = "Sylvester"
+                },
+                New Cat With {
+                    .Age = 2,
+                    .Name = "Whiskers"
+                },
+                New Cat With {
+                    .Age = 14,
+                    .Name = "Sasha"
+                }
+            }
+
+            """, result);
     }
 
     [Fact]
-    public void DumpCustomNonPublicCollectionCsharp()
+    public void DumpCustomNonPublicCollectionCSharp()
     {
         var collection = new CatNonPublicCollection
         {
@@ -120,25 +126,27 @@ public class CustomCollectionSpec
         var result = dumper.Dump(collection);
 
         Assert.Equal(
-            @"var catNonPublicCollectionOfObject = new object[]
-{
-    new Cat
-    {
-        Age = 8,
-        Name = ""Sylvester""
-    },
-    new Cat
-    {
-        Age = 2,
-        Name = ""Whiskers""
-    },
-    new Cat
-    {
-        Age = 14,
-        Name = ""Sasha""
-    }
-};
-", result);
+            """
+            var catNonPublicCollectionOfObject = new object[]
+            {
+                new Cat
+                {
+                    Age = 8,
+                    Name = "Sylvester"
+                },
+                new Cat
+                {
+                    Age = 2,
+                    Name = "Whiskers"
+                },
+                new Cat
+                {
+                    Age = 14,
+                    Name = "Sasha"
+                }
+            };
+
+            """, result);
     }
 
 }

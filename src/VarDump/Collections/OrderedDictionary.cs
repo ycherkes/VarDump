@@ -2,14 +2,25 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.ComponentModel;
+using VarDump.Visitor;
 
 namespace VarDump.Collections;
 
-// original version see https://github.com/jehugaleahsa/truncon.collections.OrderedDictionary
-
-internal interface IOrderedDictionary<TKey, TValue> : IDictionary<TKey, TValue>, IList<KeyValuePair<TKey, TValue>>
+internal sealed class KnownObjectsCollection : OrderedDictionary<string, IKnownObjectVisitor>, IKnownObjectsCollection
 {
+    public void Add(IKnownObjectVisitor knownObject)
+    {
+        Add(knownObject.Id, knownObject);
+    }
 }
+
+public interface IKnownObjectsCollection : IOrderedDictionary<string, IKnownObjectVisitor>
+{
+    void Add(IKnownObjectVisitor knownObject);
+}
+
+// original version see https://github.com/jehugaleahsa/truncon.collections.OrderedDictionary
+public interface IOrderedDictionary<TKey, TValue> : IDictionary<TKey, TValue>, IList<KeyValuePair<TKey, TValue>>;
 
 /// <summary>
 /// Represents a dictionary that tracks the order that items were added.
@@ -22,7 +33,7 @@ internal interface IOrderedDictionary<TKey, TValue> : IDictionary<TKey, TValue>,
 /// It can be costly to insert a key/value pair because other key's indexes must be adjusted.
 /// It can be costly to remove a key/value pair because other keys' indexes must be adjusted.
 /// </remarks>
-internal sealed class OrderedDictionary<TKey, TValue> : IOrderedDictionary<TKey, TValue>
+internal class OrderedDictionary<TKey, TValue> : IOrderedDictionary<TKey, TValue>
 {
     private const string EditReadOnlyList = "An attempt was made to edit a read-only list.";
     private readonly Dictionary<TKey, int> _dictionary;

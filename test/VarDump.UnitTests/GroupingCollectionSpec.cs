@@ -20,23 +20,25 @@ public class GroupingCollectionSpec
         var result = dumper.Dump(grouping);
 
         Assert.Equal(
-            @"Dim lookupOfGroupingOfPerson = {
-    New With {
-        .Key = ""Bob"",
-        .Element = New Person With {
-            .FirstName = ""Bob"",
-            .Age = 32
-        }
-    },
-    New With {
-        .Key = ""Alice"",
-        .Element = New Person With {
-            .FirstName = ""Alice"",
-            .Age = 23
-        }
-    }
-}.ToLookup(Function (grp) grp.Key, Function (grp) grp.Element)
-", result);
+            """
+            Dim lookupOfGroupingOfPerson = {
+                New With {
+                    .Key = "Bob",
+                    .Element = New Person With {
+                        .FirstName = "Bob",
+                        .Age = 32
+                    }
+                },
+                New With {
+                    .Key = "Alice",
+                    .Element = New Person With {
+                        .FirstName = "Alice",
+                        .Age = 23
+                    }
+                }
+            }.ToLookup(Function (grp) grp.Key, Function (grp) grp.Element)
+
+            """, result);
     }
 
     [Fact]
@@ -53,28 +55,30 @@ public class GroupingCollectionSpec
         var result = dumper.Dump(grouping);
 
         Assert.Equal(
-            @"var arrayOfGroupingOfPerson = new []
-{
-    new 
-    {
-        Key = ""Bob"",
-        Element = new Person
-        {
-            FirstName = ""Bob"",
-            Age = 32
-        }
-    },
-    new 
-    {
-        Key = ""Alice"",
-        Element = new Person
-        {
-            FirstName = ""Alice"",
-            Age = 23
-        }
-    }
-}.GroupBy(grp => grp.Key, grp => grp.Element).ToArray();
-", result);
+            """
+            var arrayOfGroupingOfPerson = new []
+            {
+                new 
+                {
+                    Key = "Bob",
+                    Element = new Person
+                    {
+                        FirstName = "Bob",
+                        Age = 32
+                    }
+                },
+                new 
+                {
+                    Key = "Alice",
+                    Element = new Person
+                    {
+                        FirstName = "Alice",
+                        Age = 23
+                    }
+                }
+            }.GroupBy(grp => grp.Key, grp => grp.Element).ToArray();
+
+            """, result);
     }
 
     [Fact]
@@ -89,18 +93,20 @@ public class GroupingCollectionSpec
         var result = dumper.Dump(grouping);
 
         Assert.Equal(
-            @"var groupingOfPerson = new []
-{
-    new 
-    {
-        Key = ""Bob"",
-        Element = new Person
-        {
-            FirstName = ""Bob"",
-            Age = 32
-        }
-    }
-}.GroupBy(grp => grp.Key, grp => grp.Element).Single();
-", result);
+            """
+            var groupingOfPerson = new []
+            {
+                new 
+                {
+                    Key = "Bob",
+                    Element = new Person
+                    {
+                        FirstName = "Bob",
+                        Age = 32
+                    }
+                }
+            }.GroupBy(grp => grp.Key, grp => grp.Element).Single();
+
+            """, result);
     }
 }

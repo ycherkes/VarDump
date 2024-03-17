@@ -2,22 +2,22 @@
 
   <PropertyGroup>
     <TargetFrameworks>net45;netstandard2.0</TargetFrameworks>
-	<LangVersion>latest</LangVersion>
-	<AssemblyName>VarDump</AssemblyName>
-	<AssemblyVersion>0.2.16</AssemblyVersion>
-	<FileVersion>0.2.16</FileVersion>
-	<PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
-	<Copyright>Copyright $([System.DateTime]::Now.Year) Yevhen Cherkes</Copyright>
-	<GeneratePackageOnBuild>True</GeneratePackageOnBuild>
-	<Title>VarDump</Title>
-	<Version>0.2.16</Version>
-	<Description>VarDump is a utility for serialization runtime objects to C# and Visual Basic string.</Description>
-	<PackageProjectUrl>https://github.com/ycherkes/VarDump</PackageProjectUrl>
-	<PackageReadmeFile>README.md</PackageReadmeFile>
-	<RepositoryUrl>https://github.com/ycherkes/VarDump.git</RepositoryUrl>
-	<RepositoryType>git</RepositoryType>
-	<PackageTags>dump;dumpobject;c#;visulabasic;debug</PackageTags>
-	<NeutralLanguage>en</NeutralLanguage>
+    <LangVersion>latest</LangVersion>
+    <AssemblyName>VarDump</AssemblyName>
+    <AssemblyVersion>1.0.0</AssemblyVersion>
+    <FileVersion>1.0.0</FileVersion>
+    <PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
+    <Copyright>Copyright $([System.DateTime]::Now.Year) Yevhen Cherkes</Copyright>
+    <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
+    <Title>VarDump</Title>
+    <Version>1.0.0</Version>
+    <Description>VarDump is a utility for serialization runtime objects to C# and Visual Basic string.</Description>
+    <PackageProjectUrl>https://github.com/ycherkes/VarDump</PackageProjectUrl>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+    <RepositoryUrl>https://github.com/ycherkes/VarDump.git</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
+    <PackageTags>dump;dumpobject;c#;visulabasic;debug</PackageTags>
+    <NeutralLanguage>en</NeutralLanguage>
   </PropertyGroup>
 
   <ItemGroup>
@@ -26,7 +26,6 @@
       <PackagePath>\</PackagePath>
     </None>
     <InternalsVisibleTo Include="$(AssemblyName).UnitTests" />
-	<InternalsVisibleTo Include="YellowFlavor.Serialization" />
   </ItemGroup>
 
 </Project>

@@ -6,7 +6,7 @@ namespace VarDump.UnitTests;
 public class IpAddressSpec
 {
     [Fact]
-    public void DumpIpAddressCsharp()
+    public void DumpIpAddressCSharp()
     {
         var ipAddress = IPAddress.Parse("142.250.74.110");
 
@@ -15,8 +15,10 @@ public class IpAddressSpec
         var result = dumper.Dump(ipAddress);
 
         Assert.Equal(
-            @"var iPAddress = IPAddress.Parse(""142.250.74.110"");
-", result);
+            """
+            var iPAddress = IPAddress.Parse("142.250.74.110");
+
+            """, result);
     }
 
 
@@ -30,7 +32,9 @@ public class IpAddressSpec
         var result = dumper.Dump(ipAddress);
 
         Assert.Equal(
-            @"Dim iPAddressValue = IPAddress.Parse(""142.250.74.110"")
-", result);
+            """
+            Dim iPAddressValue = IPAddress.Parse("142.250.74.110")
+
+            """, result);
     }
 }

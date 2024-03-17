@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using VarDump.Extensions;
@@ -7,26 +6,21 @@ using VarDump.Utils;
 
 namespace VarDump.Visitor.Descriptors.Implementation;
 
-internal class ObjectFieldsDescriptor : IObjectDescriptor
+internal sealed class ObjectFieldsDescriptor(BindingFlags getFieldsBindingFlags) : IObjectDescriptor
 {
-    private readonly BindingFlags _getFieldsBindingFlags;
-
-    public ObjectFieldsDescriptor(BindingFlags getFieldsBindingFlags)
+    public IObjectDescription GetObjectDescription(object @object, Type objectType)
     {
-        _getFieldsBindingFlags = getFieldsBindingFlags;
-    }
-
-    public IEnumerable<IReflectionDescriptor> Describe(object @object, Type objectType)
-    {
-        var fields = EnumerableExtensions.AsEnumerable(() => objectType
-                .GetFields(_getFieldsBindingFlags))
-            .Select(f => new ReflectionDescriptor(() => ReflectionUtils.GetValue(f, @object))
+        var fields = EnumerableExtensions.AsEnumerable(() => objectType.GetFields(getFieldsBindingFlags))
+            .Select(f => new FieldDescription(() => ReflectionUtils.GetValue(f, @object))
             {
                 Name = f.Name,
-                Type = f.FieldType,
-                ReflectionType = ReflectionType.Field
+                Type = f.FieldType
             });
 
-        return fields;
+        return new ObjectDescription
+        {
+            Fields = fields,
+            Type = objectType
+        };
     }
 }

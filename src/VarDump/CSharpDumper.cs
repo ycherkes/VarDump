@@ -3,19 +3,18 @@ using System.IO;
 using VarDump.CodeDom.Common;
 using VarDump.CodeDom.Compiler;
 using VarDump.CodeDom.CSharp;
-using VarDump.Extensions;
 using VarDump.Utils;
 using VarDump.Visitor;
 
 namespace VarDump;
 
-public class CSharpDumper : IDumper
+public sealed class CSharpDumper : IDumper
 {
     private readonly DumpOptions _options;
 
     public CSharpDumper()
     {
-        _options = DumpOptions.Default;
+        _options = new DumpOptions();
     }
 
     public CSharpDumper(DumpOptions options)
@@ -25,13 +24,13 @@ public class CSharpDumper : IDumper
 
     public string Dump(object obj)
     {
-        using var sourceWriter = new StringWriter();
+        using var writer = new StringWriter();
 
-        DumpImpl(obj, sourceWriter);
+        DumpImpl(obj, writer);
 
-        var csCodeString = sourceWriter.ToString();
+        var codeString = writer.ToString();
 
-        return csCodeString;
+        return codeString;
     }
 
     public void Dump(object obj, TextWriter textWriter)
@@ -46,25 +45,24 @@ public class CSharpDumper : IDumper
 
     private void DumpImpl(object obj, TextWriter textWriter)
     {
-        var objectVisitor = new ObjectVisitor(_options);
-
-        var expression = objectVisitor.Visit(obj);
-
-        CodeObject codeObject = _options.GenerateVariableInitializer
-            ? new CodeVariableDeclarationStatement(new CodeImplicitlyTypedTypeReference(),
-                obj != null ? ReflectionUtils.ComposeCsharpVariableName(obj.GetType()) : "nullValue")
-            {
-                InitExpression = expression
-            }
-            : expression;
-
-        var codeGeneratorOptions = new CodeGeneratorOptions
+        var codeWriterOptions = new CodeWriterOptions
         {
-            BracingStyle = "C"
+            UseFullTypeName = _options.UseTypeFullName,
+            IndentString = _options.IndentString
         };
 
-        ICodeGenerator generator = new CSharpCodeGenerator();
+        ICodeWriter codeWriter = new CSharpCodeWriter(textWriter, codeWriterOptions);
 
-        generator.GenerateCode(codeObject, textWriter, codeGeneratorOptions);
+        var objectVisitor = new ObjectVisitor(_options, codeWriter);
+
+        if (_options.GenerateVariableInitializer)
+        {
+            codeWriter.WriteVariableDeclarationStatement(new CodeVarTypeInfo(),
+                obj != null ? ReflectionUtils.ComposeCSharpVariableName(obj.GetType()) : "nullValue", () => objectVisitor.Visit(obj));
+        }
+        else
+        {
+            objectVisitor.Visit(obj);
+        }
     }
 }

@@ -7,7 +7,7 @@ public class InheritanceSpec
 {
 
     [Fact]
-    public void DumpClassCsharp()
+    public void DumpClassCSharp()
     {
         var person = new Person
         {
@@ -21,13 +21,15 @@ public class InheritanceSpec
         var result = dumper.Dump(person);
 
         Assert.Equal(
-            @"var person = new Person
-{
-    FirstName = ""Boris"",
-    LastName = ""Johnson"",
-    BirthDate = DateTime.ParseExact(""1964-06-19T00:00:00.0000000Z"", ""O"", CultureInfo.InvariantCulture, DateTimeStyles.RoundtripKind)
-};
-", result);
+            """
+            var person = new Person
+            {
+                FirstName = "Boris",
+                LastName = "Johnson",
+                BirthDate = DateTime.ParseExact("1964-06-19T00:00:00.0000000Z", "O", CultureInfo.InvariantCulture, DateTimeStyles.RoundtripKind)
+            };
+
+            """, result);
     }
 
     [Fact]
@@ -45,12 +47,14 @@ public class InheritanceSpec
         var result = dumper.Dump(person);
 
         Assert.Equal(
-            @"Dim personValue = New Person With {
-    .FirstName = ""Boris"",
-    .LastName = ""Johnson"",
-    .BirthDate = Date.ParseExact(""1964-06-19T00:00:00.0000000Z"", ""O"", CultureInfo.InvariantCulture, DateTimeStyles.RoundtripKind)
-}
-", result);
+            """
+            Dim personValue = New Person With {
+                .FirstName = "Boris",
+                .LastName = "Johnson",
+                .BirthDate = Date.ParseExact("1964-06-19T00:00:00.0000000Z", "O", CultureInfo.InvariantCulture, DateTimeStyles.RoundtripKind)
+            }
+
+            """, result);
     }
 
 

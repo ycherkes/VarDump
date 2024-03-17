@@ -6,29 +6,19 @@ namespace VarDump.UnitTests;
 
 public class LazinessSpec
 {
-    [Fact(Skip = "see https://github.com/ycherkes/VarDump/issues/35")]
-    public void DumpEnumerableCsharp()
+    [Fact]
+    public void DumpEnumerableCSharp()
     {
         var dumper = new CSharpDumper();
-        using var sourceWriter = new StringWriter();
+        using var writer = new StringWriter();
 
-        IEnumerable<int> GetItems()
-        {
-            yield return 1;
-            Assert.Contains("1", sourceWriter.ToString());
-            yield return 2;
-            Assert.Contains("2", sourceWriter.ToString());
-            yield return 3;
-            Assert.Contains("3", sourceWriter.ToString());
-        }
+        dumper.Dump(GetItems(writer), writer);
 
-        dumper.Dump(GetItems(), sourceWriter);
-
-        var result = sourceWriter.ToString();
+        var result = writer.ToString();
 
         Assert.Equal(
             """
-            var dumpEnumerableCsharpOfInt = new int[]
+            var dumpEnumerableCSharpOfInt = new int[]
             {
                 1,
                 2,
@@ -36,5 +26,16 @@ public class LazinessSpec
             };
 
             """, result);
+        return;
+
+        static IEnumerable<int> GetItems(StringWriter writer)
+        {
+            yield return 1;
+            Assert.Contains("1", writer.ToString());
+            yield return 2;
+            Assert.Contains("2", writer.ToString());
+            yield return 3;
+            Assert.Contains("3", writer.ToString());
+        }
     }
 }

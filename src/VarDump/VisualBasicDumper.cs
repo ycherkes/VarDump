@@ -3,19 +3,18 @@ using System.IO;
 using VarDump.CodeDom.Common;
 using VarDump.CodeDom.Compiler;
 using VarDump.CodeDom.VisualBasic;
-using VarDump.Extensions;
 using VarDump.Utils;
 using VarDump.Visitor;
 
 namespace VarDump;
 
-public class VisualBasicDumper : IDumper
+public sealed class VisualBasicDumper : IDumper
 {
     private readonly DumpOptions _options;
 
     public VisualBasicDumper()
     {
-        _options = DumpOptions.Default;
+        _options = new DumpOptions();
     }
 
     public VisualBasicDumper(DumpOptions options)
@@ -25,13 +24,13 @@ public class VisualBasicDumper : IDumper
 
     public string Dump(object obj)
     {
-        using var sourceWriter = new StringWriter();
+        using var writer = new StringWriter();
 
-        DumpImpl(obj, sourceWriter);
+        DumpImpl(obj, writer);
 
-        var vbCodeString = sourceWriter.ToString();
+        var codeString = writer.ToString();
 
-        return vbCodeString;
+        return codeString;
     }
 
     public void Dump(object obj, TextWriter textWriter)
@@ -46,20 +45,24 @@ public class VisualBasicDumper : IDumper
 
     private void DumpImpl(object obj, TextWriter textWriter)
     {
-        var objectVisitor = new ObjectVisitor(_options);
+        var codeWriterOptions = new CodeWriterOptions
+        {
+            UseFullTypeName = _options.UseTypeFullName,
+            IndentString = _options.IndentString
+        };
 
-        var expression = objectVisitor.Visit(obj);
+        ICodeWriter codeWriter = new VBCodeWriter(textWriter, codeWriterOptions);
 
-        CodeObject codeObject = _options.GenerateVariableInitializer
-            ? new CodeVariableDeclarationStatement(new CodeImplicitlyTypedTypeReference(),
-                obj != null ? ReflectionUtils.ComposeVisualBasicVariableName(obj.GetType()) : "nullValue")
-            {
-                InitExpression = expression
-            }
-            : expression;
+        var objectVisitor = new ObjectVisitor(_options, codeWriter);
 
-        ICodeGenerator generator = new VBCodeGenerator();
-
-        generator.GenerateCode(codeObject, textWriter, new CodeGeneratorOptions());
+        if (_options.GenerateVariableInitializer)
+        {
+            codeWriter.WriteVariableDeclarationStatement(new CodeVarTypeInfo(),
+                obj != null ? ReflectionUtils.ComposeVisualBasicVariableName(obj.GetType()) : "nullValue", () => objectVisitor.Visit(obj));
+        }
+        else
+        {
+            objectVisitor.Visit(obj);
+        }
     }
 }

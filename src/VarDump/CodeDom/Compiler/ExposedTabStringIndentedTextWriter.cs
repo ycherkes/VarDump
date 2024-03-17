@@ -5,63 +5,60 @@
 using System.CodeDom.Compiler;
 using System.IO;
 
-namespace VarDump.CodeDom.Compiler
+namespace VarDump.CodeDom.Compiler;
+
+internal sealed class ExposedTabStringIndentedTextWriter(TextWriter writer, string tabString)
+    : IndentedTextWriter(writer, tabString)
 {
-    internal sealed class ExposedTabStringIndentedTextWriter : IndentedTextWriter
+    internal void InternalOutputTabs()
     {
-        public ExposedTabStringIndentedTextWriter(TextWriter writer, string tabString) : base(writer, tabString)
+        TextWriter inner = InnerWriter;
+        for (int i = 0; i < Indent; i++)
         {
-            TabString = tabString ?? IndentedTextWriter.DefaultTabString;
+            inner.Write(TabString);
         }
-
-        internal void InternalOutputTabs()
-        {
-            TextWriter inner = InnerWriter;
-            for (int i = 0; i < Indent; i++)
-            {
-                inner.Write(TabString);
-            }
-        }
-
-        internal string TabString { get; } // IndentedTextWriter doesn't expose this publicly
     }
 
-    internal sealed class Indentation
-    {
-        private readonly ExposedTabStringIndentedTextWriter _writer;
-        private readonly int _indent;
-        private string _s;
+    internal string TabString { get; } = tabString ?? DefaultTabString; // IndentedTextWriter doesn't expose this publicly
+}
 
-        internal Indentation(ExposedTabStringIndentedTextWriter writer, int indent)
-        {
+internal sealed class Indentation
+{
+    private readonly ExposedTabStringIndentedTextWriter _writer;
+    private readonly int _indent;
+    private string _s;
+
+    internal Indentation(ExposedTabStringIndentedTextWriter writer, int indent)
+    {
             _writer = writer;
             _indent = indent;
         }
 
-        internal string IndentationString
+    internal string IndentationString
+    {
+        get
         {
-            get
+            if (_s != null)
             {
-                if (_s == null)
-                {
-                    string tabString = _writer.TabString;
-
-                    switch (_indent)
-                    {
-                        case 0: _s = string.Empty; break;
-                        case 1: _s = tabString; break;
-                        case 2: _s = tabString + tabString; break;
-                        case 3: _s = tabString + tabString + tabString; break;
-                        case 4: _s = tabString + tabString + tabString + tabString; break;
-                        default:
-                            var args = new string[_indent];
-                            for (int i = 0; i < args.Length; i++) args[i] = tabString;
-                            return string.Concat(args);
-                    }
-                }
-
                 return _s;
             }
+
+            string tabString = _writer.TabString;
+
+            switch (_indent)
+            {
+                case 0: _s = string.Empty; break;
+                case 1: _s = tabString; break;
+                case 2: _s = tabString + tabString; break;
+                case 3: _s = tabString + tabString + tabString; break;
+                case 4: _s = tabString + tabString + tabString + tabString; break;
+                default:
+                    var args = new string[_indent];
+                    for (int i = 0; i < args.Length; i++) args[i] = tabString;
+                    return string.Concat(args);
+            }
+
+            return _s;
         }
     }
 }

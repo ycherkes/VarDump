@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using VarDump.Extensions;
@@ -7,31 +6,27 @@ using VarDump.Utils;
 
 namespace VarDump.Visitor.Descriptors.Implementation;
 
-internal class ObjectPropertiesDescriptor : IObjectDescriptor
+internal sealed class ObjectPropertiesDescriptor(BindingFlags getPropertiesBindingFlags, bool writablePropertiesOnly)
+    : IObjectDescriptor
 {
-    private readonly BindingFlags _getPropertiesBindingFlags;
-    private readonly bool _writablePropertiesOnly;
-
-    public ObjectPropertiesDescriptor(BindingFlags getPropertiesBindingFlags, bool writablePropertiesOnly)
-    {
-        _getPropertiesBindingFlags = getPropertiesBindingFlags;
-        _writablePropertiesOnly = writablePropertiesOnly;
-    }
-
-    public IEnumerable<IReflectionDescriptor> Describe(object @object, Type objectType)
+    public IObjectDescription GetObjectDescription(object @object, Type objectType)
     {
         var properties = EnumerableExtensions.AsEnumerable(() => objectType
-            .GetProperties(_getPropertiesBindingFlags))
+            .GetProperties(getPropertiesBindingFlags))
             .Where(p => p.CanRead &&
-                        (p.CanWrite || !_writablePropertiesOnly) &&
+                        (p.CanWrite || !writablePropertiesOnly) &&
                         !ReflectionUtils.IsIndexer(p))
-            .Select(p => new ReflectionDescriptor(() => ReflectionUtils.GetValue(p, @object))
+            .Select(p => new PropertyDescription(() => ReflectionUtils.GetValue(p, @object))
             {
+                CanWrite = p.CanWrite,
                 Name = p.Name,
-                Type = p.PropertyType,
-                ReflectionType = ReflectionType.Property
+                Type = p.PropertyType
             });
 
-        return properties;
+        return new ObjectDescription
+        {
+            Properties = properties,
+            Type = objectType
+        };
     }
 }

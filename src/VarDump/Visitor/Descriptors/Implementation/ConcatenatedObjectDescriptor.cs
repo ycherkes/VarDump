@@ -1,22 +1,21 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
 
 namespace VarDump.Visitor.Descriptors.Implementation;
 
-internal class ConcatenatedObjectDescriptor : IObjectDescriptor
+internal sealed class ConcatenatedObjectDescriptor(IObjectDescriptor first, IObjectDescriptor second) : IObjectDescriptor
 {
-    private readonly IObjectDescriptor _first;
-    private readonly IObjectDescriptor _second;
-
-    public ConcatenatedObjectDescriptor(IObjectDescriptor first, IObjectDescriptor second)
+    public IObjectDescription GetObjectDescription(object @object, Type objectType)
     {
-        _first = first;
-        _second = second;
-    }
+        var firstInfo = first.GetObjectDescription(@object, objectType);
+        var secondInfo = second.GetObjectDescription(@object, objectType);
 
-    public IEnumerable<IReflectionDescriptor> Describe(object @object, Type objectType)
-    {
-        return _first.Describe(@object, objectType).Concat(_second.Describe(@object, objectType));
+        return new ObjectDescription
+        {
+            ConstructorArguments = firstInfo.ConstructorArguments.Concat(secondInfo.ConstructorArguments),
+            Properties = firstInfo.Properties.Concat(secondInfo.Properties),
+            Fields = firstInfo.Fields.Concat(secondInfo.Fields),
+            Type = secondInfo.Type ?? firstInfo.Type
+        };
     }
 }

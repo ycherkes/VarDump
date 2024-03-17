@@ -6,7 +6,7 @@ using System.Linq;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Text;
-using VarDump.CodeDom;
+using VarDump.CodeDom.CSharp;
 using VarDump.CodeDom.VisualBasic;
 using VarDump.Extensions;
 
@@ -14,9 +14,9 @@ namespace VarDump.Utils;
 
 internal static class ReflectionUtils
 {
-    public static string ComposeCsharpVariableName(Type type)
+    public static string ComposeCSharpVariableName(Type type)
     {
-        var result = ComposeVariableName(type, GetFormattedCsharpTypeName);
+        var result = ComposeVariableName(type, GetFormattedCSharpTypeName);
 
         if (CSharpHelpers.IsKeyword(result) || string.Equals(type.Name, result, StringComparison.Ordinal))
         {
@@ -30,7 +30,7 @@ internal static class ReflectionUtils
     {
         var result = ComposeVariableName(type, GetFormattedVisualBasicTypeName);
 
-        if (VBCodeGenerator.IsKeyword(result) || string.Equals(type.Name, result, StringComparison.OrdinalIgnoreCase))
+        if (VBHelpers.IsKeyword(result) || string.Equals(type.Name, result, StringComparison.OrdinalIgnoreCase))
         {
             result += "Value";
         }
@@ -95,7 +95,7 @@ internal static class ReflectionUtils
         { "single", "float" }
     };
 
-    private static string GetFormattedCsharpTypeName(Type type)
+    private static string GetFormattedCSharpTypeName(Type type)
     {
         var result = GetFormattedTypeName(type);
 
@@ -260,16 +260,30 @@ internal static class ReflectionUtils
 
     public static bool IsTuple(this Type type)
     {
-        var typeFullName = type.FullName ?? "";
+        if (!type.IsGenericType)
+            return false;
 
-        return typeFullName.StartsWith("System.Tuple");
+        var openType = type.GetGenericTypeDefinition();
+
+        return openType == typeof(Tuple<>)
+               || openType == typeof(Tuple<,>)
+               || openType == typeof(Tuple<,,>)
+               || openType == typeof(Tuple<,,,>)
+               || openType == typeof(Tuple<,,,,>)
+               || openType == typeof(Tuple<,,,,,>)
+               || openType == typeof(Tuple<,,,,,,>)
+               || (openType == typeof(Tuple<,,,,,,,>) && IsTuple(type.GetGenericArguments()[7]));
     }
 
     public static bool IsValueTuple(this Type type)
     {
-        var typeFullName = type.FullName ?? "";
+        if (!type.IsGenericType || !type.IsValueType())
+            return false;
 
-        return type.IsValueType() && typeFullName.StartsWith("System.ValueTuple");
+        var openType = type.GetGenericTypeDefinition();
+        var openTypeFullName = openType.FullName ?? "";
+
+        return openTypeFullName.StartsWith("System.ValueTuple`");
     }
 
     public static bool IsKeyValuePair(this Type type)
@@ -368,14 +382,14 @@ internal static class ReflectionUtils
 
     public static bool IsGrouping(this Type type)
     {
-        var hasIGrouping = type.GetInterfaces().Concat(new[] { type }).FirstOrDefault(x => x.IsGenericType && x.GetGenericTypeDefinition() == typeof(IGrouping<,>)) != null;
+        var hasIGrouping = type.GetInterfaces().Concat([type]).FirstOrDefault(x => x.IsGenericType && x.GetGenericTypeDefinition() == typeof(IGrouping<,>)) != null;
 
         return hasIGrouping;
     }
 
     public static bool IsLookup(this Type type)
     {
-        var hasILookup = type.GetInterfaces().Concat(new[] { type }).FirstOrDefault(x => x.IsGenericType && x.GetGenericTypeDefinition() == typeof(ILookup<,>)) != null;
+        var hasILookup = type.GetInterfaces().Concat([type]).FirstOrDefault(x => x.IsGenericType && x.GetGenericTypeDefinition() == typeof(ILookup<,>)) != null;
 
         return hasILookup;
     }

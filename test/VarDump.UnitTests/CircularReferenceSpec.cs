@@ -11,7 +11,7 @@ public class CircularReferenceSpec
         var assembly = typeof(int).Assembly;
 
         var dumper = new CSharpDumper(new DumpOptions { WritablePropertiesOnly = false});
-        _ = dumper.Dump(assembly);
+        _  = dumper.Dump(assembly);
     }
 
     [Fact]

@@ -1,174 +1,83 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Linq;
-using VarDump.CodeDom.Common;
+﻿using System.Linq;
+using VarDump.CodeDom.Compiler;
 using VarDump.Collections;
-using VarDump.Utils;
-using VarDump.Visitor.Descriptors;
-using VarDump.Visitor.Descriptors.Implementation;
-using VarDump.Visitor.KnownTypes;
+using VarDump.Extensions;
+using VarDump.Visitor.KnownObjects;
 
 namespace VarDump.Visitor;
 
-internal sealed class ObjectVisitor : IObjectVisitor
+internal sealed class ObjectVisitor : IObjectVisitor, INextDepthVisitor
 {
-    private readonly ICollection<string> _excludeTypes;
-    private readonly bool _ignoreDefaultValues;
-    private readonly bool _ignoreNullValues;
+    private readonly ICodeWriter _codeWriter;
+    private readonly IKnownObjectsCollection _knownObjects;
     private readonly int _maxDepth;
-    private readonly CodeTypeReferenceOptions _typeReferenceOptions;
-    private readonly Stack<object> _visitedObjects;
-    private readonly ListSortDirection? _sortDirection;
-    private readonly IObjectDescriptor _objectDescriptor;
-    private readonly OrderedDictionary<string, IKnownObjectVisitor> _knownTypes;
+    private readonly ISpecificVisitor _descriptionBasedVisitor;
 
-    private int _depth;
-
-    public ObjectVisitor(DumpOptions options)
+    public ObjectVisitor(DumpOptions options, ICodeWriter codeWriter)
     {
+        _codeWriter = codeWriter;
         _maxDepth = options.MaxDepth;
-        _ignoreDefaultValues = options.IgnoreDefaultValues;
-        _ignoreNullValues = options.IgnoreNullValues;
-        _typeReferenceOptions = options.UseTypeFullName
-            ? CodeTypeReferenceOptions.FullTypeName
-            : CodeTypeReferenceOptions.ShortTypeName;
-        _excludeTypes = options.ExcludeTypes ?? new List<string>();
-        _sortDirection = options.SortDirection;
 
-        IObjectDescriptor anonymousObjectDescriptor = new ObjectPropertiesDescriptor(options.GetPropertiesBindingFlags, false);
-        _objectDescriptor = new ObjectPropertiesDescriptor(options.GetPropertiesBindingFlags, options.WritablePropertiesOnly);
+        _descriptionBasedVisitor = new DescriptionBasedVisitor(codeWriter, this, options);
 
-        if (options.GetFieldsBindingFlags != null)
+        _knownObjects = new KnownObjectsCollection
         {
-            _objectDescriptor = anonymousObjectDescriptor.Concat(new ObjectFieldsDescriptor(options.GetFieldsBindingFlags.Value));
-        }
+            new PrimitiveVisitor(codeWriter),
+            new TimeSpanVisitor(codeWriter, options),
+            new DateTimeVisitor(codeWriter, options),
+            new DateTimeOffsetVisitor(this, codeWriter, options),
+            new EnumVisitor(codeWriter),
+            new GuidVisitor(codeWriter, options),
+            new CultureInfoVisitor(codeWriter, options),
+            new TypeVisitor(codeWriter),
+            new IPAddressVisitor(codeWriter),
+            new IPEndpointVisitor(this, codeWriter, options),
+            new DnsEndPointVisitor(this, codeWriter, options),
+            new VersionVisitor(codeWriter, options),
+            new DateOnlyVisitor(codeWriter, options),
+            new TimeOnlyVisitor(codeWriter, options),
+            new RecordVisitor(this, codeWriter, options),
+            new AnonymousVisitor(this, codeWriter, options),
+            new KeyValuePairVisitor(this, codeWriter, options),
+            new TupleVisitor(this, codeWriter, options),
+            new ValueTupleVisitor(this, codeWriter, options),
+            new UriVisitor(codeWriter, options),
+            new RegexVisitor(codeWriter, this, options),
+            new GroupingVisitor(this, codeWriter),
+            new DictionaryVisitor(this, codeWriter, options),
+            new CollectionVisitor(this, codeWriter, options)
+        };
 
-        if (options.Descriptors.Count > 0)
-        {
-            _objectDescriptor = _objectDescriptor.ApplyMiddleware(options.Descriptors);
-            anonymousObjectDescriptor = anonymousObjectDescriptor.ApplyMiddleware(options.Descriptors);
-        }
-
-        _visitedObjects = new Stack<object>();
-
-        _knownTypes = new[]
-        {
-            (IKnownObjectVisitor)new PrimitiveVisitor(options),
-            new TimeSpanVisitor(options),
-            new DateTimeVisitor(options),
-            new DateTimeOffsetVisitor(options, this),
-            new EnumVisitor(options),
-            new GuidVisitor(options),
-            new CultureInfoVisitor(options),
-            new TypeVisitor(options),
-            new IPAddressVisitor(options),
-            new IPEndpointVisitor(options, this),
-            new DnsEndPointVisitor(options, this),
-            new VersionVisitor(options),
-            new DateOnlyVisitor(options),
-            new TimeOnlyVisitor(options),
-            new RecordVisitor(options, this),
-            new AnonymousTypeVisitor(options, this, anonymousObjectDescriptor),
-            new KeyValuePairVisitor(options, this),
-            new TupleVisitor(options, this),
-            new ValueTupleVisitor(this),
-            new GroupingVisitor(this),
-            new DictionaryVisitor(options, this),
-            new CollectionVisitor(options, this)
-        }.ToOrderedDictionary(v => v.Id);
-
-        options.ConfigureKnownTypes?.Invoke(_knownTypes, this, options);
+        options.ConfigureKnownObjects?.Invoke(_knownObjects, this, options.Clone(), codeWriter);
     }
 
-    public CodeExpression Visit(object @object)
+    public void Visit(object @object)
     {
-        if (IsMaxDepth())
+        Visit(@object, new VisitContext(_maxDepth));
+    }
+
+    public void Visit(object @object, VisitContext context)
+    {
+        if (context.IsMaxDepth())
         {
-            return CodeDomUtils.GetMaxDepthExpression(@object, _typeReferenceOptions);
+            _codeWriter.WriteMaxDepthExpression(@object);
+            return;
         }
 
         try
         {
-            _depth++;
+            context.CurrentDepth++;
 
             var objectType = @object?.GetType();
 
-            var knownObjectVisitor = _knownTypes.Values.FirstOrDefault(v => v.IsSuitableFor(@object, objectType));
-            
-            if (knownObjectVisitor != null)
-            {
-                return knownObjectVisitor.Visit(@object, objectType);
-            }
+            var specificVisitor = _knownObjects.Values.FirstOrDefault(v => v.IsSuitableFor(@object, objectType))
+                                  ?? _descriptionBasedVisitor;
 
-            return VisitObject(@object, objectType);
+            specificVisitor.Visit(@object, objectType, context);
         }
         finally
         {
-            _depth--;
+            context.CurrentDepth--;
         }
-    }
-
-    private CodeExpression VisitObject(object o, Type objectType)
-    {
-        if (IsVisited(o))
-        {
-            return CodeDomUtils.GetCircularReferenceDetectedExpression();
-        }
-
-        PushVisited(o);
-
-        try
-        {
-            var membersAndConstructorParams = _objectDescriptor.Describe(o, objectType).ToArray();
-
-            var members = membersAndConstructorParams.Where(m => m.ReflectionType != ReflectionType.ConstructorParameter);
-
-            if (_sortDirection != null)
-            {
-                members = _sortDirection == ListSortDirection.Ascending
-                    ? members.OrderBy(x => x.Name)
-                    : members.OrderByDescending(x => x.Name);
-            }
-
-            var constructorParams = membersAndConstructorParams
-                .Where(mc => mc.ReflectionType == ReflectionType.ConstructorParameter)
-                .Select(cp => Visit(cp.Value));
-
-            var initializeExpressions = members
-                    .Where(pv => !_excludeTypes.Contains(pv.Type.FullName) &&
-                                 (!_ignoreNullValues || _ignoreNullValues && pv.Value != null) &&
-                                 (!_ignoreDefaultValues || !pv.Type.IsValueType || _ignoreDefaultValues &&
-                                     ReflectionUtils.GetDefaultValue(pv.Type)?.Equals(pv.Value) != true))
-                    .Select(pv => (CodeExpression)new CodeAssignExpression(new CodePropertyReferenceExpression(null, pv.Name), Visit(pv.Value)));
-
-            var result = new CodeObjectCreateAndInitializeExpression(new CodeTypeReference(objectType, _typeReferenceOptions), initializeExpressions.ToArray(), constructorParams.ToArray());
-
-            return result;
-        }
-        finally
-        {
-            PopVisited();
-        }
-    }
-
-    public void PushVisited(object value)
-    {
-        _visitedObjects.Push(value);
-    }
-
-    public void PopVisited()
-    {
-        _visitedObjects.Pop();
-    }
-
-    public bool IsVisited(object value)
-    {
-        return value != null && _visitedObjects.Contains(value);
-    }
-
-    private bool IsMaxDepth()
-    {
-        return _depth > _maxDepth;
     }
 }

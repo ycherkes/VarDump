@@ -9,12 +9,41 @@ using VarDump.CodeDom.Common;
 using VarDump.CodeDom.Compiler;
 using VarDump.UnitTests.TestModel;
 using VarDump.Visitor;
+using VarDump.Visitor.Descriptors;
 using Xunit;
 
 namespace VarDump.UnitTests;
 
 public class KnownObjectsSpec
 {
+    [Fact]
+    public void UriVisitorWithObjectDescriptionWriterCSharp()
+    {
+        // This example shows another way how to implement the KnownObjectVisitor
+        // with using the ObjectDescriptionWriter. The code looks simpler but is less performant than
+        // classical approach - see VarDump.Visitor.KnownObjects.UriVisitor
+
+        var uri = new Uri("https://user:password@www.contoso.com:80/Home/Index.htm?q1=v1&q2=v2#FragmentName");
+
+        var dumpOptions = new DumpOptions
+        {
+            ConfigureKnownObjects = (knownObjects, nextDepthVisitor, options, codeWriter) =>
+            {
+                knownObjects[nameof(Uri)] = new CustomUriVisitor(nextDepthVisitor, options, codeWriter);
+            },
+            UseNamedArgumentsInConstructors = true
+        };
+
+        var dumper = new CSharpDumper(dumpOptions);
+
+        var result = dumper.Dump(uri);
+
+        Assert.Equal("""
+                     var uri = new Uri(uriString: "https://user:password@www.contoso.com:80/Home/Index.htm?q1=v1&q2=v2#FragmentName");
+                     
+                     """, result);
+    }
+
     [Fact]
     public void ApplyDifferentSettingsToDifferentKnownObjectVisitorsCSharp()
     {
@@ -247,6 +276,59 @@ public class KnownObjectsSpec
                     () => codeWriter.WriteType(typeof(FormattableStringFactory)),
                     nameof(FormattableStringFactory.Create)),
                 arguments);
+        }
+    }
+
+    internal sealed class CustomUriVisitor(INextDepthVisitor nextDepthVisitor, DumpOptions options, ICodeWriter codeWriter) : IKnownObjectVisitor
+    {
+        private readonly ObjectDescriptionWriter _descriptionWriter = new(nextDepthVisitor, codeWriter);
+
+        public string Id => nameof(Uri);
+
+        public bool IsSuitableFor(object obj, Type objectType)
+        {
+            return obj is Uri;
+        }
+
+        public void ConfigureOptions(Action<DumpOptions> configure)
+        {
+            options = options.Clone();
+            configure?.Invoke(options);
+        }
+
+        public void Visit(object obj, Type objectType, VisitContext context)
+        {
+            var uri = (Uri)obj;
+
+            var objectDescription = new ObjectDescription
+            {
+                Type = objectType,
+                ConstructorArguments = GetConstructorArguments()
+            };
+
+            _descriptionWriter.Write(objectDescription, context, options);
+
+            return;
+
+            IEnumerable<ConstructorArgumentDescription> GetConstructorArguments()
+            {
+                yield return new ConstructorArgumentDescription
+                {
+                    Type = typeof(string),
+                    Name = "uriString",
+                    Value = uri.OriginalString
+                };
+
+                if (!uri.IsAbsoluteUri)
+                {
+                    yield return new ConstructorArgumentDescription
+                    {
+                        Type = typeof(UriKind),
+                        Name = "uriKind",
+                        Value = UriKind.Relative
+                    };
+                }
+            }
         }
     }
 }

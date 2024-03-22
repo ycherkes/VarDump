@@ -1,6 +1,6 @@
 ﻿# [![Made in Ukraine](https://img.shields.io/badge/made_in-ukraine-ffd700.svg?labelColor=0057b7&style=for-the-badge)](https://stand-with-ukraine.pp.ua) [Stand with the people of Ukraine: How to Help](https://stand-with-ukraine.pp.ua)
 
-VarDump is a utility for serialization runtime objects to C# or Visual Basic string.
+VarDump is a highly customizable  utility for serialization runtime objects to C# or Visual Basic string.
 ===========================================================================================
 
 Developed as a free alternative to [ObjectDumper.NET](https://github.com/thomasgalliker/ObjectDumper), which is not free for commercial use.

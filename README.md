@@ -98,7 +98,7 @@ Console.WriteLine(dictionary.Dump(new DumpOptions()));
 ## Extensibility:
 
 ### With middleware:
-<p align="right"><a href="https://dotnetfiddle.net/hfrbo6">Run .NET fiddle</a></p>
+<p align="right"><a href="https://dotnetfiddle.net/rCxcJR">Run .NET fiddle</a></p>
 
 ```csharp
 using System;
@@ -166,7 +166,7 @@ static ReflectionDescription MaskCardNumber(ReflectionDescription description)
 ```
 
 ### With KnownObjectVisitor:
-<p align="right"><a href="https://dotnetfiddle.net/kScIyR">Run .NET fiddle</a></p>
+<p align="right"><a href="https://dotnetfiddle.net/LsPTTr">Run .NET fiddle</a></p>
 
 ```csharp
 using System;

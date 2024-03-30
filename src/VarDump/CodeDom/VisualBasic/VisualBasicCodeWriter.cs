@@ -6,15 +6,13 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
-using System.Linq;
-using System.Text;
 using VarDump.CodeDom.Common;
 using VarDump.CodeDom.Compiler;
 using VarDump.CodeDom.Resources;
 
 namespace VarDump.CodeDom.VisualBasic;
 
-internal sealed class VBCodeWriter : ICodeWriter
+internal sealed class VisualBasicCodeWriter : ICodeWriter
 {
     private const int MaxLineLength = int.MaxValue;
     private readonly ExposedTabStringIndentedTextWriter _output;
@@ -31,14 +29,13 @@ internal sealed class VBCodeWriter : ICodeWriter
     public string NullToken => "Nothing";
 
 
-    public VBCodeWriter(TextWriter w, CodeWriterOptions o)
+    public VisualBasicCodeWriter(TextWriter w, CodeWriterOptions o)
     {
         _options = o ?? new CodeWriterOptions();
         _output = new ExposedTabStringIndentedTextWriter(w, _options.IndentString);
     }
 
-    public void WriteType(CodeTypeInfo typeInfo) =>
-        OutputType(typeInfo);
+    public void WriteType(CodeTypeInfo typeInfo) => OutputType(typeInfo);
 
     public void WriteFlagsBitwiseOrOperator(IEnumerable<Action> operandActions)
     {
@@ -53,36 +50,33 @@ internal sealed class VBCodeWriter : ICodeWriter
             }
             else
             {
-                Output.Write(' ');
+                _output.Write(' ');
                 OutputBitwiseOrOperator();
-                Output.Write(' ');
+                _output.Write(' ');
                 operand();
             }
         }
     }
 
-    private static void EnsureInDoubleQuotes(ref bool fInDoubleQuotes, StringBuilder b)
+    private void EnsureInDoubleQuotes(ref bool fInDoubleQuotes)
     {
         if (fInDoubleQuotes) return;
-        b.Append("&\"");
+        _output.Write("&\"");
         fInDoubleQuotes = true;
     }
 
-    private static void EnsureNotInDoubleQuotes(ref bool fInDoubleQuotes, StringBuilder b)
+    private void EnsureNotInDoubleQuotes(ref bool fInDoubleQuotes)
     {
         if (!fInDoubleQuotes) return;
-        b.Append('\"');
+        _output.Write('\"');
         fInDoubleQuotes = false;
     }
 
-    public string QuoteSnippetString(string value)
+    private void OutputQuoteSnippetString(string value)
     {
-        StringBuilder b = new StringBuilder(value.Length + 5);
-
         bool fInDoubleQuotes = true;
-        Indentation indentObj = new Indentation(_output, Indent + 1);
 
-        b.Append('\"');
+        _output.Write('\"');
 
         int i = 0;
         while (i < value.Length)
@@ -97,42 +91,42 @@ internal sealed class VBCodeWriter : ICodeWriter
                 case '\u201C':
                 case '\u201D':
                 case '\uFF02':
-                    EnsureInDoubleQuotes(ref fInDoubleQuotes, b);
-                    b.Append(ch);
-                    b.Append(ch);
+                    EnsureInDoubleQuotes(ref fInDoubleQuotes);
+                    _output.Write(ch);
+                    _output.Write(ch);
                     break;
                 case '\r':
-                    EnsureNotInDoubleQuotes(ref fInDoubleQuotes, b);
+                    EnsureNotInDoubleQuotes(ref fInDoubleQuotes);
                     if (i < value.Length - 1 && value[i + 1] == '\n')
                     {
-                        b.Append("&Global.Microsoft.VisualBasic.ChrW(13)&Global.Microsoft.VisualBasic.ChrW(10)");
+                        _output.Write("&Global.Microsoft.VisualBasic.ChrW(13)&Global.Microsoft.VisualBasic.ChrW(10)");
                         i++;
                     }
                     else
                     {
-                        b.Append("&Global.Microsoft.VisualBasic.ChrW(13)");
+                        _output.Write("&Global.Microsoft.VisualBasic.ChrW(13)");
                     }
                     break;
                 case '\t':
-                    EnsureNotInDoubleQuotes(ref fInDoubleQuotes, b);
-                    b.Append("&Global.Microsoft.VisualBasic.ChrW(9)");
+                    EnsureNotInDoubleQuotes(ref fInDoubleQuotes);
+                    _output.Write("&Global.Microsoft.VisualBasic.ChrW(9)");
                     break;
                 case '\0':
-                    EnsureNotInDoubleQuotes(ref fInDoubleQuotes, b);
-                    b.Append("&Global.Microsoft.VisualBasic.ChrW(0)");
+                    EnsureNotInDoubleQuotes(ref fInDoubleQuotes);
+                    _output.Write("&Global.Microsoft.VisualBasic.ChrW(0)");
                     break;
                 case '\n':
-                    EnsureNotInDoubleQuotes(ref fInDoubleQuotes, b);
-                    b.Append("&Global.Microsoft.VisualBasic.ChrW(10)");
+                    EnsureNotInDoubleQuotes(ref fInDoubleQuotes);
+                    _output.Write("&Global.Microsoft.VisualBasic.ChrW(10)");
                     break;
                 case '\u2028':
                 case '\u2029':
-                    EnsureNotInDoubleQuotes(ref fInDoubleQuotes, b);
-                    AppendEscapedChar(b, ch);
+                    EnsureNotInDoubleQuotes(ref fInDoubleQuotes);
+                    AppendEscapedChar(ch);
                     break;
                 default:
-                    EnsureInDoubleQuotes(ref fInDoubleQuotes, b);
-                    b.Append(value[i]);
+                    EnsureInDoubleQuotes(ref fInDoubleQuotes);
+                    _output.Write(value[i]);
                     break;
             }
 
@@ -148,68 +142,67 @@ internal sealed class VBCodeWriter : ICodeWriter
                     && i < value.Length - 1
                     && char.IsLowSurrogate(value[i + 1]))
                 {
-                    b.Append(value[++i]);
+                    _output.Write(value[++i]);
                 }
 
                 if (fInDoubleQuotes)
-                    b.Append('\"');
+                    _output.Write('\"');
                 fInDoubleQuotes = true;
 
-                b.Append("& _ ");
-                b.Append(_output.NewLine);
-                b.Append(indentObj.IndentationString);
-                b.Append('\"');
+                _output.Write("& _ ");
+                _output.Write(_output.NewLine);
+                _output.OutputIndents(Indent + 1);
+                _output.Write('\"');
             }
             ++i;
         }
 
         if (fInDoubleQuotes)
-            b.Append('\"');
-
-        return b.ToString();
+            _output.Write('\"');
     }
 
-    private static void AppendEscapedChar(StringBuilder b, char value)
+    private void AppendEscapedChar(char value)
     {
-        b.Append("&Global.Microsoft.VisualBasic.ChrW(");
-        b.Append(((int)value).ToString(CultureInfo.InvariantCulture));
-        b.Append(")");
+        _output.Write("&Global.Microsoft.VisualBasic.ChrW(");
+        _output.Write(((int)value).ToString(CultureInfo.InvariantCulture));
+        _output.Write(")");
     }
 
     public void WriteNamedArgument(string argumentName, Action value)
     {
-        Output.Write(argumentName);
-        Output.Write(":=");
+        _output.Write(argumentName);
+        _output.Write(":=");
         value();
     }
 
     public void WriteAssign(Action left, Action right)
     {
         left();
-        Output.Write(" = ");
+        _output.Write(" = ");
         right();
     }
 
     public void WriteDefaultValue(CodeTypeInfo typeInfo)
     {
-        Output.Write("CType(Nothing, " + GetTypeOutput(typeInfo) + ")");
+        _output.Write("CType(Nothing, ");
+        TypeOutput(typeInfo);
+        _output.Write(")");
     }
 
     private void OutputBitwiseOrOperator()
     {
-        Output.Write("Or");
+        _output.Write("Or");
     }
 
     private void OutputIdentifier(string ident)
     {
-        Output.Write(VBHelpers.CreateEscapedIdentifier(ident));
+        _output.Write(VisualBasicHelpers.CreateEscapedIdentifier(ident));
     }
 
     public void OutputType(CodeTypeInfo typeInfo)
     {
-        Output.Write(GetTypeOutputWithoutArrayPostFix(typeInfo));
+        OutputTypeWithoutArrayPostFix(typeInfo);
     }
-
 
     private void OutputTypeNamePair(CodeTypeInfo typeInfo, string name)
     {
@@ -218,184 +211,168 @@ internal sealed class VBCodeWriter : ICodeWriter
 
         OutputIdentifier(name);
         OutputArrayPostfix(typeInfo);
-        if (!(typeInfo is CodeEmptyTypeInfo))
+        if (typeInfo is not CodeEmptyTypeInfo)
         {
-            Output.Write(" As ");
+            _output.Write(" As ");
             OutputType(typeInfo);
         }
     }
 
-    private string GetArrayPostfix(CodeTypeInfo typeInfo)
+    private void OutputArrayPostfixInternal(CodeTypeInfo typeInfo)
     {
-        string s = "";
         if (typeInfo.ArrayElementType != null)
         {
             // Recurse up
-            s = GetArrayPostfix(typeInfo.ArrayElementType);
+            OutputArrayPostfixInternal(typeInfo.ArrayElementType);
         }
 
         if (typeInfo.ArrayRank > 0)
         {
-            char[] results = new char[typeInfo.ArrayRank + 1];
-            results[0] = '(';
-            results[typeInfo.ArrayRank] = ')';
+            _output.Write('(');
             for (int i = 1; i < typeInfo.ArrayRank; i++)
             {
-                results[i] = ',';
+                _output.Write(',');
             }
-            s = new string(results) + s;
+            _output.Write(')');
+        }
+    }
+
+    private void OutputArrayPostfixInternal(CodeTypeInfo typeInfo, int size)
+    {
+        if (typeInfo.ArrayElementType != null)
+        {
+            // Recurse up
+            OutputArrayPostfixInternal(typeInfo.ArrayElementType, size);
         }
 
-        return s;
+        if (typeInfo.ArrayRank > 0)
+        {
+            _output.Write('(');
+            _output.Write(size);
+            for (int i = 1; i < typeInfo.ArrayRank; i++)
+            {
+                _output.Write(',');
+                _output.Write(size);
+            }
+            _output.Write(')');
+        }
     }
 
     private void OutputArrayPostfix(CodeTypeInfo typeInfo)
     {
         if (typeInfo.ArrayRank > 0)
         {
-            Output.Write(GetArrayPostfix(typeInfo));
+            OutputArrayPostfixInternal(typeInfo);
         }
     }
 
     public void WritePrimitive(object obj)
     {
-        if (obj is char)
+        switch (obj)
         {
-            Output.Write("Global.Microsoft.VisualBasic.ChrW(" + ((IConvertible)obj).ToInt32(CultureInfo.InvariantCulture).ToString(CultureInfo.InvariantCulture) + ")");
-        }
-        else if (obj is sbyte @sbyte)
-        {
-            Output.Write("CSByte(");
-            Output.Write(@sbyte.ToString(CultureInfo.InvariantCulture));
-            Output.Write(')');
-        }
-        else if (obj is ushort @ushort)
-        {
-            Output.Write(@ushort.ToString(CultureInfo.InvariantCulture));
-            Output.Write("US");
-        }
-        else if (obj is uint u)
-        {
-            Output.Write(u.ToString(CultureInfo.InvariantCulture));
-            Output.Write("UI");
-        }
-        else if (obj is ulong @ulong)
-        {
-            Output.Write(@ulong.ToString(CultureInfo.InvariantCulture));
-            Output.Write("UL");
-        }
-        else
-        {
-            DefaultWritePrimitiveExpression(obj);
+            case char:
+                _output.Write("Global.Microsoft.VisualBasic.ChrW(");
+                _output.Write(((IConvertible)obj).ToInt32(CultureInfo.InvariantCulture).ToString(CultureInfo.InvariantCulture));
+                _output.Write(')');
+                break;
+            case sbyte @sbyte:
+                _output.Write("CSByte(");
+                _output.Write(@sbyte.ToString(CultureInfo.InvariantCulture));
+                _output.Write(')');
+                break;
+            case ushort @ushort:
+                _output.Write(@ushort.ToString(CultureInfo.InvariantCulture));
+                _output.Write("US");
+                break;
+            case uint u:
+                _output.Write(u.ToString(CultureInfo.InvariantCulture));
+                _output.Write("UI");
+                break;
+            case ulong @ulong:
+                _output.Write(@ulong.ToString(CultureInfo.InvariantCulture));
+                _output.Write("UL");
+                break;
+            default:
+                DefaultWritePrimitiveExpression(obj);
+                break;
         }
     }
 
     private void DefaultWritePrimitiveExpression(object obj)
     {
-        if (obj == null)
+        switch (obj)
         {
-            Output.Write(NullToken);
-        }
-        else if (obj is string s)
-        {
-            Output.Write(QuoteSnippetString(s));
-        }
-        else if (obj is char)
-        {
-            Output.Write("'" + obj + "'");
-        }
-        else if (obj is byte b)
-        {
-            Output.Write(b.ToString(CultureInfo.InvariantCulture));
-        }
-        else if (obj is short s1)
-        {
-            Output.Write(s1.ToString(CultureInfo.InvariantCulture));
-        }
-        else if (obj is int i)
-        {
-            Output.Write(i.ToString(CultureInfo.InvariantCulture));
-        }
-        else if (obj is long l)
-        {
-            Output.Write(l.ToString(CultureInfo.InvariantCulture));
-        }
-        else if (obj is float f)
-        {
-            WriteSingleFloatValue(f);
-        }
-        else if (obj is double d)
-        {
-            WriteDoubleValue(d);
-        }
-        else if (obj is decimal @decimal)
-        {
-            WriteDecimalValue(@decimal);
-        }
-        else if (obj is bool b1)
-        {
-            Output.Write(b1 ? "true" : "false");
-        }
-        else
-        {
-            throw new ArgumentException(string.Format(SR.InvalidPrimitiveType, obj.GetType()));
+            case null:
+                _output.Write(NullToken);
+                break;
+            case string s:
+                OutputQuoteSnippetString(s);
+                break;
+            case char:
+                _output.Write('\'');
+                _output.Write(obj);
+                _output.Write('\'');
+                break;
+            case byte b:
+                _output.Write(b.ToString(CultureInfo.InvariantCulture));
+                break;
+            case short s1:
+                _output.Write(s1.ToString(CultureInfo.InvariantCulture));
+                break;
+            case int i:
+                _output.Write(i.ToString(CultureInfo.InvariantCulture));
+                break;
+            case long l:
+                _output.Write(l.ToString(CultureInfo.InvariantCulture));
+                break;
+            case float f:
+                OutputFloatValue(f);
+                break;
+            case double d:
+                OutputDoubleValue(d);
+                break;
+            case decimal @decimal:
+                OutputDecimalValue(@decimal);
+                break;
+            case bool b1:
+                _output.Write(b1 ? "true" : "false");
+                break;
+            default:
+                throw new ArgumentException(string.Format(SR.InvalidPrimitiveType, obj.GetType()));
         }
     }
 
     public void WriteArrayCreate(CodeTypeInfo typeInfo, IEnumerable<Action> initializers, int size = 0)
     {
-        if (!(typeInfo is CodeEmptyTypeInfo))
+        if (typeInfo is not CodeEmptyTypeInfo)
         {
-            Output.Write("New ");
+            _output.Write("New ");
         }
 
         using var initializersEnumerator = initializers.GetEnumerator();
 
         if (initializersEnumerator.MoveNext())
         {
-            if (!(typeInfo is CodeEmptyTypeInfo))
+            if (typeInfo is not CodeEmptyTypeInfo)
             {
-                string typeName = GetTypeOutput(typeInfo);
-                Output.Write(typeName);
+                TypeOutput(typeInfo);
             }
 
-            Output.Write("{");
-            Output.WriteLine("");
+            _output.Write("{");
+            _output.WriteLine("");
             OutputActions(initializersEnumerator, newlineBetweenItems: true, newLineContinuation: false);
-            Output.WriteLine("");
-            Output.Write('}');
+            _output.WriteLine("");
+            _output.Write('}');
         }
         else
         {
-            string typeName = GetTypeOutput(typeInfo);
+            OutputTypeWithoutArrayPostFix(typeInfo);
+            OutputArrayPostfixInternal(typeInfo, size - 1);
 
-            int index = typeName.IndexOf('(');
-            if (index == -1)
-            {
-                Output.Write(typeName);
-                Output.Write('(');
-            }
-            else
-            {
-                Output.Write(typeName.Substring(0, index + 1));
-            }
-
-            // The tricky thing is we need to declare the size - 1
-            Output.Write(size - 1);
-
-            if (index == -1)
-            {
-                Output.Write(')');
-            }
-            else
-            {
-                Output.Write(typeName.Substring(index + 1));
-            }
-
-            Output.Write(" {}");
+            _output.Write(" {}");
         }
     }
-    
+
     public void OutputActions(IEnumerable<Action> actions, bool newlineBetweenItems,
         bool newLineContinuation = true)
     {
@@ -422,7 +399,7 @@ internal sealed class VBCodeWriter : ICodeWriter
                 if (newlineBetweenItems)
                     ContinueOnNewLine(",", newLineContinuation);
                 else
-                    Output.Write(", ");
+                    _output.Write(", ");
             }
 
             actions.Current?.Invoke();
@@ -432,21 +409,21 @@ internal sealed class VBCodeWriter : ICodeWriter
 
     public void WriteArrayDimension(IEnumerable<Action> initializers)
     {
-        Output.Write("{");
-        Output.WriteLine();
+        _output.Write("{");
+        _output.WriteLine();
         OutputActions(initializers, newlineBetweenItems: true, newLineContinuation: false);
-        Output.WriteLine();
-        Output.Write("}");
+        _output.WriteLine();
+        _output.Write("}");
     }
-    
+
     public void WriteCast(CodeTypeInfo typeInfo, Action action)
     {
-        Output.Write("CType(");
+        _output.Write("CType(");
         action();
-        Output.Write(", ");
+        _output.Write(", ");
         OutputType(typeInfo);
         OutputArrayPostfix(typeInfo);
-        Output.Write(')');
+        _output.Write(')');
     }
 
     public void WriteFieldReference(string fieldName, Action targetObjectAction)
@@ -454,106 +431,104 @@ internal sealed class VBCodeWriter : ICodeWriter
         if (targetObjectAction != null)
         {
             targetObjectAction();
-            Output.Write('.');
+            _output.Write('.');
         }
         OutputIdentifier(fieldName);
     }
 
-    
-    public void WriteSingleFloatValue(float s)
+    private void OutputFloatValue(float s)
     {
         if (float.IsNaN(s))
         {
-            Output.Write("Single.NaN");
+            _output.Write("Single.NaN");
         }
         else if (float.IsNegativeInfinity(s))
         {
-            Output.Write("Single.NegativeInfinity");
+            _output.Write("Single.NegativeInfinity");
         }
         else if (float.IsPositiveInfinity(s))
         {
-            Output.Write("Single.PositiveInfinity");
+            _output.Write("Single.PositiveInfinity");
         }
         else
         {
-            Output.Write(s.ToString(CultureInfo.InvariantCulture));
-            Output.Write('!');
+            _output.Write(s.ToString(CultureInfo.InvariantCulture));
+            _output.Write('!');
         }
     }
 
-    public void WriteDoubleValue(double d)
+    private void OutputDoubleValue(double d)
     {
         if (double.IsNaN(d))
         {
-            Output.Write("Double.NaN");
+            _output.Write("Double.NaN");
         }
         else if (double.IsNegativeInfinity(d))
         {
-            Output.Write("Double.NegativeInfinity");
+            _output.Write("Double.NegativeInfinity");
         }
         else if (double.IsPositiveInfinity(d))
         {
-            Output.Write("Double.PositiveInfinity");
+            _output.Write("Double.PositiveInfinity");
         }
         else
         {
-            Output.Write(d.ToString("R", CultureInfo.InvariantCulture));
+            _output.Write(d.ToString("R", CultureInfo.InvariantCulture));
             // always mark a double as being a double in case we have no decimal portion (e.g write 1D instead of 1 which is an int)
-            Output.Write('R');
+            _output.Write('R');
         }
     }
 
-    public void WriteDecimalValue(decimal d)
+    private void OutputDecimalValue(decimal d)
     {
-        Output.Write(d.ToString(CultureInfo.InvariantCulture));
-        Output.Write('D');
+        _output.Write(d.ToString(CultureInfo.InvariantCulture));
+        _output.Write('D');
     }
 
-    public void WriteVariableReference(string variableName) =>
-        OutputIdentifier(variableName);
+    public void WriteVariableReference(string variableName) => OutputIdentifier(variableName);
 
     public void WriteMethodInvoke(Action methodReferenceAction, IEnumerable<Action> parametersActions)
     {
         methodReferenceAction();
-        Output.Write('(');
+        _output.Write('(');
         OutputActions(parametersActions, newlineBetweenItems: false);
-        Output.Write(')');
+        _output.Write(')');
     }
-    
+
     public void WriteMethodReference(Action targetObject, string methodName, params CodeTypeInfo[] typeParameters)
     {
         if (targetObject != null)
         {
             targetObject();
-            Output.Write('.');
+            _output.Write('.');
         }
         OutputIdentifier(methodName);
 
         if (typeParameters.Length > 0)
         {
-            Output.Write(GetTypeArgumentsOutput(typeParameters));
+            OutputTypeArguments(typeParameters);
         }
     }
 
     public void WriteObjectCreate(CodeTypeInfo typeInfo, IEnumerable<Action> parametersActions)
     {
-        Output.Write("New ");
+        _output.Write("New ");
         OutputType(typeInfo);
 
         using var parametersEnumerator = parametersActions.GetEnumerator();
 
         // always write out the () to disambiguate cases like "New System.Random().Next(x,y)"
-        Output.Write('(');
+        _output.Write('(');
         if (parametersEnumerator.MoveNext())
         {
             OutputActions(parametersEnumerator, newlineBetweenItems: false);
         }
-        Output.Write(')');
+        _output.Write(')');
     }
 
     public void WriteObjectCreateAndInitialize(CodeTypeInfo typeInfo, IEnumerable<Action> parametersActions, IEnumerable<Action> initializeActions)
     {
-        Output.Write("New ");
+        _output.Write("New ");
         OutputType(typeInfo);
 
         using var parametersEnumerator = parametersActions.GetEnumerator();
@@ -565,12 +540,12 @@ internal sealed class VBCodeWriter : ICodeWriter
         if (parametersExist || !initializeExist)
         {
             // always write out the () to disambiguate cases like "New System.Random().Next(x,y)"
-            Output.Write('(');
+            _output.Write('(');
             if (parametersExist)
             {
                 OutputActions(parametersEnumerator, newlineBetweenItems: false);
             }
-            Output.Write(')');
+            _output.Write(')');
         }
 
         if (!initializeExist)
@@ -578,45 +553,45 @@ internal sealed class VBCodeWriter : ICodeWriter
             return;
         }
 
-        Output.Write(typeInfo switch
+        _output.Write(typeInfo switch
         {
             CodeEmptyTypeInfo => "With ",
             CodeCollectionTypeInfo => " From ",
             _ => " With "
         });
-        
-        Output.WriteLine('{');
+
+        _output.WriteLine('{');
         OutputActions(initializeEnumerator, newlineBetweenItems: true, newLineContinuation: false);
-        Output.WriteLine();
-        Output.Write("}");
+        _output.WriteLine();
+        _output.Write('}');
     }
 
     public void WriteValueTupleCreate(IEnumerable<Action> actions)
     {
-        Output.Write('(');
+        _output.Write('(');
         OutputActions(actions, newlineBetweenItems: false);
-        Output.Write(')');
+        _output.Write(')');
     }
 
     public void WriteImplicitKeyValuePairCreate(Action keyAction, Action valueAction)
     {
-        Output.WriteLine('{');
+        _output.WriteLine('{');
         OutputActions([keyAction, valueAction], newlineBetweenItems: true, false);
-        Output.WriteLine();
-        Output.Write('}');
+        _output.WriteLine();
+        _output.Write('}');
     }
 
     public void WriteSeparator()
     {
-        Output.Write(", ");
+        _output.Write(", ");
     }
 
     public void WriteLambdaExpression(Action lambda, Action[] parameters)
     {
-        Output.Write("Function (");
+        _output.Write("Function (");
         bool first = true;
 
-        foreach (Action current in parameters)
+        foreach (var current in parameters)
         {
             if (first)
             {
@@ -624,145 +599,165 @@ internal sealed class VBCodeWriter : ICodeWriter
             }
             else
             {
-                Output.Write(", ");
+                _output.Write(", ");
             }
             current();
         }
 
-        Output.Write(')');
-        Output.Write(" ");
+        _output.Write(')');
+        _output.Write(' ');
         lambda();
     }
-    
+
     public void WriteComment(string comment, bool noNewLine)
     {
-        const string commentLineStart = "'";
-        Output.Write(commentLineStart);
+        const char commentLineStart = '\'';
+        _output.Write(commentLineStart);
         string value = comment;
         for (int i = 0; i < value.Length; i++)
         {
-            Output.Write(value[i]);
+            _output.Write(value[i]);
 
             if (value[i] == '\r')
             {
                 if (i < value.Length - 1 && value[i + 1] == '\n')
                 { // if next char is '\n', skip it
-                    Output.Write('\n');
+                    _output.Write('\n');
                     i++;
                 }
-                ((ExposedTabStringIndentedTextWriter)Output).InternalOutputTabs();
-                Output.Write(commentLineStart);
+                ((ExposedTabStringIndentedTextWriter)Output).OutputIndents();
+                _output.Write(commentLineStart);
             }
             else if (value[i] == '\n')
             {
-                ((ExposedTabStringIndentedTextWriter)Output).InternalOutputTabs();
-                Output.Write(commentLineStart);
+                ((ExposedTabStringIndentedTextWriter)Output).OutputIndents();
+                _output.Write(commentLineStart);
             }
             else if (value[i] == '\u2028' || value[i] == '\u2029' || value[i] == '\u0085')
             {
-                Output.Write(commentLineStart);
+                _output.Write(commentLineStart);
             }
         }
         if (!noNewLine)
         {
-            Output.WriteLine();
+            _output.WriteLine();
         }
     }
 
     public void WriteVariableDeclarationStatement(CodeTypeInfo typeInfo, string variableName, Action initAction)
     {
-        Output.Write("Dim ");
+        _output.Write("Dim ");
 
         OutputTypeNamePair(typeInfo, variableName);
 
         if (initAction != null)
         {
-            Output.Write(" = ");
+            _output.Write(" = ");
             initAction();
         }
 
-        Output.WriteLine();
+        _output.WriteLine();
     }
 
     public void WritePropertyReference(string propertyName, Action targetObjectAction)
     {
         targetObjectAction?.Invoke();
-        Output.Write('.');
+        _output.Write('.');
         OutputIdentifier(propertyName);
     }
-    
+
     public void WriteTypeOf(CodeTypeInfo typeInfo)
     {
-        Output.Write("GetType(");
-        Output.Write(GetTypeOutput(typeInfo));
-        Output.Write(')');
+        _output.Write("GetType(");
+        TypeOutput(typeInfo);
+        _output.Write(')');
     }
 
-    private string GetBaseTypeOutput(CodeTypeInfo typeInfo, bool preferBuiltInTypes = true)
+    private void BaseTypeOutput(CodeTypeInfo typeInfo, bool preferBuiltInTypes = true)
     {
-        string s = typeInfo.BaseType;
+        string baseType = typeInfo.BaseType;
 
-        if (s == "System.Nullable`1" && typeInfo.TypeArguments.Count > 0)
+        if (baseType == "System.Nullable`1" && typeInfo.TypeArguments.Count > 0)
         {
-            return GetBaseTypeOutput(typeInfo.TypeArguments[0]) + "?";
+            BaseTypeOutput(typeInfo.TypeArguments[0]);
+            _output.Write('?');
+            return;
+        }
+
+        if (typeInfo is CodeEmptyTypeInfo)
+        {
+            return;
+        }
+
+        if (baseType.Length == 0)
+        {
+            _output.Write("Void");
+            return;
         }
 
         if (preferBuiltInTypes)
         {
-            if (typeInfo is CodeEmptyTypeInfo)
+            switch (baseType)
             {
-                return string.Empty;
-            }
-
-            if (s.Length == 0)
-            {
-                return "Void";
-            }
-
-            string lowerCaseString = s.ToLowerInvariant();
-
-            switch (lowerCaseString)
-            {
-                case "system.byte":
-                    return "Byte";
-                case "system.sbyte":
-                    return "SByte";
-                case "system.int16":
-                    return "Short";
-                case "system.int32":
-                    return "Integer";
-                case "system.int64":
-                    return "Long";
-                case "system.uint16":
-                    return "UShort";
-                case "system.uint32":
-                    return "UInteger";
+                case "System.Byte":
+                    _output.Write("Byte");
+                    return;
+                case "System.SByte":
+                    _output.Write("SByte");
+                    return;
+                case "System.Int16":
+                    _output.Write("Short");
+                    return;
+                case "System.Int32":
+                    _output.Write("Integer");
+                    return;
+                case "System.Int64":
+                    _output.Write("Long");
+                    return;
+                case "System.UInt16":
+                    _output.Write("UShort");
+                    return;
+                case "System.UInt32":
+                    _output.Write("UInteger");
+                    return;
                 case "system.uint64":
-                    return "ULong";
-                case "system.string":
-                    return "String";
-                case "system.datetime":
-                    return "Date";
-                case "system.decimal":
-                    return "Decimal";
-                case "system.single":
-                    return "Single";
-                case "system.double":
-                    return "Double";
-                case "system.boolean":
-                    return "Boolean";
-                case "system.char":
-                    return "Char";
-                case "system.object":
-                    return "Object";
+                    _output.Write("ULong");
+                    return;
+                case "System.String":
+                    _output.Write("String");
+                    return;
+                case "System.DateTime":
+                    _output.Write("Date");
+                    return;
+                case "System.Decimal":
+                    _output.Write("Decimal");
+                    return;
+                case "System.Single":
+                    _output.Write("Single");
+                    return;
+                case "System.Double":
+                    _output.Write("Double");
+                    return;
+                case "System.Boolean":
+                    _output.Write("Boolean");
+                    return;
+                case "System.Char":
+                    _output.Write("Char");
+                    return;
+                case "System.Object":
+                    _output.Write("Object");
+                    return;
             }
         }
 
-        var sb = new StringBuilder(s.Length + 10);
-
-        string baseType = _options.UseFullTypeName
-            ? typeInfo.BaseType
-            : typeInfo.BaseType.Split('.').Last().Split('+').Last();
+        if (!_options.UseFullTypeName)
+        {
+            var lastIndex0 = baseType.LastIndexOfAny(['.', '+']);
+            if (lastIndex0 >= 0)
+            {
+                baseType = baseType.Substring(lastIndex0 + 1);
+            }
+        }
 
         int lastIndex = 0;
         int currentTypeArgStart = 0;
@@ -772,14 +767,14 @@ internal sealed class VBCodeWriter : ICodeWriter
             {
                 case '+':
                 case '.':
-                    sb.Append(VBHelpers.CreateEscapedIdentifier(baseType.Substring(lastIndex, i - lastIndex)));
-                    sb.Append('.');
+                    _output.Write(VisualBasicHelpers.CreateEscapedIdentifier(baseType.Substring(lastIndex, i - lastIndex)));
+                    _output.Write('.');
                     i++;
                     lastIndex = i;
                     break;
 
                 case '`':
-                    sb.Append(VBHelpers.CreateEscapedIdentifier(baseType.Substring(lastIndex, i - lastIndex)));
+                    _output.Write(VisualBasicHelpers.CreateEscapedIdentifier(baseType.Substring(lastIndex, i - lastIndex)));
                     i++;    // skip the '
                     int numTypeArgs = 0;
                     while (i < baseType.Length && baseType[i] >= '0' && baseType[i] <= '9')
@@ -788,14 +783,14 @@ internal sealed class VBCodeWriter : ICodeWriter
                         i++;
                     }
 
-                    GetTypeArgumentsOutput(typeInfo.TypeArguments, currentTypeArgStart, numTypeArgs, sb);
+                    OutputTypeArguments(typeInfo.TypeArguments, currentTypeArgStart, numTypeArgs);
                     currentTypeArgStart += numTypeArgs;
 
                     // Arity can be in the middle of a nested type name, so we might have a . or + after it. 
                     // Skip it if so. 
                     if (i < baseType.Length && (baseType[i] == '+' || baseType[i] == '.'))
                     {
-                        sb.Append('.');
+                        _output.Write('.');
                         i++;
                     }
 
@@ -806,38 +801,29 @@ internal sealed class VBCodeWriter : ICodeWriter
 
         if (lastIndex < baseType.Length)
         {
-            sb.Append(VBHelpers.CreateEscapedIdentifier(baseType.Substring(lastIndex)));
+            _output.Write(VisualBasicHelpers.CreateEscapedIdentifier(baseType.Substring(lastIndex)));
         }
-
-        return sb.ToString();
     }
 
-    private string GetTypeOutputWithoutArrayPostFix(CodeTypeInfo typeInfo)
+    private void OutputTypeWithoutArrayPostFix(CodeTypeInfo typeInfo)
     {
-        StringBuilder sb = new StringBuilder();
-
         while (typeInfo.ArrayElementType != null)
         {
             typeInfo = typeInfo.ArrayElementType;
         }
 
-        sb.Append(GetBaseTypeOutput(typeInfo));
-        return sb.ToString();
+        BaseTypeOutput(typeInfo);
     }
 
-    private string GetTypeArgumentsOutput(CodeTypeInfo[] typeArguments)
+    private void OutputTypeArguments(CodeTypeInfo[] typeArguments)
     {
-        typeArguments ??= [];
-        StringBuilder sb = new StringBuilder(128);
-        GetTypeArgumentsOutput(typeArguments, 0, typeArguments.Length, sb);
-        return sb.ToString();
+        OutputTypeArguments(typeArguments, 0, typeArguments.Length);
     }
 
-
-    private void GetTypeArgumentsOutput(IReadOnlyList<CodeTypeInfo> typeArguments, int start, int length, StringBuilder sb)
+    private void OutputTypeArguments(IReadOnlyList<CodeTypeInfo> typeArguments, int start, int length)
     {
         typeArguments ??= [];
-        sb.Append("(Of ");
+        _output.Write("(Of ");
         bool first = true;
         for (int i = start; i < start + length; i++)
         {
@@ -847,32 +833,30 @@ internal sealed class VBCodeWriter : ICodeWriter
             }
             else
             {
-                sb.Append(", ");
+                _output.Write(", ");
             }
 
             // it's possible that we call GetTypeArgumentsOutput with an empty typeArguments collection.  This is the case
             // for open types, so we want to just output the brackets and commas. 
             if (i < typeArguments.Count)
-                sb.Append(GetTypeOutput(typeArguments[i]));
+                TypeOutput(typeArguments[i]);
         }
-        sb.Append(')');
+        _output.Write(')');
     }
 
-    public string GetTypeOutput(CodeTypeInfo typeInfo)
+    private void TypeOutput(CodeTypeInfo typeInfo)
     {
-        string s = string.Empty;
-        s += GetTypeOutputWithoutArrayPostFix(typeInfo);
+        OutputTypeWithoutArrayPostFix(typeInfo);
 
         if (typeInfo.ArrayRank > 0)
         {
-            s += GetArrayPostfix(typeInfo);
+            OutputArrayPostfix(typeInfo);
         }
-        return s;
     }
 
     public void ContinueOnNewLine(string st, bool newLineContinuation = true)
     {
-        Output.Write(st);
-        Output.WriteLine(newLineContinuation ? " _" : "");
+        _output.Write(st);
+        _output.WriteLine(newLineContinuation ? " _" : "");
     }
 }

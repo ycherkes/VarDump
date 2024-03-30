@@ -30,7 +30,7 @@ internal static class ReflectionUtils
     {
         var result = ComposeVariableName(type, GetFormattedVisualBasicTypeName);
 
-        if (VBHelpers.IsKeyword(result) || string.Equals(type.Name, result, StringComparison.OrdinalIgnoreCase))
+        if (VisualBasicHelpers.IsKeyword(result) || string.Equals(type.Name, result, StringComparison.OrdinalIgnoreCase))
         {
             result += "Value";
         }

@@ -9,7 +9,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "VarDump.UnitTests", "test\V
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "VarDump.Extensions", "src\VarDump.Extensions\VarDump.Extensions.csproj", "{8A369FCC-4E46-4EE2-AFEB-0904CD83A9FE}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "VarDump.Extensions.UnitTests", "test\VarDump.Extensions.UnitTests\VarDump.Extensions.UnitTests.csproj", "{15B52F38-0351-4306-8A14-349B46655C54}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "VarDump.Extensions.UnitTests", "test\VarDump.Extensions.UnitTests\VarDump.Extensions.UnitTests.csproj", "{15B52F38-0351-4306-8A14-349B46655C54}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "VarDump.Performance", "perf\VarDump.Performance\VarDump.Performance.csproj", "{42B4A337-5F8C-4BA8-A797-B8B67863BEEB}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -33,6 +35,10 @@ Global
 		{15B52F38-0351-4306-8A14-349B46655C54}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{15B52F38-0351-4306-8A14-349B46655C54}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{15B52F38-0351-4306-8A14-349B46655C54}.Release|Any CPU.Build.0 = Release|Any CPU
+		{42B4A337-5F8C-4BA8-A797-B8B67863BEEB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{42B4A337-5F8C-4BA8-A797-B8B67863BEEB}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{42B4A337-5F8C-4BA8-A797-B8B67863BEEB}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{42B4A337-5F8C-4BA8-A797-B8B67863BEEB}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

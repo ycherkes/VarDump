@@ -337,7 +337,9 @@ internal sealed class CSharpCodeWriter : ICodeWriter
                 break;
 
             case char:
-                _output.Write("'" + obj + "'");
+                _output.Write('\'');
+                _output.Write(obj);
+                _output.Write('\'');
                 break;
 
             case byte b:
@@ -674,7 +676,6 @@ internal sealed class CSharpCodeWriter : ICodeWriter
 
     private void OutputTypeArguments(CodeTypeInfo[] typeArguments)
     {
-        typeArguments ??= [];
         OutputTypeArguments(typeArguments, 0, typeArguments.Length);
     }
 

@@ -28,6 +28,22 @@ public class ArraySpec
     }
 
     [Fact]
+    public void DumpEmptyArrayCSharp()
+    {
+        var array = new int[0, 3];
+
+        var dumper = new CSharpDumper();
+
+        var result = dumper.Dump(array);
+
+        Assert.Equal(
+            """
+            var arrayOfInt = new int[0, 0];
+            
+            """, result);
+    }
+
+    [Fact]
     public void DumpImmutableArrayOfArraysCSharp()
     {
         var array = new[] { new[] { 1 } }.ToImmutableArray();
@@ -147,6 +163,22 @@ public class ArraySpec
                 }
             }
 
+            """, result);
+    }
+
+    [Fact]
+    public void DumpEmptyArrayVb()
+    {
+        var array = new int[0, 3];
+
+        var dumper = new VisualBasicDumper();
+
+        var result = dumper.Dump(array);
+
+        Assert.Equal(
+            """
+            Dim arrayOfInteger = New Integer(0, 0) {}
+            
             """, result);
     }
 

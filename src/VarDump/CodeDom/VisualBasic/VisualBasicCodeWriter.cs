@@ -251,7 +251,7 @@ internal sealed class VisualBasicCodeWriter : ICodeWriter
             _output.Write(size);
             for (int i = 1; i < typeInfo.ArrayRank; i++)
             {
-                _output.Write(',');
+                _output.Write(", ");
                 _output.Write(size);
             }
             _output.Write(')');
@@ -367,7 +367,7 @@ internal sealed class VisualBasicCodeWriter : ICodeWriter
         else
         {
             OutputTypeWithoutArrayPostFix(typeInfo);
-            OutputArrayPostfixInternal(typeInfo, size - 1);
+            OutputArrayPostfixInternal(typeInfo, size);
 
             _output.Write(" {}");
         }

@@ -3,7 +3,6 @@
 BenchmarkRunner.Run(typeof(Program).Assembly);
 
 //using VarDump;
-//using VarDump.Visitor;
 
 //var o = new
 //{
@@ -46,7 +45,7 @@ BenchmarkRunner.Run(typeof(Program).Assembly);
 
 //using var streamWriter = new StreamWriter(Stream.Null);
 
-//new CSharpDumper(new DumpOptions { CacheIndentation = true }).Dump(data, streamWriter);
+//new CSharpDumper().Dump(data, streamWriter);
 
 //----------------------------------------------------
 

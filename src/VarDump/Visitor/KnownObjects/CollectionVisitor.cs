@@ -146,7 +146,7 @@ internal sealed class CollectionVisitor : IKnownObjectVisitor
 
         if (type.IsArray || isImmutableOrFrozen || !type.IsPublic || !isCollection)
         {
-            if (type.IsArray && ((Array)enumerable).Rank > 1)
+            if (type.IsArray && ((Array)enumerable).Rank > 1 && ((Array)enumerable).Length > 0)
             {
                 items = ChunkMultiDimensionalArrayExpression((Array)enumerable, items);
             }
@@ -218,7 +218,7 @@ internal sealed class CollectionVisitor : IKnownObjectVisitor
 
         var typeInfo = new CodeAnonymousTypeInfo { ArrayRank = 1 };
 
-        if (type.IsArray && ((Array)enumerable).Rank > 1)
+        if (type.IsArray && ((Array)enumerable).Rank > 1 && ((Array)enumerable).Length > 0)
         {
             typeInfo.ArrayRank = ((Array)enumerable).Rank;
             items = ChunkMultiDimensionalArrayExpression((Array)enumerable, items);

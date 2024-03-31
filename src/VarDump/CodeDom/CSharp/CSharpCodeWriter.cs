@@ -160,6 +160,11 @@ internal sealed class CSharpCodeWriter : ICodeWriter
 
             _output.Write('[');
             _output.Write(size);
+            for (int i = 0; i < typeInfo.ArrayRank - 1; i++)
+            {
+                _output.Write(", ");
+                _output.Write(size);
+            }
             _output.Write(']');
 
             int nestedArrayDepth = typeInfo.NestedArrayDepth;

@@ -30,7 +30,7 @@
   </ItemGroup>
   
   <ItemGroup>
-    <PackageReference Include="VarDump" Version="1.0.1" />
+    <PackageReference Include="VarDump" Version="1.0.2" />
   </ItemGroup>
 
 </Project>

@@ -186,10 +186,8 @@ internal static class CSharpHelpers
         {
             return false;
         }
-        else
-        {
-            return value[0] == '_' && value[1] == '_' && value[2] != '_';
-        }
+
+        return value[0] == '_' && value[1] == '_' && value[2] != '_';
     }
 
     internal static bool IsValidTypeNameOrIdentifier(string value, bool isTypeName)

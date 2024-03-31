@@ -36,17 +36,9 @@ public class CodeTypeInfo
         }
     }
 
-    public CodeTypeInfo(string typeName)
+    private CodeTypeInfo(string typeName)
     {
         Initialize(typeName);
-    }
-
-    public CodeTypeInfo(string typeName, params CodeTypeInfo[] typeArguments) : this(typeName)
-    {
-        if (typeArguments is { Length: > 0 })
-        {
-            TypeArguments.AddRange(typeArguments);
-        }
     }
 
     public CodeTypeInfo(CodeTypeInfo arrayType, int rank)

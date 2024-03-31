@@ -8,11 +8,11 @@ using VarDump.CodeDom.CSharp;
 
 namespace VarDump.CodeDom.VisualBasic;
 
-internal static class VBHelpers
+internal static class VisualBasicHelpers
 {
     private static readonly HashSet<string> Lookup;
 
-    static VBHelpers()
+    static VisualBasicHelpers()
     {
         Lookup = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
         for (int i = 0; i < Keywords.Length; i++)

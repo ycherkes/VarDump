@@ -51,7 +51,7 @@ public sealed class VisualBasicDumper : IDumper
             IndentString = _options.IndentString
         };
 
-        ICodeWriter codeWriter = new VBCodeWriter(textWriter, codeWriterOptions);
+        ICodeWriter codeWriter = new VisualBasicCodeWriter(textWriter, codeWriterOptions);
 
         var objectVisitor = new ObjectVisitor(_options, codeWriter);
 

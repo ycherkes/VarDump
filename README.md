@@ -8,7 +8,7 @@ Developed as a free alternative to [ObjectDumper.NET](https://github.com/thomasg
 [![nuget version](https://img.shields.io/badge/Nuget-v1.0.3-blue)](https://www.nuget.org/packages/VarDump)
 [![nuget downloads](https://img.shields.io/nuget/dt/VarDump?label=Downloads)](https://www.nuget.org/packages/VarDump)
 
-## C# & VB Dumper:
+### C# & VB Dumper:
 <p align="right"><a href="https://dotnetfiddle.net/vI6Wq4">Run .NET fiddle</a></p>
 
 ```csharp
@@ -21,7 +21,7 @@ Console.WriteLine(cs);
 var vb = new VisualBasicDumper().Dump(anonymousObject);
 Console.WriteLine(vb);
 ```
-## C# & VB Dumper, how to use DumpOptions:
+### C# & VB Dumper, how to use DumpOptions:
 <p align="right"><a href="https://dotnetfiddle.net/p4oIKX">Run .NET fiddle</a></p>
 
 ```csharp
@@ -51,13 +51,14 @@ class Person
 }
 ```
 
-## Object Extension methods:
+## To dump with extension methods, please install a separate [VarDump.Extensions](https://www.nuget.org/packages/VarDump.Extensions) package.
+
+### Dump Extension methods:
 <p align="right"><a href="https://dotnetfiddle.net/n9kjiF">Run .NET fiddle</a></p>
 
 ```csharp
 using System;
 using System.Linq;
-using VarDump.Visitor;
 
 var dictionary = new[]
 {
@@ -68,16 +69,15 @@ var dictionary = new[]
     }
 }.ToDictionary(x => x.Name, x => x);
 
-Console.WriteLine(dictionary.Dump(new DumpOptions()));
+Console.WriteLine(dictionary.Dump());
 ```
 
-## Object Extension methods, how to switch default dumper to VB:
+### Dump Extension methods, how to switch default dumper to VB:
 <p align="right"><a href="https://dotnetfiddle.net/OGCcrk">Run .NET fiddle</a></p>
 
 ```csharp
 using System;
 using System.Linq;
-using VarDump.Visitor;
 
 VarDumpExtensions.VarDumpFactory = VarDumpFactories.VisualBasic;
 
@@ -90,7 +90,7 @@ var dictionary = new[]
     }
 }.ToDictionary(x => x.Name, x => x);
 
-Console.WriteLine(dictionary.Dump(new DumpOptions()));
+Console.WriteLine(dictionary.Dump());
 ```
 
 ## Extensibility:

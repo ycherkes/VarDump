@@ -6,20 +6,24 @@
     <Nullable>enable</Nullable>
     <LangVersion>latest</LangVersion>
     <AssemblyName>VarDump.Extensions</AssemblyName>
-      <AssemblyVersion>1.0.2</AssemblyVersion>
-      <FileVersion>1.0.2</FileVersion>
-      <PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
-      <Copyright>Copyright $([System.DateTime]::Now.Year) Yevhen Cherkes</Copyright>
-      <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
-      <Title>VarDump.Extensions</Title>
-      <Version>1.0.2</Version>
-      <Description>Extension methods for simplifying the usage of the VarDump library.</Description>
-      <PackageProjectUrl>https://github.com/ycherkes/VarDump</PackageProjectUrl>
-      <PackageReadmeFile>README.md</PackageReadmeFile>
-      <RepositoryUrl>https://github.com/ycherkes/VarDump.git</RepositoryUrl>
-      <RepositoryType>git</RepositoryType>
-      <PackageTags>dump;dumpobject;c#;visulabasic;debug</PackageTags>
-      <NeutralLanguage>en</NeutralLanguage>
+    <AssemblyVersion>1.0.3</AssemblyVersion>
+    <FileVersion>1.0.3</FileVersion>
+    <PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
+    <Copyright>Copyright $([System.DateTime]::Now.Year) Yevhen Cherkes</Copyright>
+    <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
+    <Title>VarDump.Extensions</Title>
+    <Version>1.0.3</Version>
+    <Description>Extension methods for simplifying the usage of the VarDump library.</Description>
+    <PackageProjectUrl>https://github.com/ycherkes/VarDump</PackageProjectUrl>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+    <RepositoryUrl>https://github.com/ycherkes/VarDump.git</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
+    <PackageTags>dump;dumpobject;c#;visulabasic;debug</PackageTags>
+    <NeutralLanguage>en</NeutralLanguage>
+	<PublishRepositoryUrl>true</PublishRepositoryUrl>
+	<EmbedUntrackedSources>true</EmbedUntrackedSources>
+	<AllowedOutputExtensionsInPackageBuildOutputFolder>$(AllowedOutputExtensionsInPackageBuildOutputFolder);.pdb</AllowedOutputExtensionsInPackageBuildOutputFolder>
+	<Authors>YevhenCherkes</Authors>
   </PropertyGroup>
 
   <ItemGroup>
@@ -30,7 +34,8 @@
   </ItemGroup>
   
   <ItemGroup>
-    <PackageReference Include="VarDump" Version="1.0.2" />
+    <PackageReference Include="VarDump" Version="1.0.3" />
+	<PackageReference Include="Microsoft.SourceLink.GitHub" Version="8.0.0" PrivateAssets="All" />
   </ItemGroup>
 
 </Project>

@@ -5,7 +5,7 @@ VarDump is a highly customizable  utility for serialization runtime objects to C
 
 Developed as a free alternative to [ObjectDumper.NET](https://github.com/thomasgalliker/ObjectDumper), which is not free for commercial use.
 
-[![nuget version](https://img.shields.io/badge/Nuget-v1.0.2-blue)](https://www.nuget.org/packages/VarDump)
+[![nuget version](https://img.shields.io/badge/Nuget-v1.0.3-blue)](https://www.nuget.org/packages/VarDump)
 [![nuget downloads](https://img.shields.io/nuget/dt/VarDump?label=Downloads)](https://www.nuget.org/packages/VarDump)
 
 ## C# & VB Dumper:
@@ -57,7 +57,6 @@ class Person
 ```csharp
 using System;
 using System.Linq;
-using VarDump.Extensions;
 using VarDump.Visitor;
 
 var dictionary = new[]
@@ -78,7 +77,6 @@ Console.WriteLine(dictionary.Dump(new DumpOptions()));
 ```csharp
 using System;
 using System.Linq;
-using VarDump.Extensions;
 using VarDump.Visitor;
 
 VarDumpExtensions.VarDumpFactory = VarDumpFactories.VisualBasic;

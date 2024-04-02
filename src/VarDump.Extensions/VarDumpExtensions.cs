@@ -1,6 +1,5 @@
-﻿using VarDump.Visitor;
-
-namespace VarDump.Extensions;
+﻿using VarDump;
+using VarDump.Visitor;
 
 public static class VarDumpExtensions
 {
@@ -21,10 +20,4 @@ public static class VarDumpExtensions
     {
         VarDumpFactory(options).Dump(obj, textWriter);
     }
-}
-
-public class VarDumpFactories
-{
-    public static readonly Func<DumpOptions, IDumper> CSharp = options => new CSharpDumper(options);
-    public static readonly Func<DumpOptions, IDumper> VisualBasic = options => new VisualBasicDumper(options);
 }

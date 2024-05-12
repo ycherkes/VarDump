@@ -113,7 +113,7 @@ internal static class ReflectionUtils
             : type.IsAnonymousType()
                 ? "AnonymousType"
                 : typeName.StartsWith("<")
-                    ? typeName.Split(new []{'<'}, StringSplitOptions.RemoveEmptyEntries)[0].Split('>')[0]
+                    ? typeName.Split(['<'], StringSplitOptions.RemoveEmptyEntries)[0].Split('>')[0]
                     : typeName.Split('`')[0];
 
         if (type.IsInterface() && result.StartsWith("I", StringComparison.OrdinalIgnoreCase))
@@ -396,44 +396,17 @@ internal static class ReflectionUtils
 
     public static bool IsPrimitiveOrNull(object @object)
     {
-        return @object == null || IsPrimitive(@object);
+        return @object == null || IsPrimitiveInternal(@object.GetType());
     }
 
     public static bool IsPrimitive(Type type)
     {
-        return type == typeof(char) ||
-               type ==  typeof(sbyte) ||
-               type ==  typeof(ushort) ||
-               type ==  typeof(uint) ||
-               type ==  typeof(ulong) ||
-               type ==  typeof(string) ||
-               type ==  typeof(byte) ||
-               type ==  typeof(short) ||
-               type ==  typeof(int) ||
-               type ==  typeof(long) ||
-               type ==  typeof(float) ||
-               type ==  typeof(double) ||
-               type ==  typeof(decimal) ||
-               type == typeof(bool);
+        return IsPrimitiveInternal(type);
     }
 
-    private static bool IsPrimitive(object @object)
+    private static bool IsPrimitiveInternal(Type type)
     {
-        return @object
-            is char
-            or sbyte
-            or ushort
-            or uint
-            or ulong
-            or string
-            or byte
-            or short
-            or int
-            or long
-            or float
-            or double
-            or decimal
-            or bool;
+        return (type.IsPrimitive || type == typeof(string)) && type != typeof(IntPtr) && type != typeof(UIntPtr);
     }
 
     public static bool IsDateOnly(this Type objectType)

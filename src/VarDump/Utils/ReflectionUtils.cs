@@ -406,7 +406,10 @@ internal static class ReflectionUtils
 
     private static bool IsPrimitiveInternal(Type type)
     {
-        return (type.IsPrimitive || type == typeof(string)) && type != typeof(IntPtr) && type != typeof(UIntPtr);
+        return type == typeof(string)
+               || type.IsPrimitive
+                    && type != typeof(IntPtr)
+                    && type != typeof(UIntPtr);
     }
 
     public static bool IsDateOnly(this Type objectType)

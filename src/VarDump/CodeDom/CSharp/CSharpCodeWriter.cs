@@ -139,7 +139,8 @@ internal sealed class CSharpCodeWriter : ICodeWriter
 
     private void OutputIdentifier(string ident) => _output.Write(CSharpHelpers.CreateEscapedIdentifier(ident));
 
-    public void WriteArrayCreate(CodeTypeInfo typeInfo, IEnumerable<Action> initializers, int size = 0)
+    public void WriteArrayCreate(CodeTypeInfo typeInfo, IEnumerable<Action> initializers, int size = 0,
+        bool singleLine = false)
     {
         _output.Write("new ");
 
@@ -147,12 +148,22 @@ internal sealed class CSharpCodeWriter : ICodeWriter
 
         if (initializersEnumerator.MoveNext())
         {
-            OutputType(typeInfo);
-            _output.WriteLine("");
-            _output.WriteLine("{");
-            OutputActions(initializersEnumerator, newlineBetweenItems: true);
-            _output.WriteLine();
-            _output.Write("}");
+            if (singleLine)
+            {
+                OutputType(typeInfo);
+                _output.Write("{ ");
+                OutputActions(initializersEnumerator, newlineBetweenItems: false);
+                _output.Write(" }");
+            }
+            else
+            {
+                OutputType(typeInfo);
+                _output.WriteLine("");
+                _output.WriteLine("{");
+                OutputActions(initializersEnumerator, newlineBetweenItems: true);
+                _output.WriteLine();
+                _output.Write("}");
+            }
         }
         else
         {
@@ -175,13 +186,22 @@ internal sealed class CSharpCodeWriter : ICodeWriter
         }
     }
 
-    public void WriteArrayDimension(IEnumerable<Action> initializers)
+    public void WriteArrayDimension(IEnumerable<Action> initializers, bool singleLine = false)
     {
-        _output.Write("{");
-        _output.WriteLine();
-        OutputActions(initializers, newlineBetweenItems: true);
-        _output.WriteLine();
-        _output.Write("}");
+        if (singleLine)
+        {
+            _output.Write("{ ");
+            OutputActions(initializers, newlineBetweenItems: false);
+            _output.Write(" }");
+        }
+        else
+        {
+            _output.Write("{");
+            _output.WriteLine();
+            OutputActions(initializers, newlineBetweenItems: true);
+            _output.WriteLine();
+            _output.Write("}");
+        }
     }
 
     public void WriteCast(CodeTypeInfo typeInfo, Action action)

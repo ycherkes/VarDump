@@ -399,6 +399,24 @@ internal static class ReflectionUtils
         return @object == null || IsPrimitive(@object);
     }
 
+    public static bool IsPrimitive(Type type)
+    {
+        return type == typeof(char) ||
+               type ==  typeof(sbyte) ||
+               type ==  typeof(ushort) ||
+               type ==  typeof(uint) ||
+               type ==  typeof(ulong) ||
+               type ==  typeof(string) ||
+               type ==  typeof(byte) ||
+               type ==  typeof(short) ||
+               type ==  typeof(int) ||
+               type ==  typeof(long) ||
+               type ==  typeof(float) ||
+               type ==  typeof(double) ||
+               type ==  typeof(decimal) ||
+               type == typeof(bool);
+    }
+
     private static bool IsPrimitive(object @object)
     {
         return @object

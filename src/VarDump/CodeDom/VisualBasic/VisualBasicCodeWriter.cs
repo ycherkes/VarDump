@@ -342,7 +342,8 @@ internal sealed class VisualBasicCodeWriter : ICodeWriter
         }
     }
 
-    public void WriteArrayCreate(CodeTypeInfo typeInfo, IEnumerable<Action> initializers, int size = 0)
+    public void WriteArrayCreate(CodeTypeInfo typeInfo, IEnumerable<Action> initializers, int size = 0,
+        bool singleLine = false)
     {
         if (typeInfo is not CodeEmptyTypeInfo)
         {
@@ -358,11 +359,20 @@ internal sealed class VisualBasicCodeWriter : ICodeWriter
                 TypeOutput(typeInfo);
             }
 
-            _output.Write("{");
-            _output.WriteLine("");
-            OutputActions(initializersEnumerator, newlineBetweenItems: true, newLineContinuation: false);
-            _output.WriteLine("");
-            _output.Write('}');
+            if (singleLine)
+            {
+                _output.Write("{ ");
+                OutputActions(initializersEnumerator, newlineBetweenItems: false, newLineContinuation: false);
+                _output.Write(" }");
+            }
+            else
+            {
+                _output.Write("{");
+                _output.WriteLine("");
+                OutputActions(initializersEnumerator, newlineBetweenItems: true, newLineContinuation: false);
+                _output.WriteLine("");
+                _output.Write('}');
+            }
         }
         else
         {
@@ -407,13 +417,22 @@ internal sealed class VisualBasicCodeWriter : ICodeWriter
         Indent--;
     }
 
-    public void WriteArrayDimension(IEnumerable<Action> initializers)
+    public void WriteArrayDimension(IEnumerable<Action> initializers, bool singleLine = false)
     {
-        _output.Write("{");
-        _output.WriteLine();
-        OutputActions(initializers, newlineBetweenItems: true, newLineContinuation: false);
-        _output.WriteLine();
-        _output.Write("}");
+        if (singleLine)
+        {
+            _output.Write("{ ");
+            OutputActions(initializers, newlineBetweenItems: false, newLineContinuation: false);
+            _output.Write(" }");
+        }
+        else
+        {
+            _output.Write("{");
+            _output.WriteLine();
+            OutputActions(initializers, newlineBetweenItems: true, newLineContinuation: false);
+            _output.WriteLine();
+            _output.Write("}");
+        }
     }
 
     public void WriteCast(CodeTypeInfo typeInfo, Action action)

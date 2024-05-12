@@ -146,14 +146,17 @@ internal sealed class CollectionVisitor : IKnownObjectVisitor
 
         if (type.IsArray || isImmutableOrFrozen || !type.IsPublic || !isCollection)
         {
+            var singleLine = ReflectionUtils.IsPrimitive(elementType) && _options.Format.CollectionOfPrimitivesAsSingleLine;
+
             if (type.IsArray && ((Array)enumerable).Rank > 1 && ((Array)enumerable).Length > 0)
             {
-                items = ChunkMultiDimensionalArrayExpression((Array)enumerable, items);
+                items = ChunkMultiDimensionalArrayExpression((Array)enumerable, items, singleLine);
+                singleLine = false;
             }
 
             var arrayType = isImmutableOrFrozen || !type.IsPublic ? elementType.MakeArrayType() : type;
 
-            void WriteArrayCreate() => _codeWriter.WriteArrayCreate(arrayType, items);
+            void WriteArrayCreate() => _codeWriter.WriteArrayCreate(arrayType, items, singleLine: singleLine);
 
             if (isImmutableOrFrozen)
             {
@@ -183,7 +186,8 @@ internal sealed class CollectionVisitor : IKnownObjectVisitor
             new CodeCollectionTypeInfo(type), [], items);
     }
 
-    private IEnumerable<Action> ChunkMultiDimensionalArrayExpression(Array array, IEnumerable<Action> enumerable)
+    private IEnumerable<Action> ChunkMultiDimensionalArrayExpression(Array array, IEnumerable<Action> enumerable,
+        bool singleLine)
     {
         var dimensions = new int[array.Rank - 1];
 
@@ -197,7 +201,7 @@ internal sealed class CollectionVisitor : IKnownObjectVisitor
         for (var index = dimensions.Length - 1; index >= 0; index--)
         {
             var dimension = dimensions[index];
-            result = result.Chunk(dimension).Select(x => (Action) (()=> _codeWriter.WriteArrayDimension(x)));
+            result = result.Chunk(dimension).Select(x => (Action) (()=> _codeWriter.WriteArrayDimension(x, singleLine)));
         }
 
         return result;
@@ -221,7 +225,7 @@ internal sealed class CollectionVisitor : IKnownObjectVisitor
         if (type.IsArray && ((Array)enumerable).Rank > 1 && ((Array)enumerable).Length > 0)
         {
             typeInfo.ArrayRank = ((Array)enumerable).Rank;
-            items = ChunkMultiDimensionalArrayExpression((Array)enumerable, items);
+            items = ChunkMultiDimensionalArrayExpression((Array)enumerable, items, false);
         }
 
         Action createAction = () => _codeWriter.WriteArrayCreate(typeInfo, items);

@@ -342,8 +342,7 @@ internal sealed class VisualBasicCodeWriter : ICodeWriter
         }
     }
 
-    public void WriteArrayCreate(CodeTypeInfo typeInfo, IEnumerable<Action> initializers, int size = 0,
-        bool singleLine = false)
+    public void WriteArrayCreate(CodeTypeInfo typeInfo, IEnumerable<Action> initializers, bool singleLine, int size = 0)
     {
         if (typeInfo is not CodeEmptyTypeInfo)
         {

@@ -35,9 +35,9 @@ public class ArraySpec
 
         var dumper = new CSharpDumper(new DumpOptions
         {
-            Format =
+            Formatting =
             {
-                CollectionOfPrimitivesAsSingleLine = true
+                PrimitiveCollection = CollectionFormat.SingleLine
             }
         });
 
@@ -64,9 +64,9 @@ public class ArraySpec
 
         var dumper = new CSharpDumper(new DumpOptions
         {
-            Format =
+            Formatting =
             {
-                CollectionOfPrimitivesAsSingleLine = true
+                PrimitiveCollection = CollectionFormat.SingleLine
             }
         });
 
@@ -229,9 +229,9 @@ public class ArraySpec
 
         var dumper = new VisualBasicDumper(new DumpOptions
         {
-            Format =
+            Formatting =
             {
-                CollectionOfPrimitivesAsSingleLine = true
+                PrimitiveCollection = CollectionFormat.SingleLine
             }
         });
 
@@ -257,9 +257,9 @@ public class ArraySpec
 
         var dumper = new VisualBasicDumper(new DumpOptions
         {
-            Format =
+            Formatting =
             {
-                CollectionOfPrimitivesAsSingleLine = true
+                PrimitiveCollection = CollectionFormat.SingleLine
             }
         });
 

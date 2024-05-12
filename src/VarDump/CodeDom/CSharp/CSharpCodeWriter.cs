@@ -139,8 +139,7 @@ internal sealed class CSharpCodeWriter : ICodeWriter
 
     private void OutputIdentifier(string ident) => _output.Write(CSharpHelpers.CreateEscapedIdentifier(ident));
 
-    public void WriteArrayCreate(CodeTypeInfo typeInfo, IEnumerable<Action> initializers, int size = 0,
-        bool singleLine = false)
+    public void WriteArrayCreate(CodeTypeInfo typeInfo, IEnumerable<Action> initializers, bool singleLine, int size = 0)
     {
         _output.Write("new ");
 

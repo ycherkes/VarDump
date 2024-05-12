@@ -123,7 +123,7 @@ internal sealed class DictionaryVisitor : IKnownObjectVisitor
 
         _codeWriter.WriteMethodInvoke(() =>
                 _codeWriter.WriteMethodReference(
-                    () => _codeWriter.WriteArrayCreate(new CodeAnonymousTypeInfo { ArrayRank = 1 }, items),
+                    () => _codeWriter.WriteArrayCreate(new CodeAnonymousTypeInfo { ArrayRank = 1 }, items, false),
                     methodName),
             [
                 WriteKeyLambda,

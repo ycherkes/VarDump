@@ -122,7 +122,7 @@ internal sealed class CollectionVisitor : IKnownObjectVisitor
                 WriteValueLambdaExpression
             ]);
 
-        void WriteArrayCreate() => _codeWriter.WriteArrayCreate(new CodeAnonymousTypeInfo { ArrayRank = 1 }, items);
+        void WriteArrayCreate() => _codeWriter.WriteArrayCreate(new CodeAnonymousTypeInfo { ArrayRank = 1 }, items, false);
         void WriteVariableReference() => _codeWriter.WriteVariableReference("grp");
         void WriteKeyLambdaPropertyExpression() => _codeWriter.WritePropertyReference("Key", WriteVariableReference);
         void WriteKeyLambdaExpression() => _codeWriter.WriteLambdaExpression(WriteKeyLambdaPropertyExpression, [WriteVariableReference]);
@@ -146,7 +146,7 @@ internal sealed class CollectionVisitor : IKnownObjectVisitor
 
         if (type.IsArray || isImmutableOrFrozen || !type.IsPublic || !isCollection)
         {
-            var singleLine = ReflectionUtils.IsPrimitive(elementType) && _options.Format.CollectionOfPrimitivesAsSingleLine;
+            var singleLine = ReflectionUtils.IsPrimitive(elementType) && _options.Formatting.PrimitiveCollection == CollectionFormat.SingleLine;
 
             if (type.IsArray && ((Array)enumerable).Rank > 1 && ((Array)enumerable).Length > 0)
             {
@@ -228,7 +228,7 @@ internal sealed class CollectionVisitor : IKnownObjectVisitor
             items = ChunkMultiDimensionalArrayExpression((Array)enumerable, items, false);
         }
 
-        Action createAction = () => _codeWriter.WriteArrayCreate(typeInfo, items);
+        Action createAction = () => _codeWriter.WriteArrayCreate(typeInfo, items, false);
 
         if (isImmutableOrFrozen || enumerable is IList && !type.IsArray)
         {

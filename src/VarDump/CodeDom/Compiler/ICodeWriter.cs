@@ -10,7 +10,7 @@ public interface ICodeWriter
     int Indent { get; set; }
     TextWriter Output { get; }
 
-    void WriteArrayCreate(CodeTypeInfo typeInfo, IEnumerable<Action> initializers, int size = 0, bool singleLine = false);
+    void WriteArrayCreate(CodeTypeInfo typeInfo, IEnumerable<Action> initializers, bool singleLine, int size = 0);
     void WriteCast(CodeTypeInfo typeInfo, Action action);
 
     void WriteArrayDimension(IEnumerable<Action> initializers, bool singleLine = false);

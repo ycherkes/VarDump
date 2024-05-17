@@ -7,7 +7,7 @@
     <AssemblyVersion>1.0.4.4</AssemblyVersion>
     <FileVersion>1.0.4.4</FileVersion>
     <PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
-    <Copyright>Copyright $([System.DateTime]::Now.Year) Yevhen Cherkes</Copyright>
+    <Copyright>Copyright 2023 - $([System.DateTime]::Now.Year) Yevhen Cherkes</Copyright>
     <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
     <Title>VarDump</Title>
     <Version>1.0.4.4-alpha</Version>

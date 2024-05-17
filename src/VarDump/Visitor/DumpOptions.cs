@@ -89,8 +89,6 @@ public struct IntegralNumericFormat
 
         return fmt;
     }
-
-    
 }
 
 public enum NumericFormat

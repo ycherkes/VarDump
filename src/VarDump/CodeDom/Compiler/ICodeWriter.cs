@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using System;
 using VarDump.CodeDom.Common;
 using System.IO;
+using VarDump.Visitor;
 
 namespace VarDump.CodeDom.Compiler;
 
@@ -37,7 +38,7 @@ public interface ICodeWriter
 
     void WriteObjectCreate(CodeTypeInfo typeInfo, IEnumerable<Action> parametersActions);
 
-    void WritePrimitive(object obj);
+    void WritePrimitive(object obj, IntegralNumericFormat numericFormat = new());
 
     void WritePropertyReference(string propertyName, Action targetObjectAction);
 

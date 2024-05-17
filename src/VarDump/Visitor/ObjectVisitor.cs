@@ -22,7 +22,7 @@ internal sealed class ObjectVisitor : IObjectVisitor, INextDepthVisitor
 
         _knownObjects = new KnownObjectsCollection
         {
-            new PrimitiveVisitor(codeWriter),
+            new PrimitiveVisitor(codeWriter, options),
             new TimeSpanVisitor(codeWriter, options),
             new DateTimeVisitor(codeWriter, options),
             new DateTimeOffsetVisitor(this, codeWriter, options),

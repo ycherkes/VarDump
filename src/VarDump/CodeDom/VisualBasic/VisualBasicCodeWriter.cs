@@ -9,6 +9,8 @@ using System.IO;
 using VarDump.CodeDom.Common;
 using VarDump.CodeDom.Compiler;
 using VarDump.CodeDom.Resources;
+using VarDump.Utils;
+using VarDump.Visitor;
 
 namespace VarDump.CodeDom.VisualBasic;
 
@@ -266,7 +268,7 @@ internal sealed class VisualBasicCodeWriter : ICodeWriter
         }
     }
 
-    public void WritePrimitive(object obj)
+    public void WritePrimitive(object obj, IntegralNumericFormat numericFormat)
     {
         switch (obj)
         {
@@ -277,28 +279,40 @@ internal sealed class VisualBasicCodeWriter : ICodeWriter
                 break;
             case sbyte @sbyte:
                 _output.Write("CSByte(");
-                _output.Write(@sbyte.ToString(CultureInfo.InvariantCulture));
+                _output.Write($"{GetPrefix(numericFormat)}{NumericUtil.ToString(@sbyte, numericFormat)}");
                 _output.Write(')');
                 break;
             case ushort @ushort:
-                _output.Write(@ushort.ToString(CultureInfo.InvariantCulture));
+                _output.Write($"{GetPrefix(numericFormat)}{NumericUtil.ToString(@ushort, numericFormat)}");
                 _output.Write("US");
                 break;
             case uint u:
-                _output.Write(u.ToString(CultureInfo.InvariantCulture));
+                _output.Write($"{GetPrefix(numericFormat)}{NumericUtil.ToString(u, numericFormat)}");
                 _output.Write("UI");
                 break;
             case ulong @ulong:
-                _output.Write(@ulong.ToString(CultureInfo.InvariantCulture));
+                _output.Write($"{GetPrefix(numericFormat)}{NumericUtil.ToString(@ulong, numericFormat)}");
                 _output.Write("UL");
                 break;
             default:
-                DefaultWritePrimitiveExpression(obj);
+                DefaultWritePrimitiveExpression(obj, numericFormat);
                 break;
         }
     }
 
-    private void DefaultWritePrimitiveExpression(object obj)
+    private static string GetPrefix(IntegralNumericFormat numericFormat)
+    {
+        return numericFormat.Format switch
+        {
+            NumericFormat.Binary => "&B",
+            NumericFormat.Decimal => "",
+            NumericFormat.HexadecimalLowerCase => "&h",
+            NumericFormat.HexadecimalUpperCase => "&H",
+            _ => throw new ArgumentOutOfRangeException()
+        };
+    }
+
+    private void DefaultWritePrimitiveExpression(object obj, IntegralNumericFormat numericFormat)
     {
         switch (obj)
         {
@@ -314,16 +328,16 @@ internal sealed class VisualBasicCodeWriter : ICodeWriter
                 _output.Write('\'');
                 break;
             case byte b:
-                _output.Write(b.ToString(CultureInfo.InvariantCulture));
+                _output.Write($"{GetPrefix(numericFormat)}{NumericUtil.ToString(b, numericFormat)}");
                 break;
             case short s1:
-                _output.Write(s1.ToString(CultureInfo.InvariantCulture));
+                _output.Write($"{GetPrefix(numericFormat)}{NumericUtil.ToString(s1, numericFormat)}");
                 break;
             case int i:
-                _output.Write(i.ToString(CultureInfo.InvariantCulture));
+                _output.Write($"{GetPrefix(numericFormat)}{NumericUtil.ToString(i, numericFormat)}");
                 break;
             case long l:
-                _output.Write(l.ToString(CultureInfo.InvariantCulture));
+                _output.Write($"{GetPrefix(numericFormat)}{NumericUtil.ToString(l, numericFormat)}");
                 break;
             case float f:
                 OutputFloatValue(f);

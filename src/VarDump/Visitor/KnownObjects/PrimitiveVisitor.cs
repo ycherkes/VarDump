@@ -6,7 +6,8 @@ using VarDump.Utils;
 
 namespace VarDump.Visitor.KnownObjects;
 
-internal sealed class PrimitiveVisitor(ICodeWriter codeWriter) : IKnownObjectVisitor
+internal sealed class PrimitiveVisitor(ICodeWriter codeWriter,
+    DumpOptions options) : IKnownObjectVisitor
 {
     private static readonly string[] SpecialValueNames =
     [
@@ -27,13 +28,15 @@ internal sealed class PrimitiveVisitor(ICodeWriter codeWriter) : IKnownObjectVis
 
     public void ConfigureOptions(Action<DumpOptions> configure)
     {
+        options = options.Clone();
+        configure?.Invoke(options);
     }
 
     public void Visit(object obj, Type objectType, VisitContext context)
     {
         if (obj == null || ValueEquality(obj, 0) || obj is byte)
         {
-            codeWriter.WritePrimitive(obj);
+            codeWriter.WritePrimitive(obj, options.Formatting.IntegralNumericFormat);
             return;
         }
 
@@ -47,7 +50,7 @@ internal sealed class PrimitiveVisitor(ICodeWriter codeWriter) : IKnownObjectVis
             return;
         }
 
-        codeWriter.WritePrimitive(obj);
+        codeWriter.WritePrimitive(obj, options.Formatting.IntegralNumericFormat);
     }
 
     private static bool IsSpecialValueField(object @object, IReflect objectType, string fieldName)

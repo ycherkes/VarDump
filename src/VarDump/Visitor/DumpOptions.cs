@@ -31,6 +31,8 @@ public class DumpOptions
 
     public DumpOptions Clone()
     {
+        var formatting = Formatting ?? new Formatting();
+
         return new DumpOptions
         {
             ConfigureKnownObjects = ConfigureKnownObjects,
@@ -49,7 +51,11 @@ public class DumpOptions
             UseNamedArgumentsInConstructors = UseNamedArgumentsInConstructors,
             UseTypeFullName = UseTypeFullName,
             WritablePropertiesOnly = WritablePropertiesOnly,
-            Formatting = Formatting ?? new Formatting()
+            Formatting = new Formatting
+            {
+                PrimitiveCollection = formatting.PrimitiveCollection,
+                IntegralNumericFormat = formatting.IntegralNumericFormat
+            }
         };
     }
 }
@@ -57,7 +63,44 @@ public class DumpOptions
 public class Formatting
 {
     public CollectionFormat PrimitiveCollection { get; set; }
+    public IntegralNumericFormat IntegralNumericFormat { get; set; } = new() { Format = NumericFormat.Decimal};
 }
+
+public struct IntegralNumericFormat
+{
+    public NumericFormat Format { get; set; }
+    public int Precision { get; set; }
+
+    public readonly override string ToString()
+    {
+        var fmt = Format switch
+        {
+            NumericFormat.Binary => "b",
+            NumericFormat.Decimal => "d",
+            NumericFormat.HexadecimalLowerCase => "x",
+            NumericFormat.HexadecimalUpperCase => "X",
+            _ => throw new ArgumentOutOfRangeException()
+        };
+
+        if (Precision > 0)
+        {
+            fmt += Precision;
+        }
+
+        return fmt;
+    }
+
+    
+}
+
+public enum NumericFormat
+{
+    Decimal,
+    Binary,
+    HexadecimalLowerCase,
+    HexadecimalUpperCase
+}
+
 
 public enum CollectionFormat
 {

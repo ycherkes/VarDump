@@ -9,6 +9,8 @@ using System.IO;
 using VarDump.CodeDom.Common;
 using VarDump.CodeDom.Compiler;
 using VarDump.CodeDom.Resources;
+using VarDump.Utils;
+using VarDump.Visitor;
 
 namespace VarDump.CodeDom.CSharp;
 
@@ -315,7 +317,7 @@ internal sealed class CSharpCodeWriter : ICodeWriter
         _output.Write(')');
     }
 
-    public void WritePrimitive(object obj)
+    public void WritePrimitive(object obj, IntegralNumericFormat numericFormat)
     {
         if (obj is char c)
         {
@@ -324,31 +326,43 @@ internal sealed class CSharpCodeWriter : ICodeWriter
         else if (obj is sbyte @sbyte)
         {
             // C# has no literal marker for types smaller than Int32
-            _output.Write(@sbyte.ToString(CultureInfo.InvariantCulture));
+            _output.Write($"{GetPrefix(numericFormat)}{NumericUtil.ToString(@sbyte, numericFormat)}");
         }
         else if (obj is ushort @ushort)
         {
             // C# has no literal marker for types smaller than Int32, and you will
             // get a conversion error if you use "u" here.
-            _output.Write(@ushort.ToString(CultureInfo.InvariantCulture));
+            _output.Write($"{GetPrefix(numericFormat)}{NumericUtil.ToString(@ushort, numericFormat)}");
         }
         else if (obj is uint u)
         {
-            _output.Write(u.ToString(CultureInfo.InvariantCulture));
+            _output.Write($"{GetPrefix(numericFormat)}{NumericUtil.ToString(u, numericFormat)}");
             _output.Write('u');
         }
         else if (obj is ulong @ulong)
         {
-            _output.Write(@ulong.ToString(CultureInfo.InvariantCulture));
+            _output.Write($"{GetPrefix(numericFormat)}{NumericUtil.ToString(@ulong, numericFormat)}");
             _output.Write("ul");
         }
         else
         {
-            OutputPrimitiveExpressionBase(obj);
+            OutputPrimitiveExpressionBase(obj, numericFormat);
         }
     }
 
-    private void OutputPrimitiveExpressionBase(object obj)
+    private static string GetPrefix(IntegralNumericFormat numericFormat)
+    {
+        return numericFormat.Format switch
+        {
+            NumericFormat.Binary => "0b",
+            NumericFormat.Decimal => "",
+            NumericFormat.HexadecimalLowerCase => "0x",
+            NumericFormat.HexadecimalUpperCase => "0X",
+            _ => throw new ArgumentOutOfRangeException()
+        };
+    }
+
+    private void OutputPrimitiveExpressionBase(object obj, IntegralNumericFormat numericFormat)
     {
         switch (obj)
         {
@@ -367,19 +381,19 @@ internal sealed class CSharpCodeWriter : ICodeWriter
                 break;
 
             case byte b:
-                _output.Write(b.ToString(CultureInfo.InvariantCulture));
+                _output.Write($"{GetPrefix(numericFormat)}{NumericUtil.ToString(b, numericFormat)}");
                 break;
 
             case short s1:
-                _output.Write(s1.ToString(CultureInfo.InvariantCulture));
+                _output.Write($"{GetPrefix(numericFormat)}{NumericUtil.ToString(s1, numericFormat)}");
                 break;
 
             case int i:
-                _output.Write(i.ToString(CultureInfo.InvariantCulture));
+                _output.Write($"{GetPrefix(numericFormat)}{NumericUtil.ToString(i, numericFormat)}");
                 break;
 
             case long l:
-                _output.Write(l.ToString(CultureInfo.InvariantCulture));
+                _output.Write($"{GetPrefix(numericFormat)}{NumericUtil.ToString(l, numericFormat)}");
                 break;
 
             case float f:

@@ -277,7 +277,7 @@ internal sealed class CSharpCodeWriter : ICodeWriter
         _output.Write(')');
     }
 
-    public void WriteObjectCreateAndInitialize(CodeTypeInfo typeInfo, IEnumerable<Action> parametersActions, IEnumerable<Action> initializeActions)
+    public void WriteObjectCreateAndInitialize(CodeTypeInfo typeInfo, IEnumerable<Action> parametersActions, IEnumerable<Action> initializeActions, bool singleLine = false)
     {
         _output.Write("new ");
         OutputType(typeInfo);
@@ -303,11 +303,20 @@ internal sealed class CSharpCodeWriter : ICodeWriter
             return;
         }
 
-        _output.WriteLine();
-        _output.WriteLine('{');
-        OutputActions(initializeEnumerator, newlineBetweenItems: true);
-        _output.WriteLine();
-        _output.Write("}");
+        if (singleLine)
+        {
+            _output.Write(" { ");
+            OutputActions(initializeEnumerator, newlineBetweenItems: false);
+            _output.Write(" }");
+        }
+        else
+        {
+            _output.WriteLine();
+            _output.WriteLine('{');
+            OutputActions(initializeEnumerator, newlineBetweenItems: true);
+            _output.WriteLine();
+            _output.Write("}");
+        }
     }
 
     public void WriteValueTupleCreate(IEnumerable<Action> actions)

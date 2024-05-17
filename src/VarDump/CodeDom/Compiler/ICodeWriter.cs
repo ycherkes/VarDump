@@ -34,7 +34,7 @@ public interface ICodeWriter
 
     void WriteNamedArgument(string argumentName, Action value);
 
-    void WriteObjectCreateAndInitialize(CodeTypeInfo typeInfo, IEnumerable<Action> parametersActions, IEnumerable<Action> initializeActions);
+    void WriteObjectCreateAndInitialize(CodeTypeInfo typeInfo, IEnumerable<Action> parametersActions, IEnumerable<Action> initializeActions, bool singleLine = false);
 
     void WriteObjectCreate(CodeTypeInfo typeInfo, IEnumerable<Action> parametersActions);
 

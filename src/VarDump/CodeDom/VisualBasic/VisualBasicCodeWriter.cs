@@ -558,7 +558,7 @@ internal sealed class VisualBasicCodeWriter : ICodeWriter
         _output.Write(')');
     }
 
-    public void WriteObjectCreateAndInitialize(CodeTypeInfo typeInfo, IEnumerable<Action> parametersActions, IEnumerable<Action> initializeActions)
+    public void WriteObjectCreateAndInitialize(CodeTypeInfo typeInfo, IEnumerable<Action> parametersActions, IEnumerable<Action> initializeActions, bool singleLine = false)
     {
         _output.Write("New ");
         OutputType(typeInfo);
@@ -592,10 +592,19 @@ internal sealed class VisualBasicCodeWriter : ICodeWriter
             _ => " With "
         });
 
-        _output.WriteLine('{');
-        OutputActions(initializeEnumerator, newlineBetweenItems: true, newLineContinuation: false);
-        _output.WriteLine();
-        _output.Write('}');
+        if (singleLine)
+        {
+            _output.Write("{ ");
+            OutputActions(initializeEnumerator, newlineBetweenItems: false, newLineContinuation: false);
+            _output.Write(" }");
+        }
+        else
+        {
+            _output.WriteLine('{');
+            OutputActions(initializeEnumerator, newlineBetweenItems: true, newLineContinuation: false);
+            _output.WriteLine();
+            _output.Write('}');
+        }
     }
 
     public void WriteValueTupleCreate(IEnumerable<Action> actions)

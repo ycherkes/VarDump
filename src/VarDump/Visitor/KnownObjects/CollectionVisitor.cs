@@ -144,12 +144,12 @@ internal sealed class CollectionVisitor : IKnownObjectVisitor
         var isImmutableOrFrozen = type.IsPublicImmutableOrFrozenCollection();
         var isCollection = IsCollection(enumerable);
 
+        var singleLine = typeof(string) != elementType
+                         && ReflectionUtils.IsPrimitive(elementType)
+                         && _options.Formatting?.PrimitiveCollection == CollectionFormat.SingleLine;
+
         if (type.IsArray || isImmutableOrFrozen || !type.IsPublic || !isCollection)
         {
-            var singleLine = typeof(string) != elementType 
-                             && ReflectionUtils.IsPrimitive(elementType) 
-                             && _options.Formatting?.PrimitiveCollection == CollectionFormat.SingleLine;
-
             if (type.IsArray && ((Array)enumerable).Rank > 1 && ((Array)enumerable).Length > 0)
             {
                 items = ChunkMultiDimensionalArrayExpression((Array)enumerable, items, singleLine);
@@ -184,8 +184,7 @@ internal sealed class CollectionVisitor : IKnownObjectVisitor
             return;
         }
 
-        _codeWriter.WriteObjectCreateAndInitialize(
-            new CodeCollectionTypeInfo(type), [], items);
+        _codeWriter.WriteObjectCreateAndInitialize(new CodeCollectionTypeInfo(type), [], items, singleLine);
     }
 
     private IEnumerable<Action> ChunkMultiDimensionalArrayExpression(Array array, IEnumerable<Action> enumerable,

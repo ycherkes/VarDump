@@ -38,7 +38,7 @@ public interface ICodeWriter
 
     void WriteObjectCreate(CodeTypeInfo typeInfo, IEnumerable<Action> parametersActions);
 
-    void WritePrimitive(object obj, IntegralNumericFormat numericFormat = new());
+    void WritePrimitive(object obj, string numericFormat = "D");
 
     void WritePropertyReference(string propertyName, Action targetObjectAction);
 

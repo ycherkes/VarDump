@@ -12,10 +12,7 @@ public class IntegralTypesSpec
         {
             Formatting =
             {
-                IntegralNumericFormat = new IntegralNumericFormat
-                {
-                    Format = NumericFormat.Binary
-                }
+                IntegralNumericFormat = "b"
             }
         });
 
@@ -29,16 +26,33 @@ public class IntegralTypesSpec
     }
 
     [Fact]
+    public void DumpULongBinaryUnderscoresCSharp()
+    {
+        var dumper = new CSharpDumper(new DumpOptions
+        {
+            Formatting =
+            {
+                IntegralNumericFormat = "b_4"
+            }
+        });
+
+        var result = dumper.Dump(ulong.MaxValue - 1);
+
+        Assert.Equal(
+            """
+            var ulongValue = 0b1111_1111_1111_1111_1111_1111_1111_1111_1111_1111_1111_1111_1111_1111_1111_1110ul;
+            
+            """, result);
+    }
+
+    [Fact]
     public void DumpIntBinaryCSharp()
     {
         var dumper = new CSharpDumper(new DumpOptions
         {
             Formatting =
             {
-                IntegralNumericFormat = new IntegralNumericFormat
-                {
-                    Format = NumericFormat.Binary
-                }
+                IntegralNumericFormat = "b"
             }
         });
 
@@ -58,10 +72,7 @@ public class IntegralTypesSpec
         {
             Formatting =
             {
-                IntegralNumericFormat = new IntegralNumericFormat
-                {
-                    Format = NumericFormat.Binary
-                },
+                IntegralNumericFormat = "b",
                 PrimitiveCollection = CollectionFormat.SingleLine
             }
         });
@@ -82,11 +93,7 @@ public class IntegralTypesSpec
         {
             Formatting =
             {
-                IntegralNumericFormat = new IntegralNumericFormat
-                {
-                    Format = NumericFormat.HexadecimalUpperCase,
-                    Precision = 2
-                }
+                IntegralNumericFormat = "X2"
             }
         });
 
@@ -100,16 +107,33 @@ public class IntegralTypesSpec
     }
 
     [Fact]
+    public void DumpIntegerHexUnderscoreCSharp()
+    {
+        var dumper = new CSharpDumper(new DumpOptions
+        {
+            Formatting =
+            {
+                IntegralNumericFormat = "X_2"
+            }
+        });
+
+        var result = dumper.Dump(0X1_E2_40);
+
+        Assert.Equal(
+            """
+            var intValue = 0X1_E2_40;
+
+            """, result);
+    }
+
+    [Fact]
     public void DumpULongBinaryVb()
     {
         var dumper = new VisualBasicDumper(new DumpOptions
         {
             Formatting =
             {
-                IntegralNumericFormat = new IntegralNumericFormat
-                {
-                    Format = NumericFormat.Binary
-                }
+                IntegralNumericFormat = "B"
             }
         });
 
@@ -129,10 +153,7 @@ public class IntegralTypesSpec
         {
             Formatting =
             {
-                IntegralNumericFormat = new IntegralNumericFormat
-                {
-                    Format = NumericFormat.Binary
-                }
+                IntegralNumericFormat = "B"
             }
         });
 
@@ -152,11 +173,7 @@ public class IntegralTypesSpec
         {
             Formatting =
             {
-                IntegralNumericFormat = new IntegralNumericFormat
-                {
-                    Format = NumericFormat.HexadecimalUpperCase,
-                    Precision = 2
-                }
+                IntegralNumericFormat = "X2"
             }
         });
 
@@ -165,6 +182,26 @@ public class IntegralTypesSpec
         Assert.Equal(
             """
             Dim byteValue = &H0F
+
+            """, result);
+    }
+
+    [Fact]
+    public void DumpIntegerHexUnderscoreVb()
+    {
+        var dumper = new VisualBasicDumper(new DumpOptions
+        {
+            Formatting =
+            {
+                IntegralNumericFormat = "X_2"
+            }
+        });
+
+        var result = dumper.Dump(0X1_E2_40);
+
+        Assert.Equal(
+            """
+            Dim integerValue = &H1_E2_40
 
             """, result);
     }

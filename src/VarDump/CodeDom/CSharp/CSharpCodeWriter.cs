@@ -326,8 +326,13 @@ internal sealed class CSharpCodeWriter : ICodeWriter
         _output.Write(')');
     }
 
-    public void WritePrimitive(object obj, IntegralNumericFormat numericFormat)
+    public void WritePrimitive(object obj, string format = "D")
     {
+        if (!IntegralNumericFormat.TryParse(format, out var numericFormat))
+        {
+            throw new FormatException("Bad format specifier.");
+        }
+
         if (obj is char c)
         {
             OutputPrimitiveChar(c);
@@ -364,9 +369,11 @@ internal sealed class CSharpCodeWriter : ICodeWriter
         return numericFormat.Format switch
         {
             NumericFormat.Binary => "0b",
+            NumericFormat.Binary | NumericFormat.UpperCase => "0B",
             NumericFormat.Decimal => "",
-            NumericFormat.HexadecimalLowerCase => "0x",
-            NumericFormat.HexadecimalUpperCase => "0X",
+            NumericFormat.Decimal | NumericFormat.UpperCase => "",
+            NumericFormat.Hexadecimal => "0x",
+            NumericFormat.Hexadecimal | NumericFormat.UpperCase => "0X",
             _ => throw new ArgumentOutOfRangeException()
         };
     }

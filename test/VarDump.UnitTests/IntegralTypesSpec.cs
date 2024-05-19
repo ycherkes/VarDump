@@ -113,15 +113,15 @@ public class IntegralTypesSpec
         {
             Formatting =
             {
-                IntegralNumericFormat = "X_2"
+                IntegralNumericFormat = "X8_4"
             }
         });
 
-        var result = dumper.Dump(0X1_E2_40);
+        var result = dumper.Dump(0X0001_E240);
 
         Assert.Equal(
             """
-            var intValue = 0X1_E2_40;
+            var intValue = 0X0001_E240;
 
             """, result);
     }
@@ -193,15 +193,15 @@ public class IntegralTypesSpec
         {
             Formatting =
             {
-                IntegralNumericFormat = "X_2"
+                IntegralNumericFormat = "X8_4"
             }
         });
 
-        var result = dumper.Dump(0X1_E2_40);
+        var result = dumper.Dump(0X0001_E240);
 
         Assert.Equal(
             """
-            Dim integerValue = &H1_E2_40
+            Dim integerValue = &H0001_E240
 
             """, result);
     }

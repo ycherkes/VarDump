@@ -7,6 +7,7 @@ using VarDump.CodeDom.Common;
 using VarDump.CodeDom.Compiler;
 using VarDump.Extensions;
 using VarDump.Utils;
+using VarDump.Visitor.Format;
 
 namespace VarDump.Visitor.KnownObjects;
 

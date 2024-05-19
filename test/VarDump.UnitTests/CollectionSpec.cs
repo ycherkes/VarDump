@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using VarDump.Visitor;
+using VarDump.Visitor.Format;
 using Xunit;
 
 namespace VarDump.UnitTests;

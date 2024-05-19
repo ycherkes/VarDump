@@ -10,7 +10,7 @@ using VarDump.CodeDom.Common;
 using VarDump.CodeDom.Compiler;
 using VarDump.CodeDom.Resources;
 using VarDump.Utils;
-using VarDump.Visitor;
+using VarDump.Visitor.Format;
 
 namespace VarDump.CodeDom.VisualBasic;
 

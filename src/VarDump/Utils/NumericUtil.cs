@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using VarDump.Visitor;
+using VarDump.Visitor.Format;
 
 namespace VarDump.Utils
 {

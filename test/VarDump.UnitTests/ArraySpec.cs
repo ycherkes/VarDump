@@ -38,7 +38,7 @@ public class ArraySpec
         {
             Formatting =
             {
-                PrimitiveCollection = CollectionFormat.SingleLine
+                PrimitiveCollectionLayout = CollectionLayout.SingleLine
             }
         });
 
@@ -67,7 +67,7 @@ public class ArraySpec
         {
             Formatting =
             {
-                PrimitiveCollection = CollectionFormat.SingleLine
+                PrimitiveCollectionLayout = CollectionLayout.SingleLine
             }
         });
 
@@ -232,7 +232,7 @@ public class ArraySpec
         {
             Formatting =
             {
-                PrimitiveCollection = CollectionFormat.SingleLine
+                PrimitiveCollectionLayout = CollectionLayout.SingleLine
             }
         });
 
@@ -260,7 +260,7 @@ public class ArraySpec
         {
             Formatting =
             {
-                PrimitiveCollection = CollectionFormat.SingleLine
+                PrimitiveCollectionLayout = CollectionLayout.SingleLine
             }
         });
 

@@ -58,7 +58,7 @@ public class CollectionSpec
         {
             Formatting =
             {
-                PrimitiveCollection = CollectionFormat.SingleLine
+                PrimitiveCollectionLayout = CollectionLayout.SingleLine
             }
         });
 
@@ -104,7 +104,7 @@ public class CollectionSpec
         {
             Formatting =
             {
-                PrimitiveCollection = CollectionFormat.SingleLine
+                PrimitiveCollectionLayout = CollectionLayout.SingleLine
             }
         });
 

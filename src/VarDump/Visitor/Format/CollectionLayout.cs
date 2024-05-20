@@ -1,6 +1,6 @@
 ﻿namespace VarDump.Visitor.Format;
 
-public enum CollectionFormat
+public enum CollectionLayout
 {
     MultiLine,
     SingleLine

@@ -74,7 +74,7 @@ public class IntegralTypesSpec
             Formatting =
             {
                 IntegralNumericFormat = "b",
-                PrimitiveCollection = CollectionFormat.SingleLine
+                PrimitiveCollectionLayout = CollectionLayout.SingleLine
             }
         });
 

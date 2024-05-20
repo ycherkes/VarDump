@@ -54,7 +54,7 @@ public class DumpOptions
             WritablePropertiesOnly = WritablePropertiesOnly,
             Formatting = new Formatting
             {
-                PrimitiveCollection = formatting.PrimitiveCollection,
+                PrimitiveCollectionLayout = formatting.PrimitiveCollectionLayout,
                 IntegralNumericFormat = formatting.IntegralNumericFormat
             }
         };
@@ -63,6 +63,6 @@ public class DumpOptions
 
 public class Formatting
 {
-    public CollectionFormat PrimitiveCollection { get; set; }
+    public CollectionLayout PrimitiveCollectionLayout { get; set; }
     public string IntegralNumericFormat { get; set; } = "";
 }

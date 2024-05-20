@@ -85,6 +85,48 @@ public class ArraySpec
     }
 
     [Fact]
+    public void DumpMultidimensionalArrayCSharpSingleLine()
+    {
+        var array = new[, ,]
+        {
+            {
+                { 1, 2, 3 },
+                { 4, 5, 6 }
+            },
+            {
+                { 7, 8, 9 },
+                { 10, 11, 12 }
+            }
+        };
+
+        var dumper = new CSharpDumper(new DumpOptions
+        {
+            Formatting =
+            {
+                PrimitiveCollectionLayout = CollectionLayout.SingleLine
+            }
+        });
+
+        var result = dumper.Dump(array);
+
+        Assert.Equal(
+            """
+            var arrayOfInt = new int[,,]
+            {
+                {
+                    { 1, 2, 3 },
+                    { 4, 5, 6 }
+                },
+                {
+                    { 7, 8, 9 },
+                    { 10, 11, 12 }
+                }
+            };
+
+            """, result);
+    }
+
+    [Fact]
     public void DumpEmptyArrayCSharp()
     {
         var array = new int[0, 3];
@@ -273,6 +315,47 @@ public class ArraySpec
                 { 4, 5, 6 }
             }
             
+            """, result);
+    }
+
+    [Fact]
+    public void DumpMultidimensionalArrayVisualBasicSingleLine()
+    {
+        var array = new[, ,]
+        {
+            {
+                { 1, 2, 3 },
+                { 4, 5, 6 }
+            },
+            {
+                { 7, 8, 9 },
+                { 10, 11, 12 }
+            }
+        };
+
+        var dumper = new VisualBasicDumper(new DumpOptions
+        {
+            Formatting =
+            {
+                PrimitiveCollectionLayout = CollectionLayout.SingleLine
+            }
+        });
+
+        var result = dumper.Dump(array);
+
+        Assert.Equal(
+            """
+            Dim arrayOfInteger = New Integer(,,){
+                {
+                    { 1, 2, 3 },
+                    { 4, 5, 6 }
+                },
+                {
+                    { 7, 8, 9 },
+                    { 10, 11, 12 }
+                }
+            }
+
             """, result);
     }
 

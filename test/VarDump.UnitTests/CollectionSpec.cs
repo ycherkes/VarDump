@@ -73,6 +73,48 @@ public class CollectionSpec
 
             """, result);
     }
+    
+    [Fact]
+    public void DumpMultidimensionalArrayCSharpSingleLine()
+    {
+        var array = new[,,] 
+        { 
+            { 
+                { 1, 2, 3 }, 
+                { 4, 5, 6 } 
+            },
+            { 
+                { 7, 8, 9 }, 
+                { 10, 11, 12 } 
+            } 
+        };
+
+        var dumper = new CSharpDumper(new DumpOptions
+        {
+            Formatting =
+            {
+                PrimitiveCollectionLayout = CollectionLayout.SingleLine
+            }
+        });
+
+        var result = dumper.Dump(array);
+
+        Assert.Equal(
+            """
+            var arrayOfInt = new int[,,]
+            {
+                {
+                    { 1, 2, 3 },
+                    { 4, 5, 6 }
+                },
+                {
+                    { 7, 8, 9 },
+                    { 10, 11, 12 }
+                }
+            };
+            
+            """, result);
+    }
 
     [Fact]
     public void DumpReadOnlyCollectionVisualBasic()
@@ -114,6 +156,47 @@ public class CollectionSpec
             """
             Dim listOfListOfInteger = New List(Of List(Of Integer)) From {
                 New List(Of Integer) From { 1, 2, 3 }
+            }
+            
+            """, result);
+    }
+
+    [Fact]
+    public void DumpMultidimensionalArrayVisualBasicSingleLine()
+    {
+        var array = new[,,]
+        {
+            {
+                { 1, 2, 3 },
+                { 4, 5, 6 }
+            },
+            {
+                { 7, 8, 9 },
+                { 10, 11, 12 }
+            }
+        };
+
+        var dumper = new VisualBasicDumper(new DumpOptions
+        {
+            Formatting =
+            {
+                PrimitiveCollectionLayout = CollectionLayout.SingleLine
+            }
+        });
+
+        var result = dumper.Dump(array);
+
+        Assert.Equal(
+            """
+            Dim arrayOfInteger = New Integer(,,){
+                {
+                    { 1, 2, 3 },
+                    { 4, 5, 6 }
+                },
+                {
+                    { 7, 8, 9 },
+                    { 10, 11, 12 }
+                }
             }
             
             """, result);

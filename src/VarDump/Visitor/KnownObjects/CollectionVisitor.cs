@@ -203,7 +203,8 @@ internal sealed class CollectionVisitor : IKnownObjectVisitor
         for (var index = dimensions.Length - 1; index >= 0; index--)
         {
             var dimension = dimensions[index];
-            result = result.Chunk(dimension).Select(x => (Action) (()=> _codeWriter.WriteArrayDimension(x, singleLine)));
+            var index1 = index;
+            result = result.Chunk(dimension).Select(x => (Action) (()=> _codeWriter.WriteArrayDimension(x, singleLine && index1 == dimensions.Length - 1)));
         }
 
         return result;

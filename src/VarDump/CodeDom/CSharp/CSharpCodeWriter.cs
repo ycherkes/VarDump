@@ -330,7 +330,7 @@ internal sealed class CSharpCodeWriter : ICodeWriter
     {
         if (!IntegralNumericFormat.TryParse(format, out var numericFormat))
         {
-            throw new FormatException("Bad format specifier.");
+            throw new FormatException($"Bad format specifier. {format}");
         }
 
         if (obj is char c)

@@ -40,8 +40,8 @@ namespace VarDump.Utils
             {
                 NumericFormat.Decimal => ToString(obj, numericFormat.ToCompatibleString()),
                 NumericFormat.Decimal | NumericFormat.UpperCase => ToString(obj, numericFormat.ToCompatibleString()),
-                NumericFormat.Binary => numericFormat.Digits < 0 ? ConvertToString(obj, 2) : ConvertToString(obj, 2).PadLeft(numericFormat.Digits),
-                NumericFormat.Binary | NumericFormat.UpperCase => numericFormat.Digits < 0 ? ConvertToString(obj, 2).ToUpper() : ConvertToString(obj, 2).PadLeft(numericFormat.Digits).ToUpper(),
+                NumericFormat.Binary => numericFormat.Digits < 0 ? ConvertToString(obj, 2) : ConvertToString(obj, 2).PadLeft(numericFormat.Digits, '0'),
+                NumericFormat.Binary | NumericFormat.UpperCase => numericFormat.Digits < 0 ? ConvertToString(obj, 2).ToUpper() : ConvertToString(obj, 2).PadLeft(numericFormat.Digits, '0').ToUpper(),
                 NumericFormat.Hexadecimal => ToString(obj, numericFormat.ToCompatibleString()),
                 NumericFormat.Hexadecimal | NumericFormat.UpperCase => ToString(obj, numericFormat.ToCompatibleString()),
                 _ => throw new ArgumentOutOfRangeException()

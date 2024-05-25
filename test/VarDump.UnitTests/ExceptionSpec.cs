@@ -17,7 +17,7 @@ public class ExceptionSpec
         {
             var dumper = new VisualBasicDumper(new DumpOptions
             {
-                WritablePropertiesOnly = false,
+                IgnoreReadonlyProperties = false,
                 MaxDepth = 1
             });
 

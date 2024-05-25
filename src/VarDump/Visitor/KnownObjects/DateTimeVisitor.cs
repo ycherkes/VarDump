@@ -26,16 +26,19 @@ internal sealed class DateTimeVisitor(
     {
         var dateTime = (DateTime)obj;
 
-        if (dateTime == DateTime.MaxValue)
+        if (options.UsePredefinedConstants)
         {
-            codeWriter.WriteFieldReference(nameof(DateTime.MaxValue), () => codeWriter.WriteType(objectType));
-            return;
-        }
-
-        if (dateTime == DateTime.MinValue)
-        {
-            codeWriter.WriteFieldReference(nameof(DateTime.MinValue), () => codeWriter.WriteType(objectType));
-            return;
+            if (dateTime == DateTime.MaxValue)
+            {
+                codeWriter.WriteFieldReference(nameof(DateTime.MaxValue), () => codeWriter.WriteType(objectType));
+                return;
+            }
+            
+            if (dateTime == DateTime.MinValue)
+            {
+                codeWriter.WriteFieldReference(nameof(DateTime.MinValue), () => codeWriter.WriteType(objectType));
+                return;
+            }
         }
 
         if (options.DateKind == DateKind.ConvertToUtc)

@@ -10,7 +10,7 @@ public class CircularReferenceSpec
     {
         var assembly = typeof(int).Assembly;
 
-        var dumper = new CSharpDumper(new DumpOptions { WritablePropertiesOnly = false});
+        var dumper = new CSharpDumper(new DumpOptions { IgnoreReadonlyProperties = false});
         _  = dumper.Dump(assembly);
     }
 
@@ -19,7 +19,7 @@ public class CircularReferenceSpec
     {
         var assembly = typeof(int).Assembly;
 
-        var dumper = new VisualBasicDumper(new DumpOptions { WritablePropertiesOnly = false });
+        var dumper = new VisualBasicDumper(new DumpOptions { IgnoreReadonlyProperties = false });
         _ = dumper.Dump(assembly);
     }
 }

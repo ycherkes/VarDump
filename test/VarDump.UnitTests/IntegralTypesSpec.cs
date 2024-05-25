@@ -11,10 +11,7 @@ public class IntegralTypesSpec
     {
         var dumper = new CSharpDumper(new DumpOptions
         {
-            Formatting =
-            {
-                IntegralNumericFormat = "b"
-            }
+            IntegralNumericFormat = "b"
         });
 
         var result = dumper.Dump(ulong.MaxValue - 1);
@@ -31,10 +28,7 @@ public class IntegralTypesSpec
     {
         var dumper = new CSharpDumper(new DumpOptions
         {
-            Formatting =
-            {
-                IntegralNumericFormat = "b_4"
-            }
+            IntegralNumericFormat = "b_4"
         });
 
         var result = dumper.Dump(ulong.MaxValue - 1);
@@ -51,10 +45,7 @@ public class IntegralTypesSpec
     {
         var dumper = new CSharpDumper(new DumpOptions
         {
-            Formatting =
-            {
-                IntegralNumericFormat = "b"
-            }
+            IntegralNumericFormat = "b"
         });
 
         var result = dumper.Dump(int.MaxValue-1);
@@ -71,11 +62,8 @@ public class IntegralTypesSpec
     {
         var dumper = new CSharpDumper(new DumpOptions
         {
-            Formatting =
-            {
-                IntegralNumericFormat = "b",
-                PrimitiveCollectionLayout = CollectionLayout.SingleLine
-            }
+            IntegralNumericFormat = "b",
+            PrimitiveCollectionLayout = CollectionLayout.SingleLine
         });
 
         var result = dumper.Dump(new[]{37,49,73});
@@ -92,10 +80,7 @@ public class IntegralTypesSpec
     {
         var dumper = new CSharpDumper(new DumpOptions
         {
-            Formatting =
-            {
-                IntegralNumericFormat = "X2"
-            }
+            IntegralNumericFormat = "X2"
         });
 
         var result = dumper.Dump((byte)15);
@@ -112,10 +97,7 @@ public class IntegralTypesSpec
     {
         var dumper = new CSharpDumper(new DumpOptions
         {
-            Formatting =
-            {
-                IntegralNumericFormat = "X8_4"
-            }
+            IntegralNumericFormat = "X8_4"
         });
 
         var result = dumper.Dump(0X0001_E240);
@@ -132,10 +114,7 @@ public class IntegralTypesSpec
     {
         var dumper = new VisualBasicDumper(new DumpOptions
         {
-            Formatting =
-            {
-                IntegralNumericFormat = "B"
-            }
+            IntegralNumericFormat = "B"
         });
 
         var result = dumper.Dump(ulong.MaxValue - 1);
@@ -152,10 +131,7 @@ public class IntegralTypesSpec
     {
         var dumper = new VisualBasicDumper(new DumpOptions
         {
-            Formatting =
-            {
-                IntegralNumericFormat = "B"
-            }
+            IntegralNumericFormat = "B"
         });
 
         var result = dumper.Dump(int.MaxValue - 1);
@@ -172,10 +148,7 @@ public class IntegralTypesSpec
     {
         var dumper = new VisualBasicDumper(new DumpOptions
         {
-            Formatting =
-            {
-                IntegralNumericFormat = "X2"
-            }
+            IntegralNumericFormat = "X2"
         });
 
         var result = dumper.Dump((byte)15);
@@ -192,10 +165,7 @@ public class IntegralTypesSpec
     {
         var dumper = new VisualBasicDumper(new DumpOptions
         {
-            Formatting =
-            {
-                IntegralNumericFormat = "X8_4"
-            }
+            IntegralNumericFormat = "X8_4"
         });
 
         var result = dumper.Dump(0X0001_E240);

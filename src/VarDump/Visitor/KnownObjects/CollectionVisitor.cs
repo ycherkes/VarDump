@@ -147,7 +147,7 @@ internal sealed class CollectionVisitor : IKnownObjectVisitor
 
         var singleLine = typeof(string) != elementType
                          && ReflectionUtils.IsPrimitive(elementType)
-                         && _options.Formatting?.PrimitiveCollectionLayout == CollectionLayout.SingleLine;
+                         && _options.PrimitiveCollectionLayout == CollectionLayout.SingleLine;
 
         if (type.IsArray || isImmutableOrFrozen || !type.IsPublic || !isCollection)
         {

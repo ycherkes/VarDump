@@ -36,10 +36,7 @@ public class ArraySpec
 
         var dumper = new CSharpDumper(new DumpOptions
         {
-            Formatting =
-            {
-                PrimitiveCollectionLayout = CollectionLayout.SingleLine
-            }
+            PrimitiveCollectionLayout = CollectionLayout.SingleLine
         });
 
         var result = dumper.Dump(array);
@@ -65,10 +62,7 @@ public class ArraySpec
 
         var dumper = new CSharpDumper(new DumpOptions
         {
-            Formatting =
-            {
-                PrimitiveCollectionLayout = CollectionLayout.SingleLine
-            }
+            PrimitiveCollectionLayout = CollectionLayout.SingleLine
         });
 
         var result = dumper.Dump(array);
@@ -101,10 +95,7 @@ public class ArraySpec
 
         var dumper = new CSharpDumper(new DumpOptions
         {
-            Formatting =
-            {
-                PrimitiveCollectionLayout = CollectionLayout.SingleLine
-            }
+            PrimitiveCollectionLayout = CollectionLayout.SingleLine
         });
 
         var result = dumper.Dump(array);
@@ -272,10 +263,7 @@ public class ArraySpec
 
         var dumper = new VisualBasicDumper(new DumpOptions
         {
-            Formatting =
-            {
-                PrimitiveCollectionLayout = CollectionLayout.SingleLine
-            }
+            PrimitiveCollectionLayout = CollectionLayout.SingleLine
         });
 
         var result = dumper.Dump(array);
@@ -300,10 +288,7 @@ public class ArraySpec
 
         var dumper = new VisualBasicDumper(new DumpOptions
         {
-            Formatting =
-            {
-                PrimitiveCollectionLayout = CollectionLayout.SingleLine
-            }
+            PrimitiveCollectionLayout = CollectionLayout.SingleLine
         });
 
         var result = dumper.Dump(array);
@@ -335,10 +320,7 @@ public class ArraySpec
 
         var dumper = new VisualBasicDumper(new DumpOptions
         {
-            Formatting =
-            {
-                PrimitiveCollectionLayout = CollectionLayout.SingleLine
-            }
+            PrimitiveCollectionLayout = CollectionLayout.SingleLine
         });
 
         var result = dumper.Dump(array);

@@ -24,17 +24,23 @@ internal sealed class TimeOnlyVisitor(ICodeWriter codeWriter, DumpOptions option
     {
         var ticks = (long?)objectType.GetProperty("Ticks")?.GetValue(timeOnly);
 
-        switch (ticks)
+        if (ticks == null)
         {
-            case null:
-                codeWriter.WriteErrorDetected("Wrong TimeOnly struct");
-                return;
-            case 863999999999:
-                codeWriter.WriteFieldReference(nameof(DateTime.MaxValue), () => codeWriter.WriteType(objectType));
-                return;
-            case 0:
-                codeWriter.WriteFieldReference(nameof(DateTime.MinValue), () => codeWriter.WriteType(objectType));
-                return;
+            codeWriter.WriteErrorDetected("Wrong TimeOnly struct");
+            return;
+        }
+
+        if (options.UsePredefinedConstants)
+        {
+            switch (ticks)
+            {
+                case 863999999999:
+                    codeWriter.WriteFieldReference(nameof(DateTime.MaxValue), () => codeWriter.WriteType(objectType));
+                    return;
+                case 0:
+                    codeWriter.WriteFieldReference(nameof(DateTime.MinValue), () => codeWriter.WriteType(objectType));
+                    return;
+            }
         }
 
         var timeSpan = TimeSpan.FromTicks(ticks.Value);

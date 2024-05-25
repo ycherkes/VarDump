@@ -29,19 +29,22 @@ internal sealed class DateOnlyVisitor(ICodeWriter codeWriter, DumpOptions option
             codeWriter.WriteErrorDetected("Wrong DateOnly struct");
             return;
         }
-        
-        if (dayNumber == 3652058U)
+
+        if (options.UsePredefinedConstants)
         {
-            codeWriter.WriteFieldReference(nameof(DateTime.MaxValue), () => codeWriter.WriteType(objectType));
+            if (dayNumber == 3652058U)
+            {
+                codeWriter.WriteFieldReference(nameof(DateTime.MaxValue), () => codeWriter.WriteType(objectType));
 
-            return;
-        }
+                return;
+            }
 
-        if (dayNumber == 1)
-        {
-            codeWriter.WriteFieldReference(nameof(DateTime.MinValue), () => codeWriter.WriteType(objectType));
+            if (dayNumber == 1)
+            {
+                codeWriter.WriteFieldReference(nameof(DateTime.MinValue), () => codeWriter.WriteType(objectType));
 
-            return;
+                return;
+            }
         }
 
         var dateTime = new DateTime((long)dayNumber * 864000000000L);

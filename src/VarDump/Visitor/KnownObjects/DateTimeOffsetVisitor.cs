@@ -27,16 +27,20 @@ internal sealed class DateTimeOffsetVisitor(
     {
         var dateTimeOffset = (DateTimeOffset)obj;
 
-        if (dateTimeOffset == DateTimeOffset.MaxValue)
+        if (options.UsePredefinedConstants)
         {
-            codeWriter.WriteFieldReference(nameof(DateTimeOffset.MaxValue), () => codeWriter.WriteType(objectType));
-            return;
-        }
 
-        if (dateTimeOffset == DateTimeOffset.MinValue)
-        {
-            codeWriter.WriteFieldReference(nameof(DateTimeOffset.MinValue), () => codeWriter.WriteType(objectType));
-            return;
+            if (dateTimeOffset == DateTimeOffset.MaxValue)
+            {
+                codeWriter.WriteFieldReference(nameof(DateTimeOffset.MaxValue), () => codeWriter.WriteType(objectType));
+                return;
+            }
+
+            if (dateTimeOffset == DateTimeOffset.MinValue)
+            {
+                codeWriter.WriteFieldReference(nameof(DateTimeOffset.MinValue), () => codeWriter.WriteType(objectType));
+                return;
+            }
         }
 
         if (options.DateTimeInstantiation == DateTimeInstantiation.Parse)

@@ -21,19 +21,27 @@ public class DumpOptions
     public BindingFlags GetPropertiesBindingFlags { get; set; } = BindingFlags.Public | BindingFlags.Instance;
     public bool IgnoreDefaultValues { get; set; } = true;
     public bool IgnoreNullValues { get; set; } = true;
+    public bool IgnoreReadonlyProperties { get; set; } = true;
     public string IndentString { get; set; } = "    ";
+    public string IntegralNumericFormat { get; set; } = "";
     public int MaxCollectionSize { get; set; } = int.MaxValue;
     public int MaxDepth { get; set; } = 25;
+    public CollectionLayout PrimitiveCollectionLayout { get; set; }
     public ListSortDirection? SortDirection { get; set; }
     public bool UseNamedArgumentsInConstructors { get; set; }
+    public bool UsePredefinedConstants { get; set; } = true;
+    public bool UsePredefinedMethods { get; set; } = true;
     public bool UseTypeFullName { get; set; }
-    public bool WritablePropertiesOnly { get; set; } = true;
-    public Formatting Formatting { get; set; } = new Formatting();
+
+    [Obsolete("Use IgnoreReadonlyProperties instead")]
+    public bool WritablePropertiesOnly
+    {
+        get => IgnoreReadonlyProperties;
+        set => IgnoreReadonlyProperties = value;
+    }
 
     public DumpOptions Clone()
     {
-        var formatting = Formatting ?? new Formatting();
-
         return new DumpOptions
         {
             ConfigureKnownObjects = ConfigureKnownObjects,
@@ -45,24 +53,17 @@ public class DumpOptions
             GetPropertiesBindingFlags = GetPropertiesBindingFlags,
             IgnoreDefaultValues = IgnoreDefaultValues,
             IgnoreNullValues = IgnoreNullValues,
+            IgnoreReadonlyProperties = IgnoreReadonlyProperties,
             IndentString = IndentString,
+            IntegralNumericFormat = IntegralNumericFormat,
             MaxCollectionSize = MaxCollectionSize,
             MaxDepth = MaxDepth,
+            PrimitiveCollectionLayout = PrimitiveCollectionLayout,
             SortDirection = SortDirection,
             UseNamedArgumentsInConstructors = UseNamedArgumentsInConstructors,
+            UsePredefinedConstants = UsePredefinedConstants,
+            UsePredefinedMethods = UsePredefinedMethods,
             UseTypeFullName = UseTypeFullName,
-            WritablePropertiesOnly = WritablePropertiesOnly,
-            Formatting = new Formatting
-            {
-                PrimitiveCollectionLayout = formatting.PrimitiveCollectionLayout,
-                IntegralNumericFormat = formatting.IntegralNumericFormat
-            }
         };
     }
-}
-
-public class Formatting
-{
-    public CollectionLayout PrimitiveCollectionLayout { get; set; }
-    public string IntegralNumericFormat { get; set; } = "";
 }

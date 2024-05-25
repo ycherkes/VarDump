@@ -13,10 +13,10 @@ internal sealed class PrimitiveVisitor(ICodeWriter codeWriter,
     [
         nameof(int.MaxValue),
         nameof(int.MinValue),
-        nameof(float.PositiveInfinity),
-        nameof(float.NegativeInfinity),
+        //nameof(float.PositiveInfinity),
+        //nameof(float.NegativeInfinity),
         nameof(float.Epsilon),
-        nameof(float.NaN)
+        //nameof(float.NaN)
     ];
 
     public string Id => "Primitive";
@@ -36,21 +36,24 @@ internal sealed class PrimitiveVisitor(ICodeWriter codeWriter,
     {
         if (obj == null || ValueEquality(obj, 0) || obj is byte)
         {
-            codeWriter.WritePrimitive(obj, options.Formatting.IntegralNumericFormat);
+            codeWriter.WritePrimitive(obj, options.IntegralNumericFormat);
             return;
         }
 
-        var specialValueName = SpecialValueNames
-            .Where(specialValue => IsSpecialValueField(obj, objectType, specialValue))
-            .FirstOrDefault(x => x != null);
-
-        if (specialValueName != null)
+        if (options.UsePredefinedConstants)
         {
-            codeWriter.WriteFieldReference(specialValueName, () => codeWriter.WriteType(objectType));
-            return;
+            var specialValueName = SpecialValueNames
+                .Where(specialValue => IsSpecialValueField(obj, objectType, specialValue))
+                .FirstOrDefault(x => x != null);
+
+            if (specialValueName != null)
+            {
+                codeWriter.WriteFieldReference(specialValueName, () => codeWriter.WriteType(objectType));
+                return;
+            }
         }
 
-        codeWriter.WritePrimitive(obj, options.Formatting.IntegralNumericFormat);
+        codeWriter.WritePrimitive(obj, options.IntegralNumericFormat);
     }
 
     private static bool IsSpecialValueField(object @object, IReflect objectType, string fieldName)

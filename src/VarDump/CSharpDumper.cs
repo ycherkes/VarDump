@@ -5,6 +5,7 @@ using VarDump.CodeDom.Compiler;
 using VarDump.CodeDom.CSharp;
 using VarDump.Utils;
 using VarDump.Visitor;
+using VarDump.Visitor.Format;
 
 namespace VarDump;
 
@@ -19,7 +20,20 @@ public sealed class CSharpDumper : IDumper
 
     public CSharpDumper(DumpOptions options)
     {
-        _options = options?.Clone() ?? throw new ArgumentNullException(nameof(options));
+        ValidateOptions(options);
+        _options = options.Clone();
+    }
+
+    private void ValidateOptions(DumpOptions options)
+    {
+        if (options == null)
+        {
+            throw new ArgumentNullException(nameof(options));
+        }
+        if (!IntegralNumericFormat.TryParse(options.IntegralNumericFormat, out _))
+        {
+            throw new FormatException($"Bad format specifier. {options.IntegralNumericFormat}");
+        }
     }
 
     public string Dump(object obj)

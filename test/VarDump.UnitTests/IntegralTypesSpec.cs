@@ -11,14 +11,15 @@ public class IntegralTypesSpec
     {
         var dumper = new CSharpDumper(new DumpOptions
         {
-            IntegralNumericFormat = "b"
+            IntegralNumericFormat = "b",
+            UsePredefinedConstants = false
         });
 
-        var result = dumper.Dump(ulong.MaxValue - 1);
+        var result = dumper.Dump(ulong.MaxValue);
 
         Assert.Equal(
             """
-            var ulongValue = 0b1111111111111111111111111111111111111111111111111111111111111110ul;
+            var ulongValue = 0b1111111111111111111111111111111111111111111111111111111111111111ul;
 
             """, result);
     }
@@ -45,15 +46,15 @@ public class IntegralTypesSpec
     {
         var dumper = new CSharpDumper(new DumpOptions
         {
-            IntegralNumericFormat = "b"
+            IntegralNumericFormat = "b8_4"
         });
 
-        var result = dumper.Dump(int.MaxValue-1);
+        var result = dumper.Dump(37);
 
         Assert.Equal(
             """
-            var intValue = 0b1111111111111111111111111111110;
-
+            var intValue = 0b0010_0101;
+            
             """, result);
     }
 
@@ -131,14 +132,14 @@ public class IntegralTypesSpec
     {
         var dumper = new VisualBasicDumper(new DumpOptions
         {
-            IntegralNumericFormat = "B"
+            IntegralNumericFormat = "b8_4"
         });
 
-        var result = dumper.Dump(int.MaxValue - 1);
+        var result = dumper.Dump(37);
 
         Assert.Equal(
             """
-            Dim integerValue = &B1111111111111111111111111111110
+            Dim integerValue = &b0010_0101
             
             """, result);
     }

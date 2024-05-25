@@ -35,41 +35,44 @@ internal sealed class TimeSpanVisitor(
     {
         var timeSpan = (TimeSpan)obj;
 
-        if (SpecialValuesDictionary.TryGetValue(timeSpan, out var name))
+        if (options.UsePredefinedConstants && SpecialValuesDictionary.TryGetValue(timeSpan, out var name))
         {
             codeWriter.WriteFieldReference(name, () => codeWriter.WriteType(objectType));
 
             return;
         }
 
-        var valuesCollection = new Dictionary<string, long>
+        if (options.UsePredefinedMethods)
         {
-            { nameof(TimeSpan.FromDays), timeSpan.Days },
-            { nameof(TimeSpan.FromHours), timeSpan.Hours },
-            { nameof(TimeSpan.FromMinutes), timeSpan.Minutes },
-            { nameof(TimeSpan.FromSeconds), timeSpan.Seconds },
-            { nameof(TimeSpan.FromMilliseconds), timeSpan.Milliseconds }
-        };
+            var valuesCollection = new Dictionary<string, long>
+            {
+                { nameof(TimeSpan.FromDays), timeSpan.Days },
+                { nameof(TimeSpan.FromHours), timeSpan.Hours },
+                { nameof(TimeSpan.FromMinutes), timeSpan.Minutes },
+                { nameof(TimeSpan.FromSeconds), timeSpan.Seconds },
+                { nameof(TimeSpan.FromMilliseconds), timeSpan.Milliseconds }
+            };
 
-        var nonZeroValues = valuesCollection.Where(v => v.Value > 0).ToArray();
+            var nonZeroValues = valuesCollection.Where(v => v.Value > 0).ToArray();
 
-        if (nonZeroValues.Length == 1)
-        {
-            codeWriter.WriteMethodInvoke(() => codeWriter.WriteMethodReference(
-                () => codeWriter.WriteType(objectType), nonZeroValues[0].Key), 
-                [() => codeWriter.WritePrimitive(nonZeroValues[0].Value)]);
-            
-            return;
-        }
+            if (nonZeroValues.Length == 1)
+            {
+                codeWriter.WriteMethodInvoke(() => codeWriter.WriteMethodReference(
+                        () => codeWriter.WriteType(objectType), nonZeroValues[0].Key),
+                    [() => codeWriter.WritePrimitive(nonZeroValues[0].Value)]);
 
-        if (timeSpan.Ticks % TimeSpan.TicksPerMillisecond != 0)
-        {
-            codeWriter.WriteMethodInvoke(
-                () => codeWriter.WriteMethodReference(
-                    () => codeWriter.WriteType(objectType), nameof(TimeSpan.FromTicks)),
-                [() => codeWriter.WritePrimitive(timeSpan.Ticks)]);
+                return;
+            }
 
-            return;
+            if (timeSpan.Ticks % TimeSpan.TicksPerMillisecond != 0)
+            {
+                codeWriter.WriteMethodInvoke(
+                    () => codeWriter.WriteMethodReference(
+                        () => codeWriter.WriteType(objectType), nameof(TimeSpan.FromTicks)),
+                    [() => codeWriter.WritePrimitive(timeSpan.Ticks)]);
+
+                return;
+            }
         }
 
         if (options.DateTimeInstantiation == DateTimeInstantiation.Parse)

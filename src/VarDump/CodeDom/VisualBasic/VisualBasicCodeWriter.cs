@@ -9,6 +9,8 @@ using System.IO;
 using VarDump.CodeDom.Common;
 using VarDump.CodeDom.Compiler;
 using VarDump.CodeDom.Resources;
+using VarDump.Utils;
+using VarDump.Visitor.Format;
 
 namespace VarDump.CodeDom.VisualBasic;
 
@@ -266,8 +268,13 @@ internal sealed class VisualBasicCodeWriter : ICodeWriter
         }
     }
 
-    public void WritePrimitive(object obj)
+    public void WritePrimitive(object obj, string format = "D")
     {
+        if (!IntegralNumericFormat.TryParse(format, out var numericFormat))
+        {
+            throw new FormatException($"Bad format specifier. {format}");
+        }
+
         switch (obj)
         {
             case char:
@@ -277,28 +284,42 @@ internal sealed class VisualBasicCodeWriter : ICodeWriter
                 break;
             case sbyte @sbyte:
                 _output.Write("CSByte(");
-                _output.Write(@sbyte.ToString(CultureInfo.InvariantCulture));
+                _output.Write($"{GetPrefix(numericFormat)}{NumericUtil.ToString(@sbyte, numericFormat)}");
                 _output.Write(')');
                 break;
             case ushort @ushort:
-                _output.Write(@ushort.ToString(CultureInfo.InvariantCulture));
+                _output.Write($"{GetPrefix(numericFormat)}{NumericUtil.ToString(@ushort, numericFormat)}");
                 _output.Write("US");
                 break;
             case uint u:
-                _output.Write(u.ToString(CultureInfo.InvariantCulture));
+                _output.Write($"{GetPrefix(numericFormat)}{NumericUtil.ToString(u, numericFormat)}");
                 _output.Write("UI");
                 break;
             case ulong @ulong:
-                _output.Write(@ulong.ToString(CultureInfo.InvariantCulture));
+                _output.Write($"{GetPrefix(numericFormat)}{NumericUtil.ToString(@ulong, numericFormat)}");
                 _output.Write("UL");
                 break;
             default:
-                DefaultWritePrimitiveExpression(obj);
+                DefaultWritePrimitiveExpression(obj, numericFormat);
                 break;
         }
     }
 
-    private void DefaultWritePrimitiveExpression(object obj)
+    private static string GetPrefix(IntegralNumericFormat numericFormat)
+    {
+        return numericFormat.Format switch
+        {
+            NumericFormat.Binary => "&b",
+            NumericFormat.Binary | NumericFormat.UpperCase => "&B",
+            NumericFormat.Decimal => "",
+            NumericFormat.Decimal | NumericFormat.UpperCase => "",
+            NumericFormat.Hexadecimal => "&h",
+            NumericFormat.Hexadecimal | NumericFormat.UpperCase => "&H",
+            _ => throw new ArgumentOutOfRangeException()
+        };
+    }
+
+    private void DefaultWritePrimitiveExpression(object obj, IntegralNumericFormat numericFormat)
     {
         switch (obj)
         {
@@ -314,16 +335,16 @@ internal sealed class VisualBasicCodeWriter : ICodeWriter
                 _output.Write('\'');
                 break;
             case byte b:
-                _output.Write(b.ToString(CultureInfo.InvariantCulture));
+                _output.Write($"{GetPrefix(numericFormat)}{NumericUtil.ToString(b, numericFormat)}");
                 break;
             case short s1:
-                _output.Write(s1.ToString(CultureInfo.InvariantCulture));
+                _output.Write($"{GetPrefix(numericFormat)}{NumericUtil.ToString(s1, numericFormat)}");
                 break;
             case int i:
-                _output.Write(i.ToString(CultureInfo.InvariantCulture));
+                _output.Write($"{GetPrefix(numericFormat)}{NumericUtil.ToString(i, numericFormat)}");
                 break;
             case long l:
-                _output.Write(l.ToString(CultureInfo.InvariantCulture));
+                _output.Write($"{GetPrefix(numericFormat)}{NumericUtil.ToString(l, numericFormat)}");
                 break;
             case float f:
                 OutputFloatValue(f);
@@ -342,7 +363,7 @@ internal sealed class VisualBasicCodeWriter : ICodeWriter
         }
     }
 
-    public void WriteArrayCreate(CodeTypeInfo typeInfo, IEnumerable<Action> initializers, int size = 0)
+    public void WriteArrayCreate(CodeTypeInfo typeInfo, IEnumerable<Action> initializers, bool singleLine, int size = 0)
     {
         if (typeInfo is not CodeEmptyTypeInfo)
         {
@@ -358,11 +379,20 @@ internal sealed class VisualBasicCodeWriter : ICodeWriter
                 TypeOutput(typeInfo);
             }
 
-            _output.Write("{");
-            _output.WriteLine("");
-            OutputActions(initializersEnumerator, newlineBetweenItems: true, newLineContinuation: false);
-            _output.WriteLine("");
-            _output.Write('}');
+            if (singleLine)
+            {
+                _output.Write("{ ");
+                OutputActions(initializersEnumerator, newlineBetweenItems: false, newLineContinuation: false);
+                _output.Write(" }");
+            }
+            else
+            {
+                _output.Write("{");
+                _output.WriteLine("");
+                OutputActions(initializersEnumerator, newlineBetweenItems: true, newLineContinuation: false);
+                _output.WriteLine("");
+                _output.Write('}');
+            }
         }
         else
         {
@@ -407,13 +437,22 @@ internal sealed class VisualBasicCodeWriter : ICodeWriter
         Indent--;
     }
 
-    public void WriteArrayDimension(IEnumerable<Action> initializers)
+    public void WriteArrayDimension(IEnumerable<Action> initializers, bool singleLine = false)
     {
-        _output.Write("{");
-        _output.WriteLine();
-        OutputActions(initializers, newlineBetweenItems: true, newLineContinuation: false);
-        _output.WriteLine();
-        _output.Write("}");
+        if (singleLine)
+        {
+            _output.Write("{ ");
+            OutputActions(initializers, newlineBetweenItems: false, newLineContinuation: false);
+            _output.Write(" }");
+        }
+        else
+        {
+            _output.Write("{");
+            _output.WriteLine();
+            OutputActions(initializers, newlineBetweenItems: true, newLineContinuation: false);
+            _output.WriteLine();
+            _output.Write("}");
+        }
     }
 
     public void WriteCast(CodeTypeInfo typeInfo, Action action)
@@ -526,7 +565,7 @@ internal sealed class VisualBasicCodeWriter : ICodeWriter
         _output.Write(')');
     }
 
-    public void WriteObjectCreateAndInitialize(CodeTypeInfo typeInfo, IEnumerable<Action> parametersActions, IEnumerable<Action> initializeActions)
+    public void WriteObjectCreateAndInitialize(CodeTypeInfo typeInfo, IEnumerable<Action> parametersActions, IEnumerable<Action> initializeActions, bool singleLine = false)
     {
         _output.Write("New ");
         OutputType(typeInfo);
@@ -560,10 +599,19 @@ internal sealed class VisualBasicCodeWriter : ICodeWriter
             _ => " With "
         });
 
-        _output.WriteLine('{');
-        OutputActions(initializeEnumerator, newlineBetweenItems: true, newLineContinuation: false);
-        _output.WriteLine();
-        _output.Write('}');
+        if (singleLine)
+        {
+            _output.Write("{ ");
+            OutputActions(initializeEnumerator, newlineBetweenItems: false, newLineContinuation: false);
+            _output.Write(" }");
+        }
+        else
+        {
+            _output.WriteLine('{');
+            OutputActions(initializeEnumerator, newlineBetweenItems: true, newLineContinuation: false);
+            _output.WriteLine();
+            _output.Write('}');
+        }
     }
 
     public void WriteValueTupleCreate(IEnumerable<Action> actions)

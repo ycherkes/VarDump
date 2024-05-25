@@ -1,8 +1,10 @@
+using System;
+using VarDump.Visitor;
 using Xunit;
 
 namespace VarDump.UnitTests;
 
-public class NumberSpecialValuesSpec
+public class PredefinedConstantsSpec
 {
     [Fact]
     public void DumpMaxValueFloatCSharp()
@@ -14,6 +16,30 @@ public class NumberSpecialValuesSpec
         var result = dumper.Dump(max);
 
         Assert.Equal("var floatValue = float.MaxValue;\r\n", result);
+    }
+    
+    [Fact]
+    public void DumpMaxValueIntegerNoPredefinedConstantsCSharp()
+    {
+        const int max = int.MaxValue;
+
+        var dumper = new CSharpDumper(new DumpOptions { UsePredefinedConstants = false });
+
+        var result = dumper.Dump(max);
+
+        Assert.Equal("var intValue = 2147483647;\r\n", result);
+    }
+
+    [Fact]
+    public void DumpMaxValueDateTimeNoPredefinedConstantsCSharp()
+    {
+        var max = DateTime.MaxValue;
+
+        var dumper = new CSharpDumper(new DumpOptions { UsePredefinedConstants = false });
+
+        var result = dumper.Dump(max);
+
+        Assert.Equal("var dateTime = DateTime.ParseExact(\"9999-12-31T23:59:59.9999999\", \"O\", CultureInfo.InvariantCulture, DateTimeStyles.RoundtripKind);\r\n", result);
     }
 
     [Fact]
@@ -95,5 +121,29 @@ public class NumberSpecialValuesSpec
         var result = dumper.Dump(zero);
 
         Assert.Equal("Dim uShortValue = 0US\r\n", result);
+    }
+
+    [Fact]
+    public void DumpMaxValueIntegerNoPredefinedConstantsVb()
+    {
+        const int max = int.MaxValue;
+
+        var dumper = new VisualBasicDumper(new DumpOptions { UsePredefinedConstants = false });
+
+        var result = dumper.Dump(max);
+
+        Assert.Equal("Dim integerValue = 2147483647\r\n", result);
+    }
+
+    [Fact]
+    public void DumpMaxValueDateTimeNoPredefinedConstantsVb()
+    {
+        var max = DateTime.MaxValue;
+
+        var dumper = new VisualBasicDumper(new DumpOptions { UsePredefinedConstants = false });
+
+        var result = dumper.Dump(max);
+
+        Assert.Equal("Dim dateValue = Date.ParseExact(\"9999-12-31T23:59:59.9999999\", \"O\", CultureInfo.InvariantCulture, DateTimeStyles.RoundtripKind)\r\n", result);
     }
 }

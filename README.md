@@ -5,7 +5,9 @@ VarDump is a highly customizable  utility for serialization runtime objects to C
 
 Developed as a free alternative to [ObjectDumper.NET](https://github.com/thomasgalliker/ObjectDumper), which is not free for commercial use.
 
-[![nuget version](https://img.shields.io/badge/Nuget-v1.0.3-blue)](https://www.nuget.org/packages/VarDump)
+Actively used as a part of [Object Dumper Visual Studio and Visual Studio Code extension](https://github.com/ycherkes/ObjectDumper)
+
+[![nuget version](https://img.shields.io/badge/Nuget-v1.0.4.9-blue)](https://www.nuget.org/packages/VarDump)
 [![nuget downloads](https://img.shields.io/nuget/dt/VarDump?label=Downloads)](https://www.nuget.org/packages/VarDump)
 
 ### C# & VB Dumper:

@@ -37,7 +37,7 @@ public class DiagnosticsSpec
 
         var dumper = new CSharpDumper(new DumpOptions
         {
-            WritablePropertiesOnly = false
+            IgnoreReadonlyProperties = false
         });
 
         var result = dumper.Dump(failures);
@@ -67,7 +67,7 @@ public class DiagnosticsSpec
 
         var dumper = new VisualBasicDumper(new DumpOptions
         {
-            WritablePropertiesOnly = false
+            IgnoreReadonlyProperties = false
         });
 
         var result = dumper.Dump(failures);

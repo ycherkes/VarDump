@@ -1,4 +1,6 @@
 using System.Collections.Immutable;
+using VarDump.Visitor;
+using VarDump.Visitor.Format;
 using Xunit;
 
 namespace VarDump.UnitTests;
@@ -21,6 +23,94 @@ public class ArraySpec
                 new int[]
                 {
                     1
+                }
+            };
+
+            """, result);
+    }
+
+    [Fact]
+    public void DumpArrayOfArraysCSharpSingleLine()
+    {
+        int[][] array = [[1, 2, 3]];
+
+        var dumper = new CSharpDumper(new DumpOptions
+        {
+            PrimitiveCollectionLayout = CollectionLayout.SingleLine
+        });
+
+        var result = dumper.Dump(array);
+
+        Assert.Equal(
+            """
+            var arrayOfArrayOfInt = new int[][]
+            {
+                new int[]{ 1, 2, 3 }
+            };
+            
+            """, result);
+    }
+
+    [Fact]
+    public void Dump2DimensionalArrayCSharpSingleLine()
+    {
+        var array = new byte [,]
+        {
+            { 1, 2, 3 },
+            { 4, 5, 6 }
+        };
+
+        var dumper = new CSharpDumper(new DumpOptions
+        {
+            PrimitiveCollectionLayout = CollectionLayout.SingleLine
+        });
+
+        var result = dumper.Dump(array);
+
+        Assert.Equal(
+            """
+            var arrayOfByte = new byte[,]
+            {
+                { 1, 2, 3 },
+                { 4, 5, 6 }
+            };
+            
+            """, result);
+    }
+
+    [Fact]
+    public void DumpMultidimensionalArrayCSharpSingleLine()
+    {
+        var array = new[, ,]
+        {
+            {
+                { 1, 2, 3 },
+                { 4, 5, 6 }
+            },
+            {
+                { 7, 8, 9 },
+                { 10, 11, 12 }
+            }
+        };
+
+        var dumper = new CSharpDumper(new DumpOptions
+        {
+            PrimitiveCollectionLayout = CollectionLayout.SingleLine
+        });
+
+        var result = dumper.Dump(array);
+
+        Assert.Equal(
+            """
+            var arrayOfInt = new int[,,]
+            {
+                {
+                    { 1, 2, 3 },
+                    { 4, 5, 6 }
+                },
+                {
+                    { 7, 8, 9 },
+                    { 10, 11, 12 }
                 }
             };
 
@@ -160,6 +250,91 @@ public class ArraySpec
             Dim arrayOfArrayOfInteger = New Integer()(){
                 New Integer(){
                     1
+                }
+            }
+
+            """, result);
+    }
+
+    [Fact]
+    public void DumpArrayOfArraysVbSingleLine()
+    {
+        int[][] array = [[1, 2, 3]];
+
+        var dumper = new VisualBasicDumper(new DumpOptions
+        {
+            PrimitiveCollectionLayout = CollectionLayout.SingleLine
+        });
+
+        var result = dumper.Dump(array);
+
+        Assert.Equal(
+            """
+            Dim arrayOfArrayOfInteger = New Integer()(){
+                New Integer(){ 1, 2, 3 }
+            }
+            
+            """, result);
+    }
+
+    [Fact]
+    public void Dump2DimensionalArrayVbSingleLine()
+    {
+        var array = new byte[,]
+        {
+            { 1, 2, 3 },
+            { 4, 5, 6 }
+        };
+
+        var dumper = new VisualBasicDumper(new DumpOptions
+        {
+            PrimitiveCollectionLayout = CollectionLayout.SingleLine
+        });
+
+        var result = dumper.Dump(array);
+
+        Assert.Equal(
+            """
+            Dim arrayOfByte = New Byte(,){
+                { 1, 2, 3 },
+                { 4, 5, 6 }
+            }
+            
+            """, result);
+    }
+
+    [Fact]
+    public void DumpMultidimensionalArrayVisualBasicSingleLine()
+    {
+        var array = new[, ,]
+        {
+            {
+                { 1, 2, 3 },
+                { 4, 5, 6 }
+            },
+            {
+                { 7, 8, 9 },
+                { 10, 11, 12 }
+            }
+        };
+
+        var dumper = new VisualBasicDumper(new DumpOptions
+        {
+            PrimitiveCollectionLayout = CollectionLayout.SingleLine
+        });
+
+        var result = dumper.Dump(array);
+
+        Assert.Equal(
+            """
+            Dim arrayOfInteger = New Integer(,,){
+                {
+                    { 1, 2, 3 },
+                    { 4, 5, 6 }
+                },
+                {
+                    { 7, 8, 9 },
+                    { 10, 11, 12 }
                 }
             }
 

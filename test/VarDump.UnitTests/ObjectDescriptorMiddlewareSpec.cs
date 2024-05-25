@@ -343,7 +343,7 @@ public class ObjectDescriptorMiddlewareSpec
         var options = new DumpOptions
         {
             Descriptors = { new MemberInfoMiddleware() },
-            WritablePropertiesOnly = false
+            IgnoreReadonlyProperties = false
         };
 
         var dumper = new CSharpDumper(options);
@@ -397,7 +397,7 @@ public class ObjectDescriptorMiddlewareSpec
         {
             Descriptors = { new FileSystemInfoMiddleware() },
             DateKind = DateKind.ConvertToUtc,
-            WritablePropertiesOnly = false,
+            IgnoreReadonlyProperties = false,
             SortDirection = ListSortDirection.Ascending
         };
 
@@ -523,7 +523,7 @@ public class ObjectDescriptorMiddlewareSpec
         var options = new DumpOptions
         {
             Descriptors = { new MemberInfoMiddleware() },
-            WritablePropertiesOnly = false
+            IgnoreReadonlyProperties = false
         };
 
         var dumper = new VisualBasicDumper(options);

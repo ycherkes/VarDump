@@ -7,6 +7,7 @@ using VarDump.CodeDom.Common;
 using VarDump.CodeDom.Compiler;
 using VarDump.Extensions;
 using VarDump.Utils;
+using VarDump.Visitor.Format;
 
 namespace VarDump.Visitor.KnownObjects;
 
@@ -122,7 +123,7 @@ internal sealed class CollectionVisitor : IKnownObjectVisitor
                 WriteValueLambdaExpression
             ]);
 
-        void WriteArrayCreate() => _codeWriter.WriteArrayCreate(new CodeAnonymousTypeInfo { ArrayRank = 1 }, items);
+        void WriteArrayCreate() => _codeWriter.WriteArrayCreate(new CodeAnonymousTypeInfo { ArrayRank = 1 }, items, false);
         void WriteVariableReference() => _codeWriter.WriteVariableReference("grp");
         void WriteKeyLambdaPropertyExpression() => _codeWriter.WritePropertyReference("Key", WriteVariableReference);
         void WriteKeyLambdaExpression() => _codeWriter.WriteLambdaExpression(WriteKeyLambdaPropertyExpression, [WriteVariableReference]);
@@ -144,16 +145,21 @@ internal sealed class CollectionVisitor : IKnownObjectVisitor
         var isImmutableOrFrozen = type.IsPublicImmutableOrFrozenCollection();
         var isCollection = IsCollection(enumerable);
 
+        var singleLine = typeof(string) != elementType
+                         && ReflectionUtils.IsPrimitive(elementType)
+                         && _options.PrimitiveCollectionLayout == CollectionLayout.SingleLine;
+
         if (type.IsArray || isImmutableOrFrozen || !type.IsPublic || !isCollection)
         {
             if (type.IsArray && ((Array)enumerable).Rank > 1 && ((Array)enumerable).Length > 0)
             {
-                items = ChunkMultiDimensionalArrayExpression((Array)enumerable, items);
+                items = ChunkMultiDimensionalArrayExpression((Array)enumerable, items, singleLine);
+                singleLine = false;
             }
 
             var arrayType = isImmutableOrFrozen || !type.IsPublic ? elementType.MakeArrayType() : type;
 
-            void WriteArrayCreate() => _codeWriter.WriteArrayCreate(arrayType, items);
+            void WriteArrayCreate() => _codeWriter.WriteArrayCreate(arrayType, items, singleLine: singleLine);
 
             if (isImmutableOrFrozen)
             {
@@ -179,11 +185,11 @@ internal sealed class CollectionVisitor : IKnownObjectVisitor
             return;
         }
 
-        _codeWriter.WriteObjectCreateAndInitialize(
-            new CodeCollectionTypeInfo(type), [], items);
+        _codeWriter.WriteObjectCreateAndInitialize(new CodeCollectionTypeInfo(type), [], items, singleLine);
     }
 
-    private IEnumerable<Action> ChunkMultiDimensionalArrayExpression(Array array, IEnumerable<Action> enumerable)
+    private IEnumerable<Action> ChunkMultiDimensionalArrayExpression(Array array, IEnumerable<Action> enumerable,
+        bool singleLine)
     {
         var dimensions = new int[array.Rank - 1];
 
@@ -197,7 +203,8 @@ internal sealed class CollectionVisitor : IKnownObjectVisitor
         for (var index = dimensions.Length - 1; index >= 0; index--)
         {
             var dimension = dimensions[index];
-            result = result.Chunk(dimension).Select(x => (Action) (()=> _codeWriter.WriteArrayDimension(x)));
+            var index1 = index;
+            result = result.Chunk(dimension).Select(x => (Action) (()=> _codeWriter.WriteArrayDimension(x, singleLine && index1 == dimensions.Length - 1)));
         }
 
         return result;
@@ -221,10 +228,10 @@ internal sealed class CollectionVisitor : IKnownObjectVisitor
         if (type.IsArray && ((Array)enumerable).Rank > 1 && ((Array)enumerable).Length > 0)
         {
             typeInfo.ArrayRank = ((Array)enumerable).Rank;
-            items = ChunkMultiDimensionalArrayExpression((Array)enumerable, items);
+            items = ChunkMultiDimensionalArrayExpression((Array)enumerable, items, false);
         }
 
-        Action createAction = () => _codeWriter.WriteArrayCreate(typeInfo, items);
+        Action createAction = () => _codeWriter.WriteArrayCreate(typeInfo, items, false);
 
         if (isImmutableOrFrozen || enumerable is IList && !type.IsArray)
         {

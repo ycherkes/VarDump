@@ -6,10 +6,11 @@ using System.Reflection;
 using VarDump.CodeDom.Compiler;
 using VarDump.Collections;
 using VarDump.Visitor.Descriptors;
+using VarDump.Visitor.Format;
 
 namespace VarDump.Visitor;
 
-public sealed class DumpOptions
+public class DumpOptions
 {
     public Action<IKnownObjectsCollection, INextDepthVisitor, DumpOptions, ICodeWriter> ConfigureKnownObjects { get; set; }
     public DateKind DateKind { get; set; } = DateKind.Original;
@@ -20,13 +21,24 @@ public sealed class DumpOptions
     public BindingFlags GetPropertiesBindingFlags { get; set; } = BindingFlags.Public | BindingFlags.Instance;
     public bool IgnoreDefaultValues { get; set; } = true;
     public bool IgnoreNullValues { get; set; } = true;
+    public bool IgnoreReadonlyProperties { get; set; } = true;
     public string IndentString { get; set; } = "    ";
+    public string IntegralNumericFormat { get; set; } = "";
     public int MaxCollectionSize { get; set; } = int.MaxValue;
     public int MaxDepth { get; set; } = 25;
+    public CollectionLayout PrimitiveCollectionLayout { get; set; }
     public ListSortDirection? SortDirection { get; set; }
     public bool UseNamedArgumentsInConstructors { get; set; }
+    public bool UsePredefinedConstants { get; set; } = true;
+    public bool UsePredefinedMethods { get; set; } = true;
     public bool UseTypeFullName { get; set; }
-    public bool WritablePropertiesOnly { get; set; } = true;
+
+    [Obsolete("Use IgnoreReadonlyProperties instead")]
+    public bool WritablePropertiesOnly
+    {
+        get => IgnoreReadonlyProperties;
+        set => IgnoreReadonlyProperties = value;
+    }
 
     public DumpOptions Clone()
     {
@@ -41,13 +53,17 @@ public sealed class DumpOptions
             GetPropertiesBindingFlags = GetPropertiesBindingFlags,
             IgnoreDefaultValues = IgnoreDefaultValues,
             IgnoreNullValues = IgnoreNullValues,
+            IgnoreReadonlyProperties = IgnoreReadonlyProperties,
             IndentString = IndentString,
+            IntegralNumericFormat = IntegralNumericFormat,
             MaxCollectionSize = MaxCollectionSize,
             MaxDepth = MaxDepth,
+            PrimitiveCollectionLayout = PrimitiveCollectionLayout,
             SortDirection = SortDirection,
             UseNamedArgumentsInConstructors = UseNamedArgumentsInConstructors,
+            UsePredefinedConstants = UsePredefinedConstants,
+            UsePredefinedMethods = UsePredefinedMethods,
             UseTypeFullName = UseTypeFullName,
-            WritablePropertiesOnly = WritablePropertiesOnly
         };
     }
 }

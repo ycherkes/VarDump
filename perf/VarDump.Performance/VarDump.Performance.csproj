@@ -9,7 +9,7 @@
 
   <ItemGroup>
     <PackageReference Include="BenchmarkDotNet" Version="0.13.12" />
-    <PackageReference Include="ObjectDumper.NET" Version="4.1.17" />
+    <PackageReference Include="ObjectDumper.NET" Version="4.2.7" />
   </ItemGroup>
 
   <ItemGroup>

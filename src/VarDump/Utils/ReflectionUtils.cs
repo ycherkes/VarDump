@@ -407,6 +407,7 @@ internal static class ReflectionUtils
     private static bool IsPrimitiveInternal(Type type)
     {
         return type == typeof(string)
+               || type == typeof(decimal)
                || type.IsPrimitive
                     && type != typeof(IntPtr)
                     && type != typeof(UIntPtr);

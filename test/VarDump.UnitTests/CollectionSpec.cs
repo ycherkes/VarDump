@@ -27,6 +27,21 @@ public class CollectionSpec
     }
 
     [Fact]
+    public void DumpReadOnlyCollectionSingleLineCSharp()
+    {
+        var collection = new List<int> { 1 }.AsReadOnly();
+
+        var dumper = new CSharpDumper(new DumpOptions { PrimitiveCollectionLayout = CollectionLayout.SingleLine });
+
+        var result = dumper.Dump(collection);
+
+        Assert.Equal("""
+                     var readOnlyCollectionOfInt = new List<int> { 1 }.AsReadOnly();
+                     
+                     """, result);
+    }
+
+    [Fact]
     public void DumpEnumerableRangeCSharp()
     {
         var range = Enumerable.Range(0, 3);
@@ -87,6 +102,21 @@ public class CollectionSpec
             }.AsReadOnly()
 
             """, result);
+    }
+
+    [Fact]
+    public void DumpReadOnlyCollectionSingleLineVisualBasic()
+    {
+        var collection = new List<int> { 1 }.AsReadOnly();
+
+        var dumper = new VisualBasicDumper(new DumpOptions { PrimitiveCollectionLayout = CollectionLayout.SingleLine });
+
+        var result = dumper.Dump(collection);
+
+        Assert.Equal("""
+                     Dim readOnlyCollectionOfInteger = New List(Of Integer) From { 1 }.AsReadOnly()
+                     
+                     """, result);
     }
 
     [Fact]

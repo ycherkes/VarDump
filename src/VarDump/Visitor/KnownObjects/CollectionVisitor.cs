@@ -180,7 +180,7 @@ internal sealed class CollectionVisitor : IKnownObjectVisitor
                 new CodeCollectionTypeInfo(typeof(List<>).MakeGenericType(elementType));
 
             _codeWriter.WriteMethodInvoke(() => _codeWriter.WriteMethodReference(() => 
-               _codeWriter.WriteObjectCreateAndInitialize(typeInfo, [], items), "AsReadOnly"), []);
+               _codeWriter.WriteObjectCreateAndInitialize(typeInfo, [], items, singleLine), "AsReadOnly"), []);
 
             return;
         }

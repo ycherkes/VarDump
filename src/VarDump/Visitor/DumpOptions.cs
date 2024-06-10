@@ -88,7 +88,7 @@ public class DumpOptions
     public CollectionLayout PrimitiveCollectionLayout { get; set; } = CollectionLayout.MultiLine;
     
     /// <summary>
-    /// The sort direction to use when sorting properties, default is <c>null</c>.
+    /// The sort direction to use when sorting properties and fields, default is <c>null</c>.
     /// </summary>
     public ListSortDirection? SortDirection { get; set; }
     

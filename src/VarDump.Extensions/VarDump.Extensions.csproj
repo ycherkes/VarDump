@@ -26,6 +26,8 @@
 	<Authors>YevhenCherkes</Authors>
 	<IncludeSymbols>true</IncludeSymbols>
     <SymbolPackageFormat>snupkg</SymbolPackageFormat>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <NoWarn>CS1570;CS1591</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>

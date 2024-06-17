@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.IO;
@@ -145,6 +146,40 @@ public class ObjectDescriptorMiddlewareSpec
                 }
             };
             
+            """, result);
+    }
+
+    [Fact]
+    public void OrderPropertiesByCollectionEmptinessCSharp()
+    {
+        var obj = new
+        {
+            StringProp = "Test",
+            IntProp = 1,
+            Col1 = Enumerable.Empty<int>(),
+            Col2 = new List<string>{ "Test1", "Test2" }.AsEnumerable()
+        };
+
+        var options = new DumpOptions
+        {
+            Descriptors = { new PropertySortingMiddleware() }
+        };
+
+        var dumper = new CSharpDumper(options);
+
+        var result = dumper.Dump(obj);
+
+        Assert.Equal(
+            """
+            var anonymousType = new
+            {
+                FullName = "BRUCE LEE",
+                OtherInfo = new
+                {
+                    FullName = "BRUCE LEE"
+                }
+            };
+
             """, result);
     }
 
@@ -725,6 +760,22 @@ public class ObjectDescriptorMiddlewareSpec
                     }
                 }
             }
+        }
+    }
+
+    private class PropertySortingMiddleware : IObjectDescriptorMiddleware
+    {
+        public IObjectDescription GetObjectDescription(object @object, Type objectType, Func<IObjectDescription> prev)
+        {
+            var objectDescription = prev();
+
+            return new ObjectDescription
+            {
+                Type = objectDescription.Type,
+                ConstructorArguments = objectDescription.ConstructorArguments,
+                Properties = objectDescription.Properties.OrderBy(x => x.Value is not IEnumerable && x.Value is not string ? 0 : x.Value is IEnumerable enumerable && enumerable.OfType<object>().Any() ? 1 : 2),
+                Fields = objectDescription.Fields
+            };
         }
     }
 

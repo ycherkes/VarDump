@@ -171,15 +171,18 @@ public class ObjectDescriptorMiddlewareSpec
 
         Assert.Equal(
             """
-            var anonymousType = new
+            var anonymousType = new 
             {
-                FullName = "BRUCE LEE",
-                OtherInfo = new
+                IntProp = 1,
+                StringProp = "Test",
+                Col2 = new List<string>
                 {
-                    FullName = "BRUCE LEE"
-                }
+                    "Test1",
+                    "Test2"
+                },
+                Col1 = new int[0]
             };
-
+            
             """, result);
     }
 

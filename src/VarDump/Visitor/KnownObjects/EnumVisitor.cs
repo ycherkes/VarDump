@@ -23,7 +23,35 @@ internal sealed class EnumVisitor(ICodeWriter codeWriter) : IKnownObjectVisitor
 
         if (values.Length == 1)
         {
-            codeWriter.WriteFieldReference(values[0].Trim(), () => codeWriter.WriteType(objectType));
+            var value = values[0].Trim();
+            var firstChar = value[0];
+            if ((char.IsDigit(firstChar) || firstChar == '-') && value.Skip(1).All(char.IsDigit))
+            {
+                var longValue = long.Parse(value);
+                if (longValue == 0)
+                {
+                    codeWriter.WritePrimitive(0);
+                }
+                else
+                {
+                    object renderValueObject = longValue is <= int.MaxValue and >= int.MinValue
+                        ? (int)longValue
+                        : longValue;
+
+                    if (longValue > 0)
+                    {
+                        codeWriter.WriteCast(objectType, () => codeWriter.WritePrimitive(renderValueObject));
+                    }
+                    else
+                    {
+                        codeWriter.WriteCast(objectType, () => codeWriter.WriteCast(typeof(object), () => codeWriter.WritePrimitive(renderValueObject)));
+                    }
+                }
+            }
+            else
+            {
+                codeWriter.WriteFieldReference(value, () => codeWriter.WriteType(objectType));
+            }
             return;
         }
 

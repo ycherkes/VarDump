@@ -414,7 +414,7 @@ public class ObjectDescriptorMiddlewareSpec
         var expectedString = $$"""
                                var directoryInfo = new DirectoryInfo
                                {
-                                   Attributes = FileAttributes.-1,
+                                   Attributes = (FileAttributes)(object)-1,
                                    CreationTime = DateTime.ParseExact("1601-01-01T00:00:00.0000000Z", "O", CultureInfo.InvariantCulture, DateTimeStyles.RoundtripKind),
                                    CreationTimeUtc = DateTime.ParseExact("1601-01-01T00:00:00.0000000Z", "O", CultureInfo.InvariantCulture, DateTimeStyles.RoundtripKind),
                                    Extension = "",
@@ -424,7 +424,7 @@ public class ObjectDescriptorMiddlewareSpec
                                    LastWriteTime = DateTime.ParseExact("1601-01-01T00:00:00.0000000Z", "O", CultureInfo.InvariantCulture, DateTimeStyles.RoundtripKind),
                                    LastWriteTimeUtc = DateTime.ParseExact("1601-01-01T00:00:00.0000000Z", "O", CultureInfo.InvariantCulture, DateTimeStyles.RoundtripKind),
                                    Name = "{{directoryName}}",
-                                   UnixFileMode = UnixFileMode.-1
+                                   UnixFileMode = (UnixFileMode)(object)-1
                                };
 
                                """;
@@ -434,7 +434,7 @@ public class ObjectDescriptorMiddlewareSpec
         var expectedString = $$"""
                                var directoryInfo = new DirectoryInfo
                                {
-                                   Attributes = FileAttributes.-1,
+                                   Attributes = (FileAttributes)(object)-1,
                                    CreationTime = DateTime.ParseExact("1601-01-01T00:00:00.0000000Z", "O", CultureInfo.InvariantCulture, DateTimeStyles.RoundtripKind),
                                    CreationTimeUtc = DateTime.ParseExact("1601-01-01T00:00:00.0000000Z", "O", CultureInfo.InvariantCulture, DateTimeStyles.RoundtripKind),
                                    Extension = "",

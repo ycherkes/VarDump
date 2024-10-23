@@ -96,10 +96,10 @@ internal sealed class CollectionVisitor : IKnownObjectVisitor
 
         if (type.IsArray)
         {
-           _codeWriter.WriteMethodInvoke(() =>
-                    _codeWriter.WriteMethodReference(WriteLambda, "ToArray"), []);
+            _codeWriter.WriteMethodInvoke(() =>
+                     _codeWriter.WriteMethodReference(WriteLambda, "ToArray"), []);
 
-           return;
+            return;
 
         }
 
@@ -115,7 +115,7 @@ internal sealed class CollectionVisitor : IKnownObjectVisitor
 
         return;
 
-        
+
         void WriteLambda() => _codeWriter.WriteMethodInvoke(() =>
                 _codeWriter.WriteMethodReference(WriteArrayCreate, methodName),
             [
@@ -157,14 +157,14 @@ internal sealed class CollectionVisitor : IKnownObjectVisitor
                 singleLine = false;
             }
 
-            var arrayType = isImmutableOrFrozen || !type.IsPublic ? elementType.MakeArrayType() : type;
+            var arrayType = isImmutableOrFrozen || !type.IsPublic || (type.IsGenericType && type.GetGenericTypeDefinition() == typeof(EnumerableQuery<>)) ? elementType.MakeArrayType() : type;
 
             void WriteArrayCreate() => _codeWriter.WriteArrayCreate(arrayType, items, singleLine: singleLine);
 
             if (isImmutableOrFrozen)
             {
-               _codeWriter.WriteMethodInvoke(() =>
-                    _codeWriter.WriteMethodReference(WriteArrayCreate, $"To{type.GetImmutableOrFrozenTypeName()}"), []);
+                _codeWriter.WriteMethodInvoke(() =>
+                     _codeWriter.WriteMethodReference(WriteArrayCreate, $"To{type.GetImmutableOrFrozenTypeName()}"), []);
             }
             else
             {
@@ -179,7 +179,7 @@ internal sealed class CollectionVisitor : IKnownObjectVisitor
             var typeInfo =
                 new CodeCollectionTypeInfo(typeof(List<>).MakeGenericType(elementType));
 
-            _codeWriter.WriteMethodInvoke(() => _codeWriter.WriteMethodReference(() => 
+            _codeWriter.WriteMethodInvoke(() => _codeWriter.WriteMethodReference(() =>
                _codeWriter.WriteObjectCreateAndInitialize(typeInfo, [], items, singleLine), "AsReadOnly"), []);
 
             return;
@@ -204,7 +204,7 @@ internal sealed class CollectionVisitor : IKnownObjectVisitor
         {
             var dimension = dimensions[index];
             var index1 = index;
-            result = result.Chunk(dimension).Select(x => (Action) (()=> _codeWriter.WriteArrayDimension(x, singleLine && index1 == dimensions.Length - 1)));
+            result = result.Chunk(dimension).Select(x => (Action)(() => _codeWriter.WriteArrayDimension(x, singleLine && index1 == dimensions.Length - 1)));
         }
 
         return result;
@@ -265,6 +265,6 @@ internal sealed class CollectionVisitor : IKnownObjectVisitor
         var items = objects.Select(GetIGroupingValue)
             .SelectMany(g => g.Value.Cast<object>().Select(e => new { g.Key, Element = e }));
 
-        return items.Select(item =>(Action)(() => _nextDepthVisitor.Visit(item, context)));
+        return items.Select(item => (Action)(() => _nextDepthVisitor.Visit(item, context)));
     }
 }

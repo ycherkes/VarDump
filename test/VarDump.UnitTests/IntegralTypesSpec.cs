@@ -25,6 +25,24 @@ public class IntegralTypesSpec
     }
 
     [Fact]
+    public void DumpULongDecimalThousandsSeparatorCSharp()
+    {
+        var dumper = new CSharpDumper(new DumpOptions
+        {
+            IntegralNumericFormat = "d_3",
+            UsePredefinedConstants = false
+        });
+
+        var result = dumper.Dump(ulong.MaxValue);
+
+        Assert.Equal(
+            """
+            var ulongValue = 18_446_744_073_709_551_615ul;
+
+            """, result);
+    }
+
+    [Fact]
     public void DumpULongBinaryUnderscoresCSharp()
     {
         var dumper = new CSharpDumper(new DumpOptions

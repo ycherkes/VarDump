@@ -24,7 +24,7 @@ internal sealed class DescriptionBasedVisitor : ISpecificVisitor
 
         if (options.GetFieldsBindingFlags != null)
         {
-            _objectDescriptor = _objectDescriptor.Concat(new ObjectFieldsDescriptor(options.GetFieldsBindingFlags.Value));
+            _objectDescriptor = _objectDescriptor.Concat(new ObjectFieldsDescriptor(options));
         }
 
         if (options.Descriptors?.Count > 0)

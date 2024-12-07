@@ -41,7 +41,12 @@ public class DumpOptions
     /// The binding flags to use when getting fields, default is <c>null</c>.
     /// </summary>
     public BindingFlags? GetFieldsBindingFlags { get; set; }
-    
+
+    /// <summary>
+    /// Enabling this option instructs the visitor visit base types.
+    /// </summary>
+    public bool GetBaseClassFields { get; set; }
+
     /// <summary>
     /// The binding flags to use when getting properties, default is <see cref="BindingFlags.Public"/> | <see cref="BindingFlags.Instance"/>.
     /// </summary>
@@ -132,6 +137,7 @@ public class DumpOptions
             DateTimeInstantiation = DateTimeInstantiation,
             Descriptors = Descriptors?.ToList() ?? [],
             GenerateVariableInitializer = GenerateVariableInitializer,
+            GetBaseClassFields = GetBaseClassFields,
             GetFieldsBindingFlags = GetFieldsBindingFlags,
             GetPropertiesBindingFlags = GetPropertiesBindingFlags,
             IgnoreDefaultValues = IgnoreDefaultValues,

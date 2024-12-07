@@ -1,4 +1,6 @@
 using System;
+using System.Reflection;
+using VarDump.Visitor;
 using Xunit;
 
 namespace VarDump.UnitTests;
@@ -57,6 +59,60 @@ public class InheritanceSpec
             """, result);
     }
 
+    [Fact]
+    public void DumpAllFieldsIncludingBaseCSharp()
+    {
+        var dumpOptions = new DumpOptions
+        {
+            GetFieldsBindingFlags = BindingFlags.NonPublic | 
+                                    BindingFlags.Public | 
+                                    BindingFlags.Instance, 
+            GetBaseClassFields = true
+        };
+
+        var derived = new DerivedClass(10, 20);
+
+        var dumper = new CSharpDumper(dumpOptions);
+
+        var result = dumper.Dump(derived);
+
+        Assert.Equal(
+            """
+            var derivedClass = new DerivedClass
+            {
+                _baseNumber = 10,
+                _derivedNumber = 20
+            };
+            
+            """, result);
+    }
+
+    [Fact]
+    public void DumpAllFieldsIncludingBaseVb()
+    {
+        var dumpOptions = new DumpOptions
+        {
+            GetFieldsBindingFlags = BindingFlags.NonPublic |
+                                    BindingFlags.Public |
+                                    BindingFlags.Instance,
+            GetBaseClassFields = true
+        };
+
+        var derived = new DerivedClass(10, 20);
+
+        var dumper = new VisualBasicDumper(dumpOptions);
+
+        var result = dumper.Dump(derived);
+
+        Assert.Equal(
+            """
+            Dim derivedClassValue = New DerivedClass With {
+                ._baseNumber = 10,
+                ._derivedNumber = 20
+            }
+            
+            """, result);
+    }
 
     private class Human
     {
@@ -67,5 +123,15 @@ public class InheritanceSpec
     {
         public string FirstName { get; set; }
         public string LastName { get; set; }
+    }
+
+    private class BaseClass(int baseNumber)
+    {
+        private int _baseNumber = baseNumber;
+    }
+
+    private class DerivedClass(int baseNumber, int derivedNumber) : BaseClass(baseNumber)
+    {
+        private int _derivedNumber = derivedNumber;
     }
 }

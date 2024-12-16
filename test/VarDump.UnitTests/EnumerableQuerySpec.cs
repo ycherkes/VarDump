@@ -8,7 +8,7 @@ public class EnumerableQuerySpec
     [Fact]
     public void DumpEnumerableQueryCSharp()
     {
-        var query = Enumerable.Range(5, 2).AsQueryable().AsEnumerable();
+        var query = new[] { 5, 6 }.AsQueryable();
 
         var dumper = new CSharpDumper();
 
@@ -20,7 +20,7 @@ public class EnumerableQuerySpec
             {
                 5,
                 6
-            };
+            }.AsQueryable();
             
             """, result);
     }
@@ -28,7 +28,7 @@ public class EnumerableQuerySpec
     [Fact]
     public void DumpEnumerableQueryVb()
     {
-        var query = Enumerable.Range(5, 2).AsQueryable().AsEnumerable();
+        var query = Enumerable.Range(5, 2).AsQueryable();
 
         var dumper = new VisualBasicDumper();
 
@@ -39,7 +39,7 @@ public class EnumerableQuerySpec
             Dim enumerableQueryOfInteger = New Integer(){
                 5,
                 6
-            }
+            }.AsQueryable()
             
             """, result);
     }

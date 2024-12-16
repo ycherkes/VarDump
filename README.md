@@ -7,7 +7,7 @@ Developed as a free alternative to [ObjectDumper.NET](https://github.com/thomasg
 
 Actively used as a part of [Object Dumper Visual Studio and Visual Studio Code extension](https://github.com/ycherkes/ObjectDumper)
 
-[![nuget version](https://img.shields.io/badge/Nuget-v1.0.5.16-blue)](https://www.nuget.org/packages/VarDump)
+[![nuget version](https://img.shields.io/badge/Nuget-v1.0.5.17-blue)](https://www.nuget.org/packages/VarDump)
 [![nuget downloads](https://img.shields.io/nuget/dt/VarDump?label=Downloads)](https://www.nuget.org/packages/VarDump)
 
 ### C# & VB Dumper:

@@ -157,7 +157,9 @@ internal sealed class CollectionVisitor : IKnownObjectVisitor
                 singleLine = false;
             }
 
-            var arrayType = isImmutableOrFrozen || !type.IsPublic || (type.IsGenericType && type.GetGenericTypeDefinition() == typeof(EnumerableQuery<>)) ? elementType.MakeArrayType() : type;
+            var isQueryable = IsQueryable(type);
+
+            var arrayType = isImmutableOrFrozen || !type.IsPublic || isQueryable ? elementType.MakeArrayType() : type;
 
             void WriteArrayCreate() => _codeWriter.WriteArrayCreate(arrayType, items, singleLine: singleLine);
 
@@ -165,6 +167,11 @@ internal sealed class CollectionVisitor : IKnownObjectVisitor
             {
                 _codeWriter.WriteMethodInvoke(() =>
                      _codeWriter.WriteMethodReference(WriteArrayCreate, $"To{type.GetImmutableOrFrozenTypeName()}"), []);
+            }
+            else if (isQueryable)
+            {
+                _codeWriter.WriteMethodInvoke(() => 
+                    _codeWriter.WriteMethodReference(WriteArrayCreate, "AsQueryable"), []);
             }
             else
             {
@@ -186,6 +193,23 @@ internal sealed class CollectionVisitor : IKnownObjectVisitor
         }
 
         _codeWriter.WriteObjectCreateAndInitialize(new CodeCollectionTypeInfo(type), [], items, singleLine);
+    }
+
+    private static bool IsQueryable(Type type)
+    {
+        var isGenericType = type.IsGenericType;
+
+        if (!isGenericType)
+        {
+            return false;
+        }
+
+        if (type.GetGenericTypeDefinition() == typeof(EnumerableQuery<>))
+        {
+            return true;
+        }
+
+        return type.GetInterfaces().Any(i => i.IsGenericType && i.GetGenericTypeDefinition() == typeof(IQueryable<>));
     }
 
     private IEnumerable<Action> ChunkMultiDimensionalArrayExpression(Array array, IEnumerable<Action> enumerable,

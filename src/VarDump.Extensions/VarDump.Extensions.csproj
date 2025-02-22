@@ -6,14 +6,14 @@
     <Nullable>enable</Nullable>
     <LangVersion>latest</LangVersion>
     <AssemblyName>VarDump.Extensions</AssemblyName>
-    <AssemblyVersion>1.0.5.15</AssemblyVersion>
-    <FileVersion>1.0.5.15</FileVersion>
+    <AssemblyVersion>1.0.5.16</AssemblyVersion>
+    <FileVersion>1.0.5.16</FileVersion>
     <PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
     <Copyright>Copyright $([System.DateTime]::Now.Year) Yevhen Cherkes</Copyright>
     <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
     <Title>VarDump.Extensions</Title>
-    <Version>1.0.5.15</Version>
-    <Description>Extension methods for simplifying the usage of the VarDump library.</Description>
+    <Version>1.0.5.16</Version>
+    <Description>Extension methods to simplify usage of the VarDump library.</Description>
     <PackageProjectUrl>https://github.com/ycherkes/VarDump</PackageProjectUrl>
     <PackageReadmeFile>README.md</PackageReadmeFile>
     <RepositoryUrl>https://github.com/ycherkes/VarDump.git</RepositoryUrl>
@@ -38,7 +38,7 @@
   </ItemGroup>
   
   <ItemGroup>
-    <PackageReference Include="VarDump" Version="1.0.5.15" />
+    <PackageReference Include="VarDump" Version="1.0.5.17" />
   </ItemGroup>
 
 </Project>

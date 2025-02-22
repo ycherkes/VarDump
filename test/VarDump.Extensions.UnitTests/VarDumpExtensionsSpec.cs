@@ -17,7 +17,7 @@ public class VarDumpExtensionsSpec
 
         VarDumpExtensions.VarDumpFactory = VarDumpFactories.CSharp;
 
-        var result = anonymous.Dump();
+        var result = anonymous.DumpText();
 
         Assert.Equal(
             """
@@ -64,7 +64,7 @@ public class VarDumpExtensionsSpec
             UseTypeFullName = true
         };
 
-        var result = anonymous.Dump();
+        var result = anonymous.DumpText();
 
         Assert.Equal(
             """
@@ -100,7 +100,7 @@ public class VarDumpExtensionsSpec
             new { Name = "Peter", Age = (int?)null, Reference = (string)null }
         };
 
-        var result = anonymous.Dump();
+        var result = anonymous.DumpText();
 
         Assert.Equal(
             """

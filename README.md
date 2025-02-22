@@ -71,7 +71,10 @@ var dictionary = new[]
     }
 }.ToDictionary(x => x.Name, x => x);
 
-Console.WriteLine(dictionary.Dump());
+Console.WriteLine(dictionary.DumpText());
+dictionary.DumpConsole();
+dictionary.DumpDebug();
+dictionary.DumpTrace();
 ```
 
 ### Dump Extension methods, how to switch default dumper to VB:
@@ -92,7 +95,10 @@ var dictionary = new[]
     }
 }.ToDictionary(x => x.Name, x => x);
 
-Console.WriteLine(dictionary.Dump());
+Console.WriteLine(dictionary.DumpText());
+dictionary.DumpConsole();
+dictionary.DumpDebug();
+dictionary.DumpTrace();
 ```
 
 ## Extensibility:

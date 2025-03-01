@@ -3,7 +3,7 @@
 VarDump is a highly customizable  utility for serialization runtime objects to C# or Visual Basic string.
 ===========================================================================================
 
-Developed as a free alternative to [ObjectDumper.NET](https://github.com/thomasgalliker/ObjectDumper), which is not free for commercial use.
+Developed as a free and more powerful alternative to [ObjectDumper.NET](https://github.com/thomasgalliker/ObjectDumper).
 
 Actively used as a part of [Object Dumper Visual Studio and Visual Studio Code extension](https://github.com/ycherkes/ObjectDumper)
 

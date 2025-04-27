@@ -14,7 +14,7 @@ internal sealed class ObjectPropertiesDescriptor(BindingFlags getPropertiesBindi
         var properties = EnumerableExtensions.AsEnumerable(() => objectType
             .GetProperties(getPropertiesBindingFlags))
             .Where(p => p.CanRead &&
-                        (p.CanWrite || !writablePropertiesOnly) &&
+                        ((p.CanWrite && MatchesAccessibility(p.SetMethod, getPropertiesBindingFlags)) || !writablePropertiesOnly) &&
                         !ReflectionUtils.IsIndexer(p))
             .Select(p => new PropertyDescription(() => ReflectionUtils.GetValue(p, @object))
             {
@@ -28,5 +28,31 @@ internal sealed class ObjectPropertiesDescriptor(BindingFlags getPropertiesBindi
             Properties = properties,
             Type = objectType
         };
+    }
+
+    private static bool MatchesAccessibility(MethodInfo methodInfo, BindingFlags flags)
+    {
+        if (methodInfo == null)
+        {
+            return false;
+        }
+
+        var anyAccess = flags.HasFlag(BindingFlags.Public | BindingFlags.NonPublic);
+        
+        if (anyAccess)
+        {
+            return true;
+        }
+
+        if (flags.HasFlag(BindingFlags.Public))
+        {
+            return methodInfo.IsPublic;
+        }
+        
+        return methodInfo.IsPrivate || 
+               methodInfo.IsFamily ||            // protected
+               methodInfo.IsAssembly ||          // internal
+               methodInfo.IsFamilyOrAssembly ||  // protected internal
+               methodInfo.IsFamilyAndAssembly;   // private protected
     }
 }

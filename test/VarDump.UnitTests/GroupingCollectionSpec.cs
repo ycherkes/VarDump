@@ -15,13 +15,20 @@ public class GroupingCollectionSpec
             new Person{ Age = 23, FirstName = "Alice"}
         }.ToLookup(x => x.FirstName);
 
+        const string expectedVariableName =
+#if NET9_0_OR_GREATER
+            "collectionLookupOfGroupingOfPerson";
+#else
+            "lookupOfGroupingOfPerson";
+#endif
+
         var dumper = new VisualBasicDumper();
 
         var result = dumper.Dump(grouping);
 
         Assert.Equal(
-            """
-            Dim lookupOfGroupingOfPerson = {
+            $$"""
+            Dim {{expectedVariableName}} = {
                 New With {
                     .Key = "Bob",
                     .Element = New Person With {

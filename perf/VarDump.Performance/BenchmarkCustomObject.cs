@@ -1,14 +1,17 @@
 ﻿using BenchmarkDotNet.Attributes;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using Newtonsoft.Json;
+using JsonSerializer = System.Text.Json.JsonSerializer;
 
 namespace VarDump.Performance;
 
 [MemoryDiagnoser]
 public class BenchmarkCustomObject
 {
-    private static readonly object O = new
+    private static object GetObjectInstance(int index) => new
     {
+        Index = index,
         Name = "Test".PadRight(50),
         Id = Guid.NewGuid(),
         GroupId = "Group Id".PadRight(50),
@@ -44,40 +47,50 @@ public class BenchmarkCustomObject
         }
     };
     
-    private static readonly object Variable = Enumerable.Range(0, 10000).Select(_ => O);
+    private static readonly object Variable = Enumerable.Range(0, 10000).Select(GetObjectInstance).ToArray();
 
     private static readonly CSharpDumper CSharpDumper = new CSharpDumper();
     private static readonly VisualBasicDumper VisualBasicDumper = new VisualBasicDumper();
 
     [Benchmark]
-    public void CSharpDumper_CustomObject()
+    public string CSharpDumper_Perf()
     {
-        using var streamWriter = new StreamWriter(Stream.Null);
-        CSharpDumper.Dump(Variable, streamWriter);
+        return CSharpDumper.Dump(Variable);
     }
 
     [Benchmark]
-    public void VisualBasicDumper_CustomObject()
+    public string VisualBasicDumper_Perf()
     {
-        using var streamWriter = new StreamWriter(Stream.Null);
-        VisualBasicDumper.Dump(Variable, streamWriter);
+        return VisualBasicDumper.Dump(Variable);
     }
 
     [Benchmark]
-    public string ObjectDumperNet_CustomObject()
+    public string ObjectDumperNet_Perf()
     {
-        return Variable.Dump(DumpStyle.CSharp);
+        return ObjectDumper.Dump(Variable, DumpStyle.CSharp);
     }
 
-    private static readonly JsonSerializerOptions Options = new()
+    private static readonly JsonSerializerOptions MsOptions = new()
     {
         WriteIndented = true,
         DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
     };
 
     [Benchmark]
-    public void MsJson_CustomObject()
+    public string MsJson_Perf()
     {
-        JsonSerializer.Serialize(Stream.Null, Variable, Options);
+        return JsonSerializer.Serialize(Variable, MsOptions);
+    }
+
+    private static readonly JsonSerializerSettings NkSettings = new()
+    {
+        Formatting = Formatting.Indented,
+        NullValueHandling = NullValueHandling.Ignore
+    };
+
+    [Benchmark]
+    public string NewtonsoftJson_Perf()
+    {
+        return JsonConvert.SerializeObject(Variable, NkSettings);
     }
 }

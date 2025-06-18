@@ -1,4 +1,4 @@
-// Licensed to the .NET Foundation under one or more agreements.
+﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
@@ -10,6 +10,7 @@ using VarDump.CodeDom.Common;
 using VarDump.CodeDom.Compiler;
 using VarDump.CodeDom.Resources;
 using VarDump.Utils;
+using VarDump.Visitor;
 using VarDump.Visitor.Format;
 
 namespace VarDump.CodeDom.CSharp;
@@ -871,9 +872,12 @@ internal sealed class CSharpCodeWriter : ICodeWriter
             }
         }
 
-        if (!_options.UseFullTypeName)
+        if (_options.NamingPolicy != TypeNamingPolicy.FullName)
         {
-            var lastIndex0 = baseType.LastIndexOfAny(['.', '+']);
+            var lastIndex0 = _options.NamingPolicy == TypeNamingPolicy.ShortName
+                ? baseType.LastIndexOfAny(['.', '+'])
+                : baseType.LastIndexOf('.');
+
             if (lastIndex0 >= 0)
             {
                 baseType = baseType.Substring(lastIndex0 + 1);

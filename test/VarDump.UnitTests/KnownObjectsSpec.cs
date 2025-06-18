@@ -1,4 +1,4 @@
-using Microsoft.Extensions.DependencyInjection;
+﻿using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using System;
 using System.Collections.Generic;
@@ -52,7 +52,7 @@ public class KnownObjectsSpec
             Version = new Version("1.2.3.4"),
             Regex = new Regex("\\D{4}", RegexOptions.Compiled),
             KeyValuePair = new KeyValuePair<string, string>("1", "2"),
-            Tuple = new Tuple<string, string>("3","4"),
+            Tuple = new Tuple<string, string>("3", "4"),
             ValueTuple = new ValueTuple<string, string>("5", "6")
         };
 
@@ -95,9 +95,9 @@ public class KnownObjectsSpec
     {
         var serviceCollection = new ServiceCollection
         {
-            ServiceDescriptor.Transient<IPerson>(_ => new Person()), // It's not possible to reconstruct the expression by existing Func
-            ServiceDescriptor.Singleton<IPerson, Person>(),
-            ServiceDescriptor.Scoped<IPerson, Person>()
+            ServiceDescriptor.Transient<IPerson>(_ => new TestModel.Person()), // It's not possible to reconstruct the expression by existing Func
+            ServiceDescriptor.Singleton<IPerson, TestModel.Person>(),
+            ServiceDescriptor.Scoped<IPerson, TestModel.Person>()
         };
 
         var dumpOptions = new DumpOptions
@@ -122,11 +122,11 @@ public class KnownObjectsSpec
 
                 """, result);
     }
-    
+
     [Fact]
     public void DumpServiceDescriptorVb()
     {
-        var personServiceDescriptor = ServiceDescriptor.Transient<IPerson, Person>();
+        var personServiceDescriptor = ServiceDescriptor.Transient<IPerson, TestModel.Person>();
 
         var dumpOptions = new DumpOptions
         {
@@ -235,11 +235,11 @@ public class KnownObjectsSpec
             {
                 var typeInfo = serviceDescriptor.ImplementationType ?? serviceDescriptor.ServiceType;
 
-                parameters.Add(() => codeWriter.WriteLambdaExpression(() => codeWriter.WriteDefaultValue(typeInfo), [ () => codeWriter.WriteVariableReference("serviceProvider")]));
-               
+                parameters.Add(() => codeWriter.WriteLambdaExpression(() => codeWriter.WriteDefaultValue(typeInfo), [() => codeWriter.WriteVariableReference("serviceProvider")]));
+
             }
 
-            codeWriter.WriteMethodInvoke(() => 
+            codeWriter.WriteMethodInvoke(() =>
                 codeWriter.WriteMethodReference(
                     () => codeWriter.WriteType(typeof(ServiceDescriptor)),
                     serviceDescriptor.Lifetime.ToString(), typeParameters.ToArray()),

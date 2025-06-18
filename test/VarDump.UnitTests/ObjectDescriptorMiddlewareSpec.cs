@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.IO;
@@ -38,7 +38,7 @@ public class ObjectDescriptorMiddlewareSpec
         var options = new DumpOptions
         {
             Descriptors =
-            { 
+            {
                 new ObjectMembersFilter
                 {
                     Condition = member => !typesToExclude.Contains(member.Type)
@@ -209,8 +209,8 @@ public class ObjectDescriptorMiddlewareSpec
 
         var options = new DumpOptions
         {
-            Descriptors = 
-            { 
+            Descriptors =
+            {
                 new ObjectContentReplacer { Replacement = MaskCardNumber }
             }
         };

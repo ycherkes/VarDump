@@ -1,8 +1,8 @@
+﻿using Microsoft.CodeAnalysis.CSharp.Scripting;
+using Microsoft.CodeAnalysis.Scripting;
 using System;
 using System.Globalization;
 using System.Threading.Tasks;
-using Microsoft.CodeAnalysis.CSharp.Scripting;
-using Microsoft.CodeAnalysis.Scripting;
 using VarDump.Visitor;
 using Xunit;
 
@@ -17,7 +17,7 @@ public class DateTimeSpec
 
         var dumper = new CSharpDumper(new DumpOptions
         {
-            UseTypeFullName = false,
+            NamingPolicy = TypeNamingPolicy.ShortName,
             DateTimeInstantiation = DateTimeInstantiation.New,
             DateKind = DateKind.ConvertToUtc,
             GenerateVariableInitializer = false
@@ -40,7 +40,7 @@ public class DateTimeSpec
 
         var dumper = new CSharpDumper(new DumpOptions
         {
-            UseTypeFullName = false,
+            NamingPolicy = TypeNamingPolicy.ShortName,
             DateTimeInstantiation = DateTimeInstantiation.New,
             DateKind = DateKind.ConvertToUtc,
             GenerateVariableInitializer = false,
@@ -61,7 +61,7 @@ public class DateTimeSpec
 
         var dumper = new CSharpDumper(new DumpOptions
         {
-            UseTypeFullName = false,
+            NamingPolicy = TypeNamingPolicy.ShortName,
             DateTimeInstantiation = DateTimeInstantiation.New,
             GenerateVariableInitializer = false
         });
@@ -83,7 +83,7 @@ public class DateTimeSpec
 
         var dumper = new CSharpDumper(new DumpOptions
         {
-            UseTypeFullName = false,
+            NamingPolicy = TypeNamingPolicy.ShortName,
             DateTimeInstantiation = DateTimeInstantiation.New,
             GenerateVariableInitializer = false,
             UseNamedArgumentsInConstructors = true
@@ -92,7 +92,7 @@ public class DateTimeSpec
         var expectedResult = "new DateTimeOffset(year: 2022, month: 6, day: 24, hour: 11, minute: 59, second: 21, millisecond: 796, offset: TimeSpan.FromHours(3)).AddTicks(1218)";
 
         var result = dumper.Dump(dateTimeOffset);
-        
+
         Assert.Equal(expectedResult, result);
     }
 
@@ -103,7 +103,7 @@ public class DateTimeSpec
 
         var dumper = new VisualBasicDumper(new DumpOptions
         {
-            UseTypeFullName = false,
+            NamingPolicy = TypeNamingPolicy.ShortName,
             DateTimeInstantiation = DateTimeInstantiation.New,
             DateKind = DateKind.ConvertToUtc,
             GenerateVariableInitializer = false
@@ -120,7 +120,7 @@ public class DateTimeSpec
     public void DumpDateTimeOffsetCSharp()
     {
         var dto = DateTimeOffset.ParseExact("2022-06-24T11:59:21.7961218+03:00", "O", CultureInfo.InvariantCulture, DateTimeStyles.RoundtripKind);
-            
+
         var dumper = new CSharpDumper();
 
         var result = dumper.Dump(dto);
@@ -142,7 +142,7 @@ public class DateTimeSpec
 
         var dumper = new CSharpDumper(new DumpOptions
         {
-            UseTypeFullName = false,
+            NamingPolicy = TypeNamingPolicy.ShortName,
             DateTimeInstantiation = DateTimeInstantiation.Parse
         });
 

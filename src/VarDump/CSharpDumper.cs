@@ -61,7 +61,7 @@ public sealed class CSharpDumper : IDumper
     {
         var codeWriterOptions = new CodeWriterOptions
         {
-            UseFullTypeName = _options.UseTypeFullName,
+            TypeNamePolicy = _options.TypeNamePolicy,
             IndentString = _options.IndentString
         };
 

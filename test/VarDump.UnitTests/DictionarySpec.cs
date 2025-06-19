@@ -126,8 +126,8 @@ public class DictionarySpec
     {
         var dict = new Dictionary<string, Type[]>
         {
-            {"First",  new[]{ typeof(Person) } },
-            {"Second", new[]{ typeof(string) } }
+            {"First", [typeof(Person)] },
+            {"Second", [typeof(string)] }
         };
 
         var dumper = new CSharpDumper(new DumpOptions
@@ -135,7 +135,7 @@ public class DictionarySpec
             IgnoreDefaultValues = true,
             IgnoreNullValues = true,
             MaxDepth = 5,
-            UseTypeFullName = false,
+            TypeNamePolicy = TypeNamingPolicy.ShortName,
             DateTimeInstantiation = DateTimeInstantiation.New,
             DateKind = DateKind.ConvertToUtc
         });

@@ -115,7 +115,7 @@ public class DumpOptions
     /// <summary>
     /// Use the full name of the type when dumping, default is <c>false</c>.
     /// </summary>
-    [Obsolete("Use NamingPolicy instead")]
+    [Obsolete("Use TypeNamePolicy instead")]
     [EditorBrowsable(EditorBrowsableState.Never)]
     public bool UseTypeFullName
     {
@@ -124,8 +124,17 @@ public class DumpOptions
     }
 
     /// <summary>
-    /// 
+    /// Gets or sets the policy for naming types during the dumping process.
     /// </summary>
+    /// <remarks>
+    /// This property determines how type names are represented in the output. 
+    /// Possible values include:
+    /// <list type="bullet">
+    /// <item><description><see cref="TypeNamingPolicy.ShortName"/>: Uses the short name of the type.</description></item>
+    /// <item><description><see cref="TypeNamingPolicy.NestedQualified"/>: Includes nested type qualification.</description></item>
+    /// <item><description><see cref="TypeNamingPolicy.FullName"/>: Uses the fully qualified name of the type.</description></item>
+    /// </list>
+    /// </remarks>
     public TypeNamingPolicy TypeNamePolicy { get; set; } = TypeNamingPolicy.ShortName;
 
     /// <summary>

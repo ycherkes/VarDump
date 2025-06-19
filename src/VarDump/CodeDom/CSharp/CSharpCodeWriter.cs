@@ -872,11 +872,14 @@ internal sealed class CSharpCodeWriter : ICodeWriter
             }
         }
 
-        if (_options.NamingPolicy != TypeNamingPolicy.FullName)
+        if (_options.TypeNamePolicy != TypeNamingPolicy.FullName)
         {
-            var lastIndex0 = _options.NamingPolicy == TypeNamingPolicy.ShortName
-                ? baseType.LastIndexOfAny(['.', '+'])
-                : baseType.LastIndexOf('.');
+            var lastIndex0 = _options.TypeNamePolicy switch
+            {
+                TypeNamingPolicy.ShortName => baseType.LastIndexOfAny(['.', '+']),
+                TypeNamingPolicy.NestedQualified => baseType.LastIndexOf('.'),
+                _ => throw new InvalidOperationException($"Specified type naming policy is not supported: {_options.TypeNamePolicy}")
+            };
 
             if (lastIndex0 >= 0)
             {

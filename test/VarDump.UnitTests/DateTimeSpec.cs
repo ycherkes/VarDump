@@ -17,7 +17,7 @@ public class DateTimeSpec
 
         var dumper = new CSharpDumper(new DumpOptions
         {
-            NamingPolicy = TypeNamingPolicy.ShortName,
+            TypeNamePolicy = TypeNamingPolicy.ShortName,
             DateTimeInstantiation = DateTimeInstantiation.New,
             DateKind = DateKind.ConvertToUtc,
             GenerateVariableInitializer = false
@@ -40,7 +40,7 @@ public class DateTimeSpec
 
         var dumper = new CSharpDumper(new DumpOptions
         {
-            NamingPolicy = TypeNamingPolicy.ShortName,
+            TypeNamePolicy = TypeNamingPolicy.ShortName,
             DateTimeInstantiation = DateTimeInstantiation.New,
             DateKind = DateKind.ConvertToUtc,
             GenerateVariableInitializer = false,
@@ -61,7 +61,7 @@ public class DateTimeSpec
 
         var dumper = new CSharpDumper(new DumpOptions
         {
-            NamingPolicy = TypeNamingPolicy.ShortName,
+            TypeNamePolicy = TypeNamingPolicy.ShortName,
             DateTimeInstantiation = DateTimeInstantiation.New,
             GenerateVariableInitializer = false
         });
@@ -83,7 +83,7 @@ public class DateTimeSpec
 
         var dumper = new CSharpDumper(new DumpOptions
         {
-            NamingPolicy = TypeNamingPolicy.ShortName,
+            TypeNamePolicy = TypeNamingPolicy.ShortName,
             DateTimeInstantiation = DateTimeInstantiation.New,
             GenerateVariableInitializer = false,
             UseNamedArgumentsInConstructors = true
@@ -103,7 +103,7 @@ public class DateTimeSpec
 
         var dumper = new VisualBasicDumper(new DumpOptions
         {
-            NamingPolicy = TypeNamingPolicy.ShortName,
+            TypeNamePolicy = TypeNamingPolicy.ShortName,
             DateTimeInstantiation = DateTimeInstantiation.New,
             DateKind = DateKind.ConvertToUtc,
             GenerateVariableInitializer = false
@@ -142,7 +142,7 @@ public class DateTimeSpec
 
         var dumper = new CSharpDumper(new DumpOptions
         {
-            NamingPolicy = TypeNamingPolicy.ShortName,
+            TypeNamePolicy = TypeNamingPolicy.ShortName,
             DateTimeInstantiation = DateTimeInstantiation.Parse
         });
 

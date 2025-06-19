@@ -61,7 +61,7 @@ public sealed class VisualBasicDumper : IDumper
     {
         var codeWriterOptions = new CodeWriterOptions
         {
-            NamingPolicy = _options.NamingPolicy,
+            TypeNamePolicy = _options.TypeNamePolicy,
             IndentString = _options.IndentString
         };
 

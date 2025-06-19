@@ -2,7 +2,7 @@
 
 public enum TypeNamingPolicy
 {
-    ShortName = 0,  // Uses short type name
-    NormalName = 1, // Uses short type name for regular types and partially full name for nested types.
-    FullName = 2    // Uses full type name
+    ShortName = 0,       // Short type name
+    NestedQualified = 1, // Include the enclosing class name for nested types, but not the namespace.
+    FullName = 2         // Full type name
 }

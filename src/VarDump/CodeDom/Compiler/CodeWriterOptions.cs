@@ -9,5 +9,5 @@ namespace VarDump.CodeDom.Compiler;
 public sealed class CodeWriterOptions
 {
     public string IndentString { get; set; }
-    public TypeNamingPolicy NamingPolicy { get; set; }
+    public TypeNamingPolicy TypeNamePolicy { get; set; }
 }

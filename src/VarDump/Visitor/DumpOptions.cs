@@ -119,14 +119,14 @@ public class DumpOptions
     [EditorBrowsable(EditorBrowsableState.Never)]
     public bool UseTypeFullName
     {
-        get => NamingPolicy == TypeNamingPolicy.FullName;
-        set => NamingPolicy = value ? TypeNamingPolicy.FullName : TypeNamingPolicy.ShortName;
+        get => TypeNamePolicy == TypeNamingPolicy.FullName;
+        set => TypeNamePolicy = value ? TypeNamingPolicy.FullName : TypeNamingPolicy.ShortName;
     }
 
     /// <summary>
     /// 
     /// </summary>
-    public TypeNamingPolicy NamingPolicy { get; set; } = TypeNamingPolicy.ShortName;
+    public TypeNamingPolicy TypeNamePolicy { get; set; } = TypeNamingPolicy.ShortName;
 
     /// <summary>
     /// Gets or sets a value indicating whether to dump only writable properties.
@@ -163,7 +163,7 @@ public class DumpOptions
             UseNamedArgumentsInConstructors = UseNamedArgumentsInConstructors,
             UsePredefinedConstants = UsePredefinedConstants,
             UsePredefinedMethods = UsePredefinedMethods,
-            NamingPolicy = NamingPolicy
+            TypeNamePolicy = TypeNamePolicy
         };
     }
 }

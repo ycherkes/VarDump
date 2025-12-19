@@ -5,6 +5,25 @@ VarDump is a highly customizable  utility for serialization runtime objects to C
 
 Developed as a free, more powerful, and faster alternative to [ObjectDumper.NET](https://github.com/thomasgalliker/ObjectDumper).
 
+[Comparison fiddle](https://dotnetfiddle.net/vRX7vO) highlights the differences with ObjectDumper.NET:
+
+| Scenario | VarDump | ObjectDumper |
+| --- | --- | --- |
+| Console-style dump | ✗ | ✓ |
+| Dictionary of anonymous | ✓ | ✗ |
+| FrozenSet | ✓ | ✗ |
+| Grouping | ✓ | ✗ |
+| Grouping array | ✓ | ✗ |
+| Hex/Binary formatting and digit separator | ✓ | ✗ |
+| Immutable jagged array | ✓ | ✗ |
+| Jagged anonymous array | ✓ | ✗ |
+| Lookup | ✓ | ✗ |
+| Max collection size | ✓ | N/A |
+| Milti-dimensional array | ✓ | ✗ |
+| ReadOnlyCollection | ✓ | ✗ |
+| Single-line primitive layout | ✓ | ✗ |
+| TextWriter support | ✓ | ✗ |
+
 Actively used as a part of [Object Dumper Visual Studio and Visual Studio Code extension](https://github.com/ycherkes/ObjectDumper)
 
 [![nuget version](https://img.shields.io/nuget/v/VarDump.svg?style=flat-square)](https://www.nuget.org/packages/VarDump)
@@ -236,8 +255,6 @@ class FormattableStringVisitor(INextDepthVisitor nextDepthVisitor, ICodeWriter c
 ```
 
 For more examples see [Unit Tests](https://github.com/ycherkes/VarDump/tree/main/test)
-
-[Compare VarDump with ObjectDumper.NET - Run .NET fiddle](https://dotnetfiddle.net/vRX7vO)
 
 # Powered By
 

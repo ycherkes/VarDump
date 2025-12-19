@@ -9,7 +9,7 @@ Developed as a free, more powerful, and faster alternative to [ObjectDumper.NET]
 
 | Scenario | VarDump | ObjectDumper |
 | --- | --- | --- |
-| Console-style dump | ✗ | ✓ |
+| Console-style dump | N/A | ✓ |
 | Dictionary of anonymous | ✓ | ✗ |
 | FrozenSet | ✓ | ✗ |
 | Grouping | ✓ | ✗ |

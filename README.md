@@ -16,7 +16,7 @@ It outputs a more copy-paste-friendly code structure for unit tests.
 | [Extended Date-Time support](https://github.com/ycherkes/VarDump/blob/main/test/VarDump.UnitTests/DateTimeSpec.cs) | ✓ | ✗ |
 | [Hex/Binary formatting and digit separator](https://github.com/ycherkes/VarDump/blob/main/test/VarDump.UnitTests/IntegralTypesSpec.cs) | ✓ | ✗ |
 | [Max collection size](https://github.com/ycherkes/VarDump/blob/main/test/VarDump.UnitTests/TooManyItemsCollectionSpec.cs) | ✓ | N/A |
-| [Nested types](https://github.com/ycherkes/VarDump/blob/main/src/VarDump/Visitor/TypeNamingPolicy.cs#L6) | ✓ | ✗ |
+| [Nested types](https://github.com/ycherkes/VarDump/blob/main/test/VarDump.UnitTests/TypeNamingPolicySpec.cs) | ✓ | ✗ |
 | [Output to TextWriter](https://github.com/ycherkes/VarDump/blob/main/test/VarDump.UnitTests/LazinessSpec.cs) | ✓ | ✗ |
 
 Actively used as a part of [Object Dumper Visual Studio and Visual Studio Code extension](https://github.com/ycherkes/ObjectDumper)

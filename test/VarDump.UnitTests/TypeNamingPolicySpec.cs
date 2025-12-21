@@ -42,7 +42,7 @@ public class TypeNamingPolicySpec
             Name = "Nested value"
         });
 
-        Assert.Equal(expected.ReplaceLineEndings(), result);
+        Assert.Equal(expected, result, ignoreLineEndingDifferences: true);
     }
 
     private class NestedParent

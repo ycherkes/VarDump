@@ -11,7 +11,7 @@ It outputs a more copy-paste-friendly code structure for unit tests.
 | Feature | VarDump | ObjectDumper |
 | --- | --- | --- |
 | [Console-style dump](https://github.com/thomasgalliker/ObjectDumper?tab=readme-ov-file#dumping-c-objects-to-consolewriteline) | N/A | ✓ |
-| Collections (anonymous, goups, lookups, readonly, immutable, frozen) | ✓ | ✗ |
+| Collections (anonymous, goups, lookups, readonly, immutable, frozen, queryable) | ✓ | ✗ |
 | [Extended array support (multi-dimensional, layout)](https://github.com/ycherkes/VarDump/blob/main/test/VarDump.UnitTests/ArraySpec.cs) | ✓ | ✗ |
 | [Extended Date-Time support](https://github.com/ycherkes/VarDump/blob/main/test/VarDump.UnitTests/DateTimeSpec.cs) | ✓ | ✗ |
 | [Hex/Binary formatting and digit separator](https://github.com/ycherkes/VarDump/blob/main/test/VarDump.UnitTests/IntegralTypesSpec.cs) | ✓ | ✗ |

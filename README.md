@@ -7,22 +7,15 @@ Developed as a free, more powerful, and faster alternative to [ObjectDumper.NET]
 
 [Comparison fiddle](https://dotnetfiddle.net/vRX7vO) highlights the differences with ObjectDumper.NET:
 
-| Scenario | VarDump | ObjectDumper |
+| Feature | VarDump | ObjectDumper |
 | --- | --- | --- |
-| Console-style dump | N/A | ✓ |
-| Dictionary of anonymous | ✓ | ✗ |
-| FrozenSet | ✓ | ✗ |
-| Grouping | ✓ | ✗ |
-| Grouping array | ✓ | ✗ |
-| Hex/Binary formatting and digit separator | ✓ | ✗ |
-| Immutable jagged array | ✓ | ✗ |
-| Jagged anonymous array | ✓ | ✗ |
-| Lookup | ✓ | ✗ |
-| Max collection size | ✓ | N/A |
-| Milti-dimensional array | ✓ | ✗ |
-| ReadOnlyCollection | ✓ | ✗ |
-| Single-line primitive layout | ✓ | ✗ |
-| TextWriter support | ✓ | ✗ |
+| [Console-style dump](https://github.com/thomasgalliker/ObjectDumper?tab=readme-ov-file#dumping-c-objects-to-consolewriteline) | N/A | ✓ |
+| Collections (anonymous, goups, lookups, readonly, immutable, frozen) | ✓ | ✗ |
+| [Extended Date-Time support](https://github.com/ycherkes/VarDump/blob/main/test/VarDump.UnitTests/DateTimeSpec.cs) | ✓ | ✗ |
+| [Hex/Binary formatting and digit separator](https://github.com/ycherkes/VarDump/blob/main/test/VarDump.UnitTests/IntegralTypesSpec.cs) | ✓ | ✗ |
+| [Max collection size](https://github.com/ycherkes/VarDump/blob/main/test/VarDump.UnitTests/TooManyItemsCollectionSpec.cs) | ✓ | N/A |
+| [Extended array support (multi-dimensional, layout)](https://github.com/ycherkes/VarDump/blob/main/test/VarDump.UnitTests/ArraySpec.cs) | ✓ | ✗ |
+| [Output to TextWriter](https://github.com/ycherkes/VarDump/blob/main/test/VarDump.UnitTests/LazinessSpec.cs) | ✓ | ✗ |
 
 Actively used as a part of [Object Dumper Visual Studio and Visual Studio Code extension](https://github.com/ycherkes/ObjectDumper)
 

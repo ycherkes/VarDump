@@ -19,7 +19,7 @@ It outputs a more copy-paste-friendly code structure for unit tests.
 | [Nested types](https://github.com/ycherkes/VarDump/blob/main/test/VarDump.UnitTests/TypeNamingPolicySpec.cs) | ✓ | ✗ |
 | [Output to TextWriter](https://github.com/ycherkes/VarDump/blob/main/test/VarDump.UnitTests/LazinessSpec.cs) | ✓ | ✗ |
 
-Actively used as a part of [Object Dumper Visual Studio and Visual Studio Code extension](https://github.com/ycherkes/ObjectDumper)
+Actively used as a part of [Object Dumper Visual Studio, Visual Studio Code and Rider extensions](https://github.com/ycherkes/ObjectDumper)
 
 [![nuget version](https://img.shields.io/nuget/v/VarDump.svg?style=flat-square)](https://www.nuget.org/packages/VarDump)
 [![nuget downloads](https://img.shields.io/nuget/dt/VarDump?label=Downloads)](https://www.nuget.org/packages/VarDump)

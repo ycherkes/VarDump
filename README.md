@@ -1,10 +1,9 @@
 [![Stand With Ukraine](https://raw.githubusercontent.com/vshymanskyy/StandWithUkraine/main/banner2-direct.svg)](https://stand-with-ukraine.pp.ua)
  
-VarDump is a highly customizable  utility for serialization runtime objects to C# or Visual Basic string.
+VarDump is a highly customizable utility for serializing runtime objects to C# or Visual Basic strings.
 ===========================================================================================
 
-Developed as a free, more powerful, and faster alternative to [ObjectDumper.NET](https://github.com/thomasgalliker/ObjectDumper).
-It outputs a more copy-paste-friendly code structure for unit tests.
+VarDump grew out of my work on a [Object Dumper Visual Studio, Visual Studio Code, and Rider extensions](https://github.com/ycherkes/ObjectDumper). I initially tried [ObjectDumper.NET](https://github.com/thomasgalliker/ObjectDumper), but some limitations pushed me to build a free library with richer output options.
 
 [Comparison fiddle](https://dotnetfiddle.net/vRX7vO) highlights the differences with ObjectDumper.NET:
 
@@ -18,8 +17,6 @@ It outputs a more copy-paste-friendly code structure for unit tests.
 | [Max collection size](https://github.com/ycherkes/VarDump/blob/main/test/VarDump.UnitTests/TooManyItemsCollectionSpec.cs) | ✓ | N/A |
 | [Nested types](https://github.com/ycherkes/VarDump/blob/main/test/VarDump.UnitTests/TypeNamingPolicySpec.cs) | ✓ | ✗ |
 | [Output to TextWriter](https://github.com/ycherkes/VarDump/blob/main/test/VarDump.UnitTests/LazinessSpec.cs) | ✓ | ✗ |
-
-Actively used as a part of [Object Dumper Visual Studio, Visual Studio Code and Rider extensions](https://github.com/ycherkes/ObjectDumper)
 
 [![nuget version](https://img.shields.io/nuget/v/VarDump.svg?style=flat-square)](https://www.nuget.org/packages/VarDump)
 [![nuget downloads](https://img.shields.io/nuget/dt/VarDump?label=Downloads)](https://www.nuget.org/packages/VarDump)

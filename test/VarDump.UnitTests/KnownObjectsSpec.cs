@@ -41,7 +41,7 @@ public class KnownObjectsSpec
         Assert.Equal("""
                      var uri = new Uri(uriString: "https://user:password@www.contoso.com:80/Home/Index.htm?q1=v1&q2=v2#FragmentName");
                      
-                     """, result);
+                     """, result, ignoreLineEndingDifferences: true);
     }
 
     [Fact]
@@ -81,7 +81,7 @@ public class KnownObjectsSpec
                          ValueTuple = ("5", "6")
                      };
                      
-                     """, result);
+                     """, result, ignoreLineEndingDifferences: true);
         return;
 
         static void DisableNamedArguments(DumpOptions opts)
@@ -120,7 +120,7 @@ public class KnownObjectsSpec
                     ServiceDescriptor.Scoped<IPerson, Person>()
                 };
 
-                """, result);
+                """, result, ignoreLineEndingDifferences: true);
     }
 
     [Fact]
@@ -144,7 +144,7 @@ public class KnownObjectsSpec
             """
             Dim serviceDescriptorValue = ServiceDescriptor.Transient(Of IPerson, Person)()
 
-            """, result);
+            """, result, ignoreLineEndingDifferences: true);
     }
 
     [Fact]
@@ -169,7 +169,7 @@ public class KnownObjectsSpec
             """
             var concreteFormattableString = FormattableStringFactory.Create("Hello, {0}", "World");
 
-            """, result);
+            """, result, ignoreLineEndingDifferences: true);
     }
 
     [Fact]
@@ -194,7 +194,7 @@ public class KnownObjectsSpec
             """
             Dim concreteFormattableStringValue = FormattableStringFactory.Create("Hello, {0}", "World")
             
-            """, result);
+            """, result, ignoreLineEndingDifferences: true);
     }
 
     private class ServiceDescriptorVisitor(INextDepthVisitor nextDepthVisitor, ICodeWriter codeWriter) : IKnownObjectVisitor

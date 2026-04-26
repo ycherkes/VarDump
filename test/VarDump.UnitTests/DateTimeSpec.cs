@@ -30,7 +30,7 @@ public class DateTimeSpec
         var evaluatedResult = await CSharpScript.EvaluateAsync<DateTime>(result, ScriptOptions.Default.WithImports("System"));
 
         Assert.Equal(dateTime.ToUniversalTime(), evaluatedResult.ToUniversalTime());
-        Assert.Equal(expectedResult, result);
+        Assert.Equal(expectedResult, result, ignoreLineEndingDifferences: true);
     }
 
     [Fact]
@@ -51,7 +51,7 @@ public class DateTimeSpec
 
         var result = dumper.Dump(dateTime);
 
-        Assert.Equal(expectedResult, result);
+        Assert.Equal(expectedResult, result, ignoreLineEndingDifferences: true);
     }
 
     [Fact]
@@ -73,7 +73,7 @@ public class DateTimeSpec
         var evaluatedResult = await CSharpScript.EvaluateAsync<DateTimeOffset>(result, ScriptOptions.Default.WithImports("System"));
 
         Assert.Equal(dateTimeOffset, evaluatedResult);
-        Assert.Equal(expectedResult, result);
+        Assert.Equal(expectedResult, result, ignoreLineEndingDifferences: true);
     }
 
     [Fact]
@@ -93,7 +93,7 @@ public class DateTimeSpec
 
         var result = dumper.Dump(dateTimeOffset);
 
-        Assert.Equal(expectedResult, result);
+        Assert.Equal(expectedResult, result, ignoreLineEndingDifferences: true);
     }
 
     [Fact]
@@ -113,7 +113,7 @@ public class DateTimeSpec
 
         var result = dumper.Dump(dateTime);
 
-        Assert.Equal(expectedResult, result);
+        Assert.Equal(expectedResult, result, ignoreLineEndingDifferences: true);
     }
 
     [Fact]
@@ -129,7 +129,7 @@ public class DateTimeSpec
             """
             var dateTimeOffset = DateTimeOffset.ParseExact("2022-06-24T11:59:21.7961218+03:00", "O", CultureInfo.InvariantCulture, DateTimeStyles.RoundtripKind);
 
-            """, result);
+            """, result, ignoreLineEndingDifferences: true);
     }
 
     [Fact]
@@ -155,7 +155,7 @@ public class DateTimeSpec
                 DateOnly = DateOnly.ParseExact("2022-12-10", "O")
             };
 
-            """, result);
+            """, result, ignoreLineEndingDifferences: true);
     }
 
     [Fact]
@@ -180,7 +180,7 @@ public class DateTimeSpec
                 TimeOnly = TimeOnly.ParseExact("22:55:33.1220000", "O")
             };
 
-            """, result);
+            """, result, ignoreLineEndingDifferences: true);
     }
 
     [Fact]
@@ -204,7 +204,7 @@ public class DateTimeSpec
                 .DateOnly = DateOnly.ParseExact("2022-12-10", "O")
             }
 
-            """, result);
+            """, result, ignoreLineEndingDifferences: true);
     }
 
     [Fact]
@@ -228,6 +228,6 @@ public class DateTimeSpec
                 .TimeOnly = TimeOnly.ParseExact("22:55:33.1220000", "O")
             }
 
-            """, result);
+            """, result, ignoreLineEndingDifferences: true);
     }
 }

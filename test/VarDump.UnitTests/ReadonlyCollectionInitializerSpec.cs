@@ -32,7 +32,7 @@ public class ReadonlyCollectionInitializerSpec
                 }
             };
 
-            """, result);
+            """, result, ignoreLineEndingDifferences: true);
     }
 
     [Fact(Skip = "Not implemented yet")]
@@ -62,6 +62,6 @@ public class ReadonlyCollectionInitializerSpec
                 }
             };
 
-            """, result);
+            """, result, ignoreLineEndingDifferences: true);
     }
 }

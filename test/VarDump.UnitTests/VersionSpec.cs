@@ -18,7 +18,7 @@ public class VersionSpec
             """
             var version = new Version("1.2.3.4");
 
-            """, result);
+            """, result, ignoreLineEndingDifferences: true);
     }
 
 
@@ -35,6 +35,6 @@ public class VersionSpec
             """
             Dim versionValue = New Version("1.2.3.4")
 
-            """, result);
+            """, result, ignoreLineEndingDifferences: true);
     }
 }

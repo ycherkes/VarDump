@@ -87,6 +87,23 @@ public class DumpOptions
     /// </summary>
     public int MaxDepth { get; set; } = 25;
 
+    private string _newLine = Environment.NewLine;
+
+    /// <summary>
+    /// The newline string to use when dumping, default is <see cref="Environment.NewLine"/>.
+    /// </summary>
+    public string NewLine
+    {
+        get => _newLine;
+        set
+        {
+            _newLine = value;
+            IsNewLineSpecified = true;
+        }
+    }
+
+    internal bool IsNewLineSpecified { get; private set; }
+
     /// <summary>
     /// The layout to use for primitive collections, default is <see cref="CollectionLayout.MultiLine"/>.
     /// </summary>
@@ -150,7 +167,7 @@ public class DumpOptions
 
     public DumpOptions Clone()
     {
-        return new DumpOptions
+        var clone = new DumpOptions
         {
             ConfigureKnownObjects = ConfigureKnownObjects,
             DateKind = DateKind,
@@ -174,5 +191,12 @@ public class DumpOptions
             UsePredefinedMethods = UsePredefinedMethods,
             TypeNamePolicy = TypeNamePolicy
         };
+
+        if (IsNewLineSpecified)
+        {
+            clone.NewLine = NewLine;
+        }
+
+        return clone;
     }
 }

@@ -38,7 +38,7 @@ public class AnonymousTypeSpec
                 }
             };
 
-            """, result);
+            """, result, ignoreLineEndingDifferences: true);
     }
 
     [Fact]
@@ -69,7 +69,7 @@ public class AnonymousTypeSpec
                 }
             }
 
-            """, result);
+            """, result, ignoreLineEndingDifferences: true);
     }
 
     [Fact]

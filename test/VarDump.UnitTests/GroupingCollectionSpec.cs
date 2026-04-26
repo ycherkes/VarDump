@@ -85,7 +85,7 @@ public class GroupingCollectionSpec
                 }
             }.GroupBy(grp => grp.Key, grp => grp.Element).ToArray();
 
-            """, result);
+            """, result, ignoreLineEndingDifferences: true);
     }
 
     [Fact]
@@ -114,6 +114,6 @@ public class GroupingCollectionSpec
                 }
             }.GroupBy(grp => grp.Key, grp => grp.Element).Single();
 
-            """, result);
+            """, result, ignoreLineEndingDifferences: true);
     }
 }

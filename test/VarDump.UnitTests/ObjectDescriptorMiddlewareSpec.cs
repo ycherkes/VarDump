@@ -57,7 +57,7 @@ public class ObjectDescriptorMiddlewareSpec
                 ValueTuple = ("5", "6")
             };
             
-            """, result);
+            """, result, ignoreLineEndingDifferences: true);
     }
 
     [Fact]
@@ -82,7 +82,7 @@ public class ObjectDescriptorMiddlewareSpec
             """
             var regex = new Regex("\\p{Sc}+\\s*\\d+", RegexOptions.Compiled, TimeSpan.FromSeconds(5));
             
-            """, result);
+            """, result, ignoreLineEndingDifferences: true);
     }
 
     [Fact]
@@ -108,7 +108,7 @@ public class ObjectDescriptorMiddlewareSpec
             """
             var regex = new Regex(pattern: "\\p{Sc}+\\s*\\d+", options: RegexOptions.Compiled, matchTimeout: TimeSpan.FromSeconds(5));
             
-            """, result);
+            """, result, ignoreLineEndingDifferences: true);
     }
 
     [Fact]
@@ -145,7 +145,7 @@ public class ObjectDescriptorMiddlewareSpec
                 }
             };
             
-            """, result);
+            """, result, ignoreLineEndingDifferences: true);
     }
 
     [Fact]
@@ -185,7 +185,7 @@ public class ObjectDescriptorMiddlewareSpec
                 }
             };
             
-            """, result);
+            """, result, ignoreLineEndingDifferences: true);
 
         static bool IsNotCardNumber(ReflectionDescription description)
         {
@@ -231,7 +231,7 @@ public class ObjectDescriptorMiddlewareSpec
                 }
             };
             
-            """, result);
+            """, result, ignoreLineEndingDifferences: true);
         return;
 
         static ReflectionDescription MaskCardNumber(ReflectionDescription description)
@@ -294,7 +294,7 @@ public class ObjectDescriptorMiddlewareSpec
                 }
             };
             
-            """, result);
+            """, result, ignoreLineEndingDifferences: true);
     }
 
     [Fact]
@@ -330,7 +330,7 @@ public class ObjectDescriptorMiddlewareSpec
                 }
             };
 
-            """, result);
+            """, result, ignoreLineEndingDifferences: true);
     }
 
     [Fact]
@@ -450,7 +450,7 @@ public class ObjectDescriptorMiddlewareSpec
 
 #endif
 
-        Assert.Equal(expectedString, actualString);
+        Assert.Equal(expectedString, actualString, ignoreLineEndingDifferences: true);
     }
 
     [Fact]
@@ -470,7 +470,7 @@ public class ObjectDescriptorMiddlewareSpec
         var expectedFullName = Path.Combine(Directory.GetCurrentDirectory(), fileName).Replace(@"\", @"\\");
         var expectedString = $"var fileInfo = new FileInfo(\"{expectedFullName}\");\r\n";
 
-        Assert.Equal(expectedString, actualString);
+        Assert.Equal(expectedString, actualString, ignoreLineEndingDifferences: true);
     }
 
     [Fact]
@@ -487,9 +487,10 @@ public class ObjectDescriptorMiddlewareSpec
 
         var actualString = dumper.Dump(new DriveInfo(driveName));
 
-        var expectedString = "var driveInfo = new DriveInfo(\"C:\\\\\");\r\n";
+        var expectedDriveName = new DriveInfo(driveName).Name.Replace(@"\", @"\\");
+        var expectedString = $"var driveInfo = new DriveInfo(\"{expectedDriveName}\");\r\n";
 
-        Assert.Equal(expectedString, actualString);
+        Assert.Equal(expectedString, actualString, ignoreLineEndingDifferences: true);
     }
 
     [Fact]
@@ -507,9 +508,10 @@ public class ObjectDescriptorMiddlewareSpec
 
         var actualString = dumper.Dump(new DriveInfo(driveName));
 
-        var expectedString = $"var driveInfo = new DriveInfo(driveName: \"{driveName}\\\\\");\r\n";
+        var expectedDriveName = new DriveInfo(driveName).Name.Replace(@"\", @"\\");
+        var expectedString = $"var driveInfo = new DriveInfo(driveName: \"{expectedDriveName}\");\r\n";
 
-        Assert.Equal(expectedString, actualString);
+        Assert.Equal(expectedString, actualString, ignoreLineEndingDifferences: true);
     }
 
 

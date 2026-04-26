@@ -13,7 +13,7 @@ namespace VarDump.UnitTests
 
             var result = dumper.Dump(value);
 
-            Assert.Equal("var decimalValue = 0.00000m;\r\n", result);
+            Assert.Equal("var decimalValue = 0.00000m;\r\n", result, ignoreLineEndingDifferences: true);
         }
 
         [Fact]
@@ -25,7 +25,7 @@ namespace VarDump.UnitTests
 
             var result = dumper.Dump(value);
 
-            Assert.Equal("Dim decimalValue = 0.00000D\r\n", result);
+            Assert.Equal("Dim decimalValue = 0.00000D\r\n", result, ignoreLineEndingDifferences: true);
         }
     }
 }

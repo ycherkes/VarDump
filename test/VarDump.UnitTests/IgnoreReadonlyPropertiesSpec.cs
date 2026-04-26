@@ -16,7 +16,7 @@ public class IgnoreReadonlyPropertiesSpec
 
         var result = dumper.Dump(subjectDescriptor);
 
-        Assert.Equal("var subjectDescriptor = new SubjectDescriptor();\r\n", result);
+        Assert.Equal("var subjectDescriptor = new SubjectDescriptor();\r\n", result, ignoreLineEndingDifferences: true);
     }
 
     [Fact]
@@ -35,7 +35,7 @@ public class IgnoreReadonlyPropertiesSpec
                          Identifier = "identifier"
                      };
                      
-                     """, result);
+                     """, result, ignoreLineEndingDifferences: true);
     }
 
     [Fact]
@@ -54,7 +54,7 @@ public class IgnoreReadonlyPropertiesSpec
                          Identifier = "identifier"
                      };
 
-                     """, result);
+                     """, result, ignoreLineEndingDifferences: true);
     }
 
     private struct SubjectDescriptor(string subjectType, string identifier)

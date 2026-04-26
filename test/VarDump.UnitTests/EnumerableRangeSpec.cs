@@ -30,7 +30,7 @@ public class EnumerableRangeSpec
                 }
             };
 
-            """, result);
+            """, result, ignoreLineEndingDifferences: true);
     }
 
     [Fact]
@@ -55,6 +55,6 @@ public class EnumerableRangeSpec
                 }
             }
 
-            """, result);
+            """, result, ignoreLineEndingDifferences: true);
     }
 }

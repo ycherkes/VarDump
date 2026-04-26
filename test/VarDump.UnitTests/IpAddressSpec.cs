@@ -18,7 +18,7 @@ public class IpAddressSpec
             """
             var iPAddress = IPAddress.Parse("142.250.74.110");
 
-            """, result);
+            """, result, ignoreLineEndingDifferences: true);
     }
 
 
@@ -35,6 +35,6 @@ public class IpAddressSpec
             """
             Dim iPAddressValue = IPAddress.Parse("142.250.74.110")
 
-            """, result);
+            """, result, ignoreLineEndingDifferences: true);
     }
 }

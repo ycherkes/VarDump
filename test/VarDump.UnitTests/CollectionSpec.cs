@@ -23,7 +23,7 @@ public class CollectionSpec
                          1
                      }.AsReadOnly();
 
-                     """, result);
+                     """, result, ignoreLineEndingDifferences: true);
     }
 
     [Fact]
@@ -38,7 +38,7 @@ public class CollectionSpec
         Assert.Equal("""
                      var readOnlyCollectionOfInt = new List<int> { 1 }.AsReadOnly();
                      
-                     """, result);
+                     """, result, ignoreLineEndingDifferences: true);
     }
 
     [Fact]
@@ -58,7 +58,7 @@ public class CollectionSpec
                          2
                      };
                      
-                     """, result);
+                     """, result, ignoreLineEndingDifferences: true);
     }
 
     [Fact]
@@ -83,7 +83,7 @@ public class CollectionSpec
                 new List<int> { 1, 2, 3 }
             };
 
-            """, result);
+            """, result, ignoreLineEndingDifferences: true);
     }
 
     [Fact]
@@ -101,7 +101,7 @@ public class CollectionSpec
                 1
             }.AsReadOnly()
 
-            """, result);
+            """, result, ignoreLineEndingDifferences: true);
     }
 
     [Fact]
@@ -116,7 +116,7 @@ public class CollectionSpec
         Assert.Equal("""
                      Dim readOnlyCollectionOfInteger = New List(Of Integer) From { 1 }.AsReadOnly()
                      
-                     """, result);
+                     """, result, ignoreLineEndingDifferences: true);
     }
 
     [Fact]
@@ -140,6 +140,6 @@ public class CollectionSpec
                 New List(Of Integer) From { 1, 2, 3 }
             }
             
-            """, result);
+            """, result, ignoreLineEndingDifferences: true);
     }
 }

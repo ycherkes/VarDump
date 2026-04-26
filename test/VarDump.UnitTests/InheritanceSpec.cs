@@ -31,7 +31,7 @@ public class InheritanceSpec
                 BirthDate = DateTime.ParseExact("1964-06-19T00:00:00.0000000Z", "O", CultureInfo.InvariantCulture, DateTimeStyles.RoundtripKind)
             };
 
-            """, result);
+            """, result, ignoreLineEndingDifferences: true);
     }
 
     [Fact]
@@ -56,7 +56,7 @@ public class InheritanceSpec
                 .BirthDate = Date.ParseExact("1964-06-19T00:00:00.0000000Z", "O", CultureInfo.InvariantCulture, DateTimeStyles.RoundtripKind)
             }
 
-            """, result);
+            """, result, ignoreLineEndingDifferences: true);
     }
 
     [Fact]
@@ -84,7 +84,7 @@ public class InheritanceSpec
                 _derivedNumber = 20
             };
             
-            """, result);
+            """, result, ignoreLineEndingDifferences: true);
     }
 
     [Fact]
@@ -111,7 +111,7 @@ public class InheritanceSpec
                 ._derivedNumber = 20
             }
             
-            """, result);
+            """, result, ignoreLineEndingDifferences: true);
     }
 
     private class Human

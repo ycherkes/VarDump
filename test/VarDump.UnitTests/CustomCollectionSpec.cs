@@ -36,7 +36,7 @@ public class CustomCollectionSpec
                 }
             }
 
-            """, result);
+            """, result, ignoreLineEndingDifferences: true);
     }
 
     [Fact]
@@ -74,7 +74,7 @@ public class CustomCollectionSpec
                 }
             };
 
-            """, result);
+            """, result, ignoreLineEndingDifferences: true);
     }
 
     [Fact]
@@ -108,7 +108,7 @@ public class CustomCollectionSpec
                 }
             }
 
-            """, result);
+            """, result, ignoreLineEndingDifferences: true);
     }
 
     [Fact]
@@ -146,7 +146,7 @@ public class CustomCollectionSpec
                 }
             };
 
-            """, result);
+            """, result, ignoreLineEndingDifferences: true);
     }
 
 }

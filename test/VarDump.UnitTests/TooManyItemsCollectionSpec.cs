@@ -25,7 +25,7 @@ public class TooManyItemsCollectionSpec
                          // Too many items (> 2). Consider increasing the MaxCollectionSize option.
                      }.AsReadOnly();
                      
-                     """, result);
+                     """, result, ignoreLineEndingDifferences: true);
     }
 
     [Fact]
@@ -65,7 +65,7 @@ public class TooManyItemsCollectionSpec
                          // Too many items (> 2). Consider increasing the MaxCollectionSize option.
                      };
                      
-                     """, result);
+                     """, result, ignoreLineEndingDifferences: true);
     }
 
     [Fact]
@@ -107,7 +107,7 @@ public class TooManyItemsCollectionSpec
                          // Too many items (> 2). Consider increasing the MaxCollectionSize option.
                      }.ToDictionary(kvp => kvp.Key, kvp => kvp.Value);
                      
-                     """, result);
+                     """, result, ignoreLineEndingDifferences: true);
     }
 
     [Fact]
@@ -150,7 +150,7 @@ public class TooManyItemsCollectionSpec
                 // Too many items (> 2). Consider increasing the MaxCollectionSize option.
             }.GroupBy(grp => grp.Key, grp => grp.Element).ToArray();
             
-            """, result);
+            """, result, ignoreLineEndingDifferences: true);
     }
 
     [Fact]
@@ -169,6 +169,6 @@ public class TooManyItemsCollectionSpec
                          'Too many items (> 2). Consider increasing the MaxCollectionSize option.
                      }.AsReadOnly()
                      
-                     """, result);
+                     """, result, ignoreLineEndingDifferences: true);
     }
 }

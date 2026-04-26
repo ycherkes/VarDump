@@ -21,7 +21,7 @@ public class IntegralTypesSpec
             """
             var ulongValue = 0b1111111111111111111111111111111111111111111111111111111111111111ul;
 
-            """, result);
+            """, result, ignoreLineEndingDifferences: true);
     }
 
     [Fact]
@@ -39,7 +39,7 @@ public class IntegralTypesSpec
             """
             var ulongValue = 18_446_744_073_709_551_615ul;
 
-            """, result);
+            """, result, ignoreLineEndingDifferences: true);
     }
 
     [Fact]
@@ -56,7 +56,7 @@ public class IntegralTypesSpec
             """
             var ulongValue = 0b1111_1111_1111_1111_1111_1111_1111_1111_1111_1111_1111_1111_1111_1111_1111_1110ul;
             
-            """, result);
+            """, result, ignoreLineEndingDifferences: true);
     }
 
     [Fact]
@@ -73,7 +73,7 @@ public class IntegralTypesSpec
             """
             var intValue = 0b0010_0101;
             
-            """, result);
+            """, result, ignoreLineEndingDifferences: true);
     }
 
     [Fact]
@@ -91,7 +91,7 @@ public class IntegralTypesSpec
             """
             var arrayOfInt = new int[]{ 0b100101, 0b110001, 0b1001001 };
             
-            """, result);
+            """, result, ignoreLineEndingDifferences: true);
     }
 
     [Fact]
@@ -108,7 +108,7 @@ public class IntegralTypesSpec
             """
             var byteValue = 0X0F;
 
-            """, result);
+            """, result, ignoreLineEndingDifferences: true);
     }
 
     [Fact]
@@ -125,7 +125,7 @@ public class IntegralTypesSpec
             """
             var intValue = 0X0001_E240;
 
-            """, result);
+            """, result, ignoreLineEndingDifferences: true);
     }
 
     [Fact]
@@ -142,7 +142,7 @@ public class IntegralTypesSpec
             """
             Dim uLongValue = &B1111111111111111111111111111111111111111111111111111111111111110UL
             
-            """, result);
+            """, result, ignoreLineEndingDifferences: true);
     }
 
     [Fact]
@@ -159,7 +159,7 @@ public class IntegralTypesSpec
             """
             Dim integerValue = &b0010_0101
             
-            """, result);
+            """, result, ignoreLineEndingDifferences: true);
     }
 
     [Fact]
@@ -176,7 +176,7 @@ public class IntegralTypesSpec
             """
             Dim byteValue = &H0F
 
-            """, result);
+            """, result, ignoreLineEndingDifferences: true);
     }
 
     [Fact]
@@ -193,6 +193,6 @@ public class IntegralTypesSpec
             """
             Dim integerValue = &H0001_E240
 
-            """, result);
+            """, result, ignoreLineEndingDifferences: true);
     }
 }

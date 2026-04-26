@@ -18,7 +18,7 @@ public class IpEndPointSpec
             """
             var iPEndPoint = new IPEndPoint(IPAddress.Parse("142.250.74.110"), 12345);
 
-            """, result);
+            """, result, ignoreLineEndingDifferences: true);
     }
 
 
@@ -35,6 +35,6 @@ public class IpEndPointSpec
             """
             Dim iPEndPointValue = New IPEndPoint(IPAddress.Parse("142.250.74.110"), 12345)
 
-            """, result);
+            """, result, ignoreLineEndingDifferences: true);
     }
 }

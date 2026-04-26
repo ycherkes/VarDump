@@ -17,7 +17,7 @@ public class NullableSpec
             """
             var myEnum = MyEnum.TestValue;
 
-            """, result);
+            """, result, ignoreLineEndingDifferences: true);
     }
 
     [Fact]
@@ -33,7 +33,7 @@ public class NullableSpec
             """
             Dim myEnumValue = MyEnum.TestValue
 
-            """, result);
+            """, result, ignoreLineEndingDifferences: true);
     }
 
     enum MyEnum

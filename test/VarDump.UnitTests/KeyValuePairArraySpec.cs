@@ -26,7 +26,7 @@ public class KeyValuePairArraySpec
                 New KeyValuePair(Of Integer, String)(2, "Second")
             }
 
-            """, result);
+            """, result, ignoreLineEndingDifferences: true);
     }
 
     [Fact]
@@ -49,7 +49,7 @@ public class KeyValuePairArraySpec
                 New KeyValuePair(Of Integer, String)(key:=2, value:="Second")
             }
             
-            """, result);
+            """, result, ignoreLineEndingDifferences: true);
     }
 
     [Fact]
@@ -73,7 +73,7 @@ public class KeyValuePairArraySpec
                 new KeyValuePair<int, string>(2, "Second")
             };
 
-            """, result);
+            """, result, ignoreLineEndingDifferences: true);
     }
 
     [Fact]
@@ -97,6 +97,6 @@ public class KeyValuePairArraySpec
                 new KeyValuePair<int, string>(key: 2, value: "Second")
             };
             
-            """, result);
+            """, result, ignoreLineEndingDifferences: true);
     }
 }

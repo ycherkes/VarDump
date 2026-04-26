@@ -20,7 +20,7 @@ namespace VarDump.UnitTests
                 """
                 var regex = new Regex("\\p{Sc}+\\s*\\d+", RegexOptions.Compiled, TimeSpan.FromSeconds(5));
 
-                """, result);
+                """, result, ignoreLineEndingDifferences: true);
         }
 
         [Fact]
@@ -36,7 +36,7 @@ namespace VarDump.UnitTests
                 """
                 var regex = new Regex(pattern: "\\p{Sc}+\\s*\\d+", options: RegexOptions.Compiled, matchTimeout: TimeSpan.FromSeconds(5));
                 
-                """, result);
+                """, result, ignoreLineEndingDifferences: true);
         }
 
         [Fact]
@@ -52,7 +52,7 @@ namespace VarDump.UnitTests
                 """
                 Dim regexValue = New Regex("\p{Sc}+\s*\d+", RegexOptions.Compiled, TimeSpan.FromSeconds(5))
                 
-                """, result);
+                """, result, ignoreLineEndingDifferences: true);
         }
 
         [Fact]
@@ -68,7 +68,7 @@ namespace VarDump.UnitTests
                 """
                 Dim regexValue = New Regex(pattern:="\p{Sc}+\s*\d+", options:=RegexOptions.Compiled, matchTimeout:=TimeSpan.FromSeconds(5))
                 
-                """, result);
+                """, result, ignoreLineEndingDifferences: true);
         }
     }
 }

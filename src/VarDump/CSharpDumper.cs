@@ -34,11 +34,18 @@ public sealed class CSharpDumper : IDumper
         {
             throw new FormatException($"Bad format specifier. {options.IntegralNumericFormat}");
         }
+        if (options.NewLine == null)
+        {
+            throw new ArgumentNullException(nameof(options.NewLine));
+        }
     }
 
     public string Dump(object obj)
     {
-        using var writer = new StringWriter();
+        using var writer = new StringWriter
+        {
+            NewLine = _options.NewLine
+        };
 
         DumpImpl(obj, writer);
 
@@ -54,7 +61,19 @@ public sealed class CSharpDumper : IDumper
             throw new ArgumentNullException(nameof(textWriter));
         }
 
-        DumpImpl(obj, textWriter);
+        var originalNewLine = textWriter.NewLine;
+        try
+        {
+            if (_options.IsNewLineSpecified)
+            {
+                textWriter.NewLine = _options.NewLine;
+            }
+            DumpImpl(obj, textWriter);
+        }
+        finally
+        {
+            textWriter.NewLine = originalNewLine;
+        }
     }
 
     private void DumpImpl(object obj, TextWriter textWriter)

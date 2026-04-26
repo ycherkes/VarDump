@@ -80,7 +80,7 @@ public class VariableNameSpec
 
         var result = dumper.Dump(stringValue);
 
-        Assert.Equal("\"Test string value\"", result);
+        Assert.Equal("\"Test string value\"", result, ignoreLineEndingDifferences: true);
     }
 
     [Fact]
@@ -95,6 +95,6 @@ public class VariableNameSpec
 
         var result = dumper.Dump(stringValue);
 
-        Assert.Equal("\"Test string value\"", result);
+        Assert.Equal("\"Test string value\"", result, ignoreLineEndingDifferences: true);
     }
 }

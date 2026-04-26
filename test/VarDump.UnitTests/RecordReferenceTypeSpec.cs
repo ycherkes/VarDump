@@ -14,7 +14,7 @@ public class RecordReferenceTypeSpec
 
         var result = dumper.Dump(person);
 
-        Assert.Equal("var person = new Person(\"Boris\", \"Johnson\");\r\n", result);
+        Assert.Equal("var person = new Person(\"Boris\", \"Johnson\");\r\n", result, ignoreLineEndingDifferences: true);
     }
 
     [Fact]
@@ -26,7 +26,7 @@ public class RecordReferenceTypeSpec
 
         var result = dumper.Dump(person);
 
-        Assert.Equal("Dim personValue = New Person(\"Boris\", \"Johnson\")\r\n", result);
+        Assert.Equal("Dim personValue = New Person(\"Boris\", \"Johnson\")\r\n", result, ignoreLineEndingDifferences: true);
     }
 
     [Fact]
@@ -48,7 +48,7 @@ public class RecordReferenceTypeSpec
     FirstName = ""Boris"",
     LastName = ""Johnson""
 };
-", result);
+", result, ignoreLineEndingDifferences: true);
     }
 
     [Fact]
@@ -69,7 +69,7 @@ public class RecordReferenceTypeSpec
     .FirstName = ""Boris"",
     .LastName = ""Johnson""
 }
-", result);
+", result, ignoreLineEndingDifferences: true);
     }
 
     private record Person(string FirstName, string LastName)

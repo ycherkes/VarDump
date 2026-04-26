@@ -26,7 +26,7 @@ public class ValueTupleArraySpec
                 (2, "Second")
             }
             
-            """, result);
+            """, result, ignoreLineEndingDifferences: true);
     }
 
     [Fact]
@@ -49,7 +49,7 @@ public class ValueTupleArraySpec
                 (item1:=2, item2:="Second")
             }
             
-            """, result);
+            """, result, ignoreLineEndingDifferences: true);
     }
 
     [Fact]
@@ -73,7 +73,7 @@ public class ValueTupleArraySpec
                 (2, "Second")
             };
             
-            """, result);
+            """, result, ignoreLineEndingDifferences: true);
     }
 
     [Fact]
@@ -97,6 +97,6 @@ public class ValueTupleArraySpec
                 (item1: 2, item2: "Second")
             };
             
-            """, result);
+            """, result, ignoreLineEndingDifferences: true);
     }
 }

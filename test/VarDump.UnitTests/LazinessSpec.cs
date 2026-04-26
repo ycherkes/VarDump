@@ -25,7 +25,7 @@ public class LazinessSpec
                 3
             };
 
-            """, result);
+            """, result, ignoreLineEndingDifferences: true);
         return;
 
         static IEnumerable<int> GetItems(StringWriter writer)

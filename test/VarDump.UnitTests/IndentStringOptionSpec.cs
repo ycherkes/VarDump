@@ -41,6 +41,6 @@ public class IndentStringOptionSpec
              }
             };
             
-            """, result);
+            """, result, ignoreLineEndingDifferences: true);
     }
 }

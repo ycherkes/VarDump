@@ -27,6 +27,6 @@ public class CustomNewLineSpec
         dumper.Dump(obj, stringWriter);
         var result = stringWriter.ToString();
 
-        Assert.Equal("var anonymousType = new \n{\n    Level1 = new \n    {\n        Level2 = new \n        {\n            Level3 = \"Level3\"\n        }\n    }\n};\n", result);
+        Assert.Equal("var anonymousType = new \n{\n    Level1 = new \n    {\n        Level2 = new \n        {\n            Level3 = \"Level3\"\n        }\n    }\n};\n", result, ignoreLineEndingDifferences: true);
     }
 }

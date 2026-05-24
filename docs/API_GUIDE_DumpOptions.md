@@ -36,9 +36,9 @@ var text = dumper.Dump(new { Name = "Nick", Age = 23, Tags = new[] { "a", "b" } 
 | `DateTimeInstantiation` | `DateTimeInstantiation` | `DateTimeInstantiation.Parse` | Controls how `DateTime` instances are emitted in code. | Enum values: `DateTimeInstantiation.Parse` emits parse-style construction; `DateTimeInstantiation.New` emits constructor-style creation. |
 | `Descriptors` | `List<IObjectDescriptorMiddleware>` | empty list | Middleware pipeline for object description customization. | Add descriptor middleware (for example replacers/maskers) to transform values before writing. |
 | `GenerateVariableInitializer` | `bool` | `true` | Emits variable initializer in top-level output. | Set `false` to emit object expression only. |
-| `GetFieldsBindingFlags` | `BindingFlags?` | `null` | Controls **which fields** are inspected, and enables field dumping when set. | Important: when `null` (default), fields are not included in output at all. Set a value like `BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic` to include fields. |
+| `GetFieldsBindingFlags` | `BindingFlags?` | `null` | Controls **which fields** are inspected, and enables field dumping when set. | Important: when `null` (default), fields are not included in output at all. Set a value like `BindingFlags.Instance \| BindingFlags.Public \| BindingFlags.NonPublic` to include fields. |
 | `GetBaseClassFields` | `bool` | `false` | Controls whether fields from base classes are included. | Applies only when `GetFieldsBindingFlags` is set. `false` = current type only; `true` = walk inheritance chain and include base fields too. |
-| `GetPropertiesBindingFlags` | `BindingFlags` | `BindingFlags.Public | BindingFlags.Instance` | Controls **which properties** are inspected. | Default includes public instance properties only. Add `NonPublic` for private/protected/internal properties, and `Static` for static properties. |
+| `GetPropertiesBindingFlags` | `BindingFlags` | `BindingFlags.Public \| BindingFlags.Instance` | Controls **which properties** are inspected. | Default includes public instance properties only. Add `NonPublic` for private/protected/internal properties, and `Static` for static properties. |
 | `IgnoreDefaultValues` | `bool` | `true` | Skips members equal to type default values. | Set `false` to always include defaults like `0`, `false`, etc. |
 | `IgnoreNullValues` | `bool` | `true` | Skips members with `null` values. | Set `false` to include explicit `null` assignments. |
 | `IgnoreReadonlyProperties` | `bool` | `true` | Skips read-only properties. | Set `false` to include read-only properties in output. |
@@ -59,10 +59,10 @@ var text = dumper.Dump(new { Name = "Nick", Age = 23, Tags = new[] { "a", "b" } 
 
 | Goal | Recommended options |
 | --- | --- |
-| Public instance properties only (default behavior) | `GetPropertiesBindingFlags = BindingFlags.Public | BindingFlags.Instance` |
-| Include non-public properties | `GetPropertiesBindingFlags = BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance` |
-| Include private instance fields declared on current type | `GetFieldsBindingFlags = BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance` (without this, no fields are dumped) |
-| Include base class fields too | `GetFieldsBindingFlags = BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance` and `GetBaseClassFields = true` |
+| Public instance properties only (default behavior) | `GetPropertiesBindingFlags = BindingFlags.Public \| BindingFlags.Instance` |
+| Include non-public properties | `GetPropertiesBindingFlags = BindingFlags.Public \| BindingFlags.NonPublic \| BindingFlags.Instance` |
+| Include private instance fields declared on current type | `GetFieldsBindingFlags = BindingFlags.Public \| BindingFlags.NonPublic \| BindingFlags.Instance` (without this, no fields are dumped) |
+| Include base class fields too | `GetFieldsBindingFlags = BindingFlags.Public \| BindingFlags.NonPublic \| BindingFlags.Instance` and `GetBaseClassFields = true` |
 
 
 ### `IntegralNumericFormat` details

@@ -37,6 +37,8 @@ Console.WriteLine(vb);
 ### C# & VB Dumper, how to use DumpOptions:
 <p align="right"><a href="https://dotnetfiddle.net/p4oIKX">Run .NET fiddle</a></p>
 
+Full API guide: [DumpOptions API Guide](docs/API_GUIDE_DumpOptions.md)
+
 ```csharp
 using System;
 using System.ComponentModel;

@@ -142,4 +142,36 @@ public class CollectionSpec
             
             """, result);
     }
+
+    [Fact]
+    public void DumpListCollectionExpressionCSharp()
+    {
+        var collection = new List<int> { 1, 2, 3 };
+
+        var dumper = new CSharpDumper(new DumpOptions
+        {
+            CSharpCollectionLiteralStyle = CSharpCollectionLiteralStyle.Expression,
+            PrimitiveCollectionLayout = CollectionLayout.SingleLine
+        });
+
+        var result = dumper.Dump(collection);
+
+        Assert.Equal("List<int> listOfInt = [1, 2, 3];\r\n", result, ignoreLineEndingDifferences: true);
+    }
+
+    [Fact]
+    public void DumpListCollectionMultiLineExpressionCSharp()
+    {
+        var collection = new List<int> { 1, 2, 3 };
+
+        var dumper = new CSharpDumper(new DumpOptions
+        {
+            CSharpCollectionLiteralStyle = CSharpCollectionLiteralStyle.Expression,
+            PrimitiveCollectionLayout = CollectionLayout.MultiLine
+        });
+
+        var result = dumper.Dump(collection);
+
+        Assert.Equal("List<int> listOfInt = \r\n    [\r\n    1,\r\n    2,\r\n    3\r\n];\r\n", result, ignoreLineEndingDifferences: true);
+    }
 }

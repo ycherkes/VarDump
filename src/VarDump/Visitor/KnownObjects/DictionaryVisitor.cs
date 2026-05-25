@@ -90,16 +90,21 @@ internal sealed class DictionaryVisitor : IKnownObjectVisitor
 
             var dictionaryType = typeof(Dictionary<,>).MakeGenericType(keyType, valueType);
 
-            var dictionaryCreateAction = () =>
-                _codeWriter.WriteObjectCreateAndInitialize(
-                    new CodeCollectionTypeInfo(dictionaryType), [], items);
+            var dictionaryCreateAction = ResolveDictionaryCreateAction(new CodeCollectionTypeInfo(dictionaryType), items);
 
             _codeWriter.WriteMethodInvoke(() => _codeWriter.WriteMethodReference(dictionaryCreateAction, $"To{type.GetImmutableOrFrozenTypeName()}"), []);
 
             return;
         }
 
-        _codeWriter.WriteObjectCreateAndInitialize(new CodeCollectionTypeInfo(type), [], items);
+        ResolveDictionaryCreateAction(new CodeCollectionTypeInfo(type), items)();
+
+        return;
+
+        Action ResolveDictionaryCreateAction(CodeTypeInfo dictionaryTypeInfo, IEnumerable<Action> initializers)
+        {
+            return () => _codeWriter.WriteObjectCreateAndInitialize(dictionaryTypeInfo, [], initializers);
+        }
     }
 
     private void VisitAnonymousDictionary(IEnumerable dictionary, VisitContext context)

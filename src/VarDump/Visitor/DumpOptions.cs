@@ -13,6 +13,16 @@ namespace VarDump.Visitor;
 public class DumpOptions
 {
     /// <summary>
+    /// Controls C# collection literal emission style.
+    /// </summary>
+    public CSharpCollectionLiteralStyle CSharpCollectionLiteralStyle { get; set; } = CSharpCollectionLiteralStyle.Initializer;
+
+    /// <summary>
+    /// Controls C# string literal emission style.
+    /// </summary>
+    public CSharpStringLiteralStyle CSharpStringLiteralStyle { get; set; } = CSharpStringLiteralStyle.Auto;
+
+    /// <summary>
     /// Configure the known objects collection.
     /// </summary>
     public Action<IKnownObjectsCollection, INextDepthVisitor, DumpOptions, ICodeWriter> ConfigureKnownObjects { get; set; }
@@ -81,6 +91,11 @@ public class DumpOptions
     /// The maximum collection size to dump, default is <see cref="int.MaxValue"/>.
     /// </summary>
     public int MaxCollectionSize { get; set; } = int.MaxValue;
+
+    /// <summary>
+    /// Controls line endings in generated output.
+    /// </summary>
+    public NewLineStyle NewLineStyle { get; set; } = NewLineStyle.Auto;
 
     /// <summary>
     /// The maximum depth to dump, default is <c>25</c>.
@@ -152,6 +167,8 @@ public class DumpOptions
     {
         return new DumpOptions
         {
+            CSharpCollectionLiteralStyle = CSharpCollectionLiteralStyle,
+            CSharpStringLiteralStyle = CSharpStringLiteralStyle,
             ConfigureKnownObjects = ConfigureKnownObjects,
             DateKind = DateKind,
             DateTimeInstantiation = DateTimeInstantiation,
@@ -166,6 +183,7 @@ public class DumpOptions
             IndentString = IndentString,
             IntegralNumericFormat = IntegralNumericFormat,
             MaxCollectionSize = MaxCollectionSize,
+            NewLineStyle = NewLineStyle,
             MaxDepth = MaxDepth,
             PrimitiveCollectionLayout = PrimitiveCollectionLayout,
             SortDirection = SortDirection,

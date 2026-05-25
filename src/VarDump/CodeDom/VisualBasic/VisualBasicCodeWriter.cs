@@ -30,12 +30,27 @@ internal sealed class VisualBasicCodeWriter : ICodeWriter
     public TextWriter Output => _output;
 
     public string NullToken => "Nothing";
+    public bool SupportsCollectionExpression => false;
 
 
     public VisualBasicCodeWriter(TextWriter w, CodeWriterOptions o)
     {
         _options = o ?? new CodeWriterOptions();
         _output = new ExposedTabStringIndentedTextWriter(w, _options.IndentString);
+
+        switch (_options.NewLineStyle)
+        {
+            case NewLineStyle.Unix:
+                _output.NewLine = "\n";
+                break;
+            case NewLineStyle.Windows:
+                _output.NewLine = "\r\n";
+                break;
+            case NewLineStyle.Auto:
+                break;
+            default:
+                throw new ArgumentOutOfRangeException();
+        }
     }
 
     public void WriteType(CodeTypeInfo typeInfo) => OutputType(typeInfo);
@@ -454,6 +469,11 @@ internal sealed class VisualBasicCodeWriter : ICodeWriter
             _output.WriteLine();
             _output.Write("}");
         }
+    }
+
+    public void WriteCollectionExpression(IEnumerable<Action> initializers, bool singleLine = false)
+    {
+        WriteArrayDimension(initializers, singleLine);
     }
 
     public void WriteCast(CodeTypeInfo typeInfo, Action action)

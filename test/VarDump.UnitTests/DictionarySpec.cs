@@ -210,4 +210,26 @@ public class DictionarySpec
 
                      """, result);
     }
+
+    [Fact]
+    public void DumpDictionaryCollectionExpressionCSharpFallsBackToInitializer()
+    {
+        var dict = new Dictionary<string, int>
+        {
+            { "A", 1 },
+            { "B", 2 }
+        };
+
+        var dumper = new CSharpDumper(new DumpOptions
+        {
+            CSharpCollectionLiteralStyle = CSharpCollectionLiteralStyle.Expression
+        });
+
+        var result = dumper.Dump(dict);
+
+        Assert.Contains("Dictionary<string, int>", result);
+        Assert.Contains("{", result);
+        Assert.DoesNotContain(" = [", result);
+        Assert.Contains("\"A\"", result);
+    }
 }

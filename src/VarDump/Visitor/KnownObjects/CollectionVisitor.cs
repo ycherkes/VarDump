@@ -186,13 +186,29 @@ internal sealed class CollectionVisitor : IKnownObjectVisitor
             var typeInfo =
                 new CodeCollectionTypeInfo(typeof(List<>).MakeGenericType(elementType));
 
+            var createAction = ResolveCollectionCreateAction(typeInfo, items, singleLine);
+
             _codeWriter.WriteMethodInvoke(() => _codeWriter.WriteMethodReference(() =>
-               _codeWriter.WriteObjectCreateAndInitialize(typeInfo, [], items, singleLine), "AsReadOnly"), []);
+               createAction(), "AsReadOnly"), []);
 
             return;
         }
 
-        _codeWriter.WriteObjectCreateAndInitialize(new CodeCollectionTypeInfo(type), [], items, singleLine);
+        var collectionTypeInfo = new CodeCollectionTypeInfo(type);
+        ResolveCollectionCreateAction(collectionTypeInfo, items, singleLine)();
+
+        return;
+
+        Action ResolveCollectionCreateAction(CodeTypeInfo collectionTypeInfo, IEnumerable<Action> initializers, bool useSingleLine)
+        {
+            if (_options.CSharpCollectionLiteralStyle == CSharpCollectionLiteralStyle.Expression
+                && _codeWriter.SupportsCollectionExpression)
+            {
+                return () => _codeWriter.WriteCollectionExpression(initializers, useSingleLine);
+            }
+
+            return () => _codeWriter.WriteObjectCreateAndInitialize(collectionTypeInfo, [], initializers, useSingleLine);
+        }
     }
 
     private static bool IsQueryable(Type type)

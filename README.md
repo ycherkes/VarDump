@@ -66,6 +66,26 @@ class Person
 }
 ```
 
+### C# literal style options
+
+```csharp
+using VarDump;
+using VarDump.Visitor;
+
+var options = new DumpOptions
+{
+    CSharpStringLiteralStyle = CSharpStringLiteralStyle.Raw,
+    CSharpCollectionLiteralStyle = CSharpCollectionLiteralStyle.Expression
+};
+
+var dumper = new CSharpDumper(options);
+```
+
+- `CSharpStringLiteralStyle`: `Auto`, `Escaped`, `Verbatim`, `Raw`
+- `CSharpCollectionLiteralStyle`: `Initializer`, `Expression`
+
+`Raw` string literals require modern C# language support. `Expression` collection literals require C# 12 support.
+
 ## To dump with extension methods, please install a separate [VarDump.Extensions](https://www.nuget.org/packages/VarDump.Extensions) package.
 
 ### Dump Extension methods:

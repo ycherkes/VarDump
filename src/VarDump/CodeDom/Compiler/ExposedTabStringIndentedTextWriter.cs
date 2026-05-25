@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System;
 using System.CodeDom.Compiler;
 using System.IO;
 
@@ -10,6 +11,38 @@ namespace VarDump.CodeDom.Compiler;
 internal sealed class ExposedTabStringIndentedTextWriter(TextWriter writer, string tabString)
     : IndentedTextWriter(writer, tabString)
 {
+    private int _currentColumn;
+
+    internal int CurrentColumn => _currentColumn;
+
+    internal int GetCurrentColumnFromBuffer()
+    {
+        if (InnerWriter is not StringWriter sw)
+        {
+            return _currentColumn;
+        }
+
+        var text = sw.ToString();
+        var lastLf = text.LastIndexOf('\n');
+        var lastCr = text.LastIndexOf('\r');
+        var lineStart = Math.Max(lastLf, lastCr) + 1;
+
+        return text.Length - lineStart;
+    }
+
+    public override void Write(char value)
+    {
+        base.Write(value);
+
+        if (value == '\n' || value == '\r')
+        {
+            _currentColumn = 0;
+            return;
+        }
+
+        _currentColumn++;
+    }
+
     internal void OutputIndents()
     {
         OutputIndents(Indent);
@@ -21,6 +54,7 @@ internal sealed class ExposedTabStringIndentedTextWriter(TextWriter writer, stri
         for (int i = 0; i < indent; i++)
         {
             inner.Write(TabString);
+            _currentColumn += TabString.Length;
         }
     }
 

@@ -34,6 +34,11 @@ public sealed class VisualBasicDumper : IDumper
         {
             throw new FormatException($"Bad format specifier. {options.IntegralNumericFormat}");
         }
+
+        if (!Enum.IsDefined(typeof(NewLineStyle), options.NewLineStyle))
+        {
+            throw new ArgumentOutOfRangeException(nameof(options.NewLineStyle));
+        }
     }
 
     public string Dump(object obj)
@@ -62,7 +67,8 @@ public sealed class VisualBasicDumper : IDumper
         var codeWriterOptions = new CodeWriterOptions
         {
             TypeNamePolicy = _options.TypeNamePolicy,
-            IndentString = _options.IndentString
+            IndentString = _options.IndentString,
+            NewLineStyle = _options.NewLineStyle
         };
 
         ICodeWriter codeWriter = new VisualBasicCodeWriter(textWriter, codeWriterOptions);

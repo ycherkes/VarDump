@@ -34,6 +34,21 @@ public sealed class CSharpDumper : IDumper
         {
             throw new FormatException($"Bad format specifier. {options.IntegralNumericFormat}");
         }
+
+        if (!Enum.IsDefined(typeof(CSharpStringLiteralStyle), options.CSharpStringLiteralStyle))
+        {
+            throw new ArgumentOutOfRangeException(nameof(options.CSharpStringLiteralStyle));
+        }
+
+        if (!Enum.IsDefined(typeof(CSharpCollectionLiteralStyle), options.CSharpCollectionLiteralStyle))
+        {
+            throw new ArgumentOutOfRangeException(nameof(options.CSharpCollectionLiteralStyle));
+        }
+
+        if (!Enum.IsDefined(typeof(NewLineStyle), options.NewLineStyle))
+        {
+            throw new ArgumentOutOfRangeException(nameof(options.NewLineStyle));
+        }
     }
 
     public string Dump(object obj)
@@ -61,8 +76,11 @@ public sealed class CSharpDumper : IDumper
     {
         var codeWriterOptions = new CodeWriterOptions
         {
+            CSharpCollectionLiteralStyle = _options.CSharpCollectionLiteralStyle,
+            CSharpStringLiteralStyle = _options.CSharpStringLiteralStyle,
             TypeNamePolicy = _options.TypeNamePolicy,
-            IndentString = _options.IndentString
+            IndentString = _options.IndentString,
+            NewLineStyle = _options.NewLineStyle
         };
 
         ICodeWriter codeWriter = new CSharpCodeWriter(textWriter, codeWriterOptions);
@@ -71,7 +89,15 @@ public sealed class CSharpDumper : IDumper
 
         if (_options.GenerateVariableInitializer)
         {
-            codeWriter.WriteVariableDeclarationStatement(new CodeVarTypeInfo(),
+            CodeTypeInfo declarationType = new CodeVarTypeInfo();
+
+            if (_options.CSharpCollectionLiteralStyle == CSharpCollectionLiteralStyle.Expression
+                && obj is System.Collections.IEnumerable)
+            {
+                declarationType = obj.GetType();
+            }
+
+            codeWriter.WriteVariableDeclarationStatement(declarationType,
                 obj != null ? ReflectionUtils.ComposeCSharpVariableName(obj.GetType()) : "nullValue", () => objectVisitor.Visit(obj));
         }
         else

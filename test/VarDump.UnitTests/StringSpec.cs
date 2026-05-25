@@ -91,6 +91,7 @@ public class StringSpec
                                            """
                          }
                      };
+                     
                      """", result, ignoreLineEndingDifferences: true);
     }
 

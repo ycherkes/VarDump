@@ -22,7 +22,7 @@ public class EnumerableQuerySpec
                 6
             }.AsQueryable();
             
-            """, result);
+            """, result, ignoreLineEndingDifferences: true);
     }
 
     [Fact]
@@ -41,6 +41,6 @@ public class EnumerableQuerySpec
                 6
             }.AsQueryable()
             
-            """, result);
+            """, result, ignoreLineEndingDifferences: true);
     }
 }

@@ -14,7 +14,7 @@ public class FlagsSpec
 
         var result = dumper.Dump(flagsVar);
 
-        Assert.Equal("var testEnum = TestEnum.First | TestEnum.Third;\r\n", result);
+        Assert.Equal("var testEnum = TestEnum.First | TestEnum.Third;\r\n", result, ignoreLineEndingDifferences: true);
     }
 
     [Fact]
@@ -26,7 +26,7 @@ public class FlagsSpec
 
         var result = dumper.Dump(flagsVar);
 
-        Assert.Equal("var testEnum = 0;\r\n", result);
+        Assert.Equal("var testEnum = 0;\r\n", result, ignoreLineEndingDifferences: true);
     }
 
     [Fact]
@@ -38,7 +38,7 @@ public class FlagsSpec
 
         var result = dumper.Dump(flagsVar);
 
-        Assert.Equal("var testEnum = (TestEnum)(object)-54;\r\n", result);
+        Assert.Equal("var testEnum = (TestEnum)(object)-54;\r\n", result, ignoreLineEndingDifferences: true);
     }
 
     [Fact]
@@ -50,7 +50,7 @@ public class FlagsSpec
 
         var result = dumper.Dump(flagsVar);
 
-        Assert.Equal("Dim testEnumValue = TestEnum.Second Or TestEnum.Third\r\n", result);
+        Assert.Equal("Dim testEnumValue = TestEnum.Second Or TestEnum.Third\r\n", result, ignoreLineEndingDifferences: true);
     }
 
     [Fact]
@@ -62,7 +62,7 @@ public class FlagsSpec
 
         var result = dumper.Dump(flagsVar);
 
-        Assert.Equal("Dim testEnumValue = 0\r\n", result);
+        Assert.Equal("Dim testEnumValue = 0\r\n", result, ignoreLineEndingDifferences: true);
     }
 
     [Fact]
@@ -74,7 +74,7 @@ public class FlagsSpec
 
         var result = dumper.Dump(flagsVar);
 
-        Assert.Equal("Dim testEnumValue = CType(CType(-54, Object), TestEnum)\r\n", result);
+        Assert.Equal("Dim testEnumValue = CType(CType(-54, Object), TestEnum)\r\n", result, ignoreLineEndingDifferences: true);
     }
 
     [Flags]

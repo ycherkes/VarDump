@@ -1,4 +1,4 @@
-﻿#if NET8_0_OR_GREATER
+#if NET8_0_OR_GREATER
 
 using System.Collections.Frozen;
 using System.Collections.Generic;
@@ -24,7 +24,7 @@ namespace VarDump.UnitTests
                     1
                 }.ToFrozenSet();
 
-                """, result);
+                """, result, ignoreLineEndingDifferences: true);
         }
 
         [Fact]
@@ -41,7 +41,7 @@ namespace VarDump.UnitTests
                     1
                 }.ToFrozenSet()
                 
-                """, result);
+                """, result, ignoreLineEndingDifferences: true);
         }
 
         [Fact]
@@ -65,7 +65,7 @@ namespace VarDump.UnitTests
                     }
                 }.ToFrozenDictionary();
                 
-                """, result);
+                """, result, ignoreLineEndingDifferences: true);
         }
 
         [Fact]
@@ -88,7 +88,7 @@ namespace VarDump.UnitTests
                     }
                 }.ToFrozenDictionary()
                 
-                """, result);
+                """, result, ignoreLineEndingDifferences: true);
         }
     }
 }

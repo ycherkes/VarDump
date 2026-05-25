@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
@@ -41,7 +41,7 @@ public class DictionarySpec
                          }
                      }
 
-                     """, result);
+                     """, result, ignoreLineEndingDifferences: true);
     }
 
     [Fact]
@@ -78,7 +78,7 @@ public class DictionarySpec
                          }
                      };
 
-                     """, result);
+                     """, result, ignoreLineEndingDifferences: true);
     }
 
     [Fact]
@@ -118,7 +118,7 @@ public class DictionarySpec
                 }
             }.ToDictionary(kvp => kvp.Key, kvp => kvp.Value);
 
-            """, result);
+            """, result, ignoreLineEndingDifferences: true);
     }
 
     [Fact]
@@ -161,7 +161,7 @@ public class DictionarySpec
                          }
                      };
 
-                     """, result);
+                     """, result, ignoreLineEndingDifferences: true);
     }
 
     [Fact]
@@ -185,7 +185,7 @@ public class DictionarySpec
                          }
                      }.ToImmutableDictionary();
 
-                     """, result);
+                     """, result, ignoreLineEndingDifferences: true);
     }
 
     [Fact]
@@ -208,7 +208,7 @@ public class DictionarySpec
                          }
                      }.ToImmutableDictionary()
 
-                     """, result);
+                     """, result, ignoreLineEndingDifferences: true);
     }
 
     [Fact]

@@ -27,8 +27,6 @@ internal sealed class VisualBasicCodeWriter : ICodeWriter
         set => _output.Indent = value;
     }
 
-    public TextWriter Output => _output;
-
     public string NullToken => "Nothing";
     public bool SupportsCollectionExpression => false;
 
@@ -694,12 +692,12 @@ internal sealed class VisualBasicCodeWriter : ICodeWriter
                     _output.Write('\n');
                     i++;
                 }
-                ((ExposedTabStringIndentedTextWriter)Output).OutputIndents();
+                _output.OutputIndents();
                 _output.Write(commentLineStart);
             }
             else if (value[i] == '\n')
             {
-                ((ExposedTabStringIndentedTextWriter)Output).OutputIndents();
+                _output.OutputIndents();
                 _output.Write(commentLineStart);
             }
             else if (value[i] == '\u2028' || value[i] == '\u2029' || value[i] == '\u0085')

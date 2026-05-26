@@ -1,15 +1,12 @@
 using System.Collections.Generic;
 using System;
 using VarDump.CodeDom.Common;
-using System.IO;
-using VarDump.Visitor;
 
 namespace VarDump.CodeDom.Compiler;
 
 public interface ICodeWriter
 {
     int Indent { get; set; }
-    TextWriter Output { get; }
     bool SupportsCollectionExpression { get; }
 
     void WriteArrayCreate(CodeTypeInfo typeInfo, IEnumerable<Action> initializers, bool singleLine, int size = 0);

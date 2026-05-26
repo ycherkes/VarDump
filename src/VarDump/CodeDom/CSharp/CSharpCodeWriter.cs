@@ -30,8 +30,6 @@ internal sealed class CSharpCodeWriter : ICodeWriter
     public string NullToken => "null";
     public bool SupportsCollectionExpression => true;
 
-    public TextWriter Output => _output;
-
     public CSharpCodeWriter(TextWriter w, CodeWriterOptions o)
     {
         _options = o ?? new CodeWriterOptions();

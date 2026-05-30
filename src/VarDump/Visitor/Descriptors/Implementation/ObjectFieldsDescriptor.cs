@@ -1,18 +1,20 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 using System.Reflection;
 using VarDump.Utils;
 
 namespace VarDump.Visitor.Descriptors.Implementation;
 
-internal sealed class ObjectFieldsDescriptor(DumpOptions dumpOptions) : IObjectDescriptor
+internal sealed class ObjectFieldsDescriptor(BindingFlags getFieldsBindingFlags, bool getBaseClassFields) : IObjectDescriptor
 {
     public IObjectDescription GetObjectDescription(object @object, Type objectType)
     {
-        var fields = GetFields(objectType, dumpOptions)
+        var fields = GetFields(objectType)
             .Select(f => new FieldDescription(() => ReflectionUtils.GetValue(f, @object))
             {
+                DefaultValueAttributeValue = f.GetCustomAttribute<DefaultValueAttribute>()?.Value,
                 Name = f.Name,
                 Type = f.FieldType
             });
@@ -24,11 +26,11 @@ internal sealed class ObjectFieldsDescriptor(DumpOptions dumpOptions) : IObjectD
         };
     }
 
-    private static IEnumerable<FieldInfo> GetFields(Type type, DumpOptions dumpOptions)
+    private IEnumerable<FieldInfo> GetFields(Type type)
     {
-        if (!dumpOptions.GetBaseClassFields)
+        if (!getBaseClassFields)
         {
-            foreach (var field in type.GetFields(dumpOptions.GetFieldsBindingFlags!.Value))
+            foreach (var field in type.GetFields(getFieldsBindingFlags))
             {
                 yield return field;
             }
@@ -38,7 +40,7 @@ internal sealed class ObjectFieldsDescriptor(DumpOptions dumpOptions) : IObjectD
 
         foreach (var currentType in GetInheritanceHierarchy(type).Reverse())
         {
-            foreach (var field in currentType.GetFields(dumpOptions.GetFieldsBindingFlags!.Value))
+            foreach (var field in currentType.GetFields(getFieldsBindingFlags))
             {
                 yield return field;
             }

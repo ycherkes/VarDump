@@ -15,12 +15,12 @@ public class DumpOptions
     /// <summary>
     /// Controls C# collection literal emission style.
     /// </summary>
-    public CSharpCollectionLiteralStyle CSharpCollectionLiteralStyle { get; set; } = CSharpCollectionLiteralStyle.Initializer;
+    public CollectionLiteralStyle CollectionLiteralStyle { get; set; } = CollectionLiteralStyle.Initializer;
 
     /// <summary>
     /// Controls C# string literal emission style.
     /// </summary>
-    public CSharpStringLiteralStyle CSharpStringLiteralStyle { get; set; } = CSharpStringLiteralStyle.Auto;
+    public StringLiteralStyle StringLiteralStyle { get; set; } = StringLiteralStyle.Auto;
 
     /// <summary>
     /// Configure the known objects collection.
@@ -167,8 +167,8 @@ public class DumpOptions
     {
         return new DumpOptions
         {
-            CSharpCollectionLiteralStyle = CSharpCollectionLiteralStyle,
-            CSharpStringLiteralStyle = CSharpStringLiteralStyle,
+            CollectionLiteralStyle = CollectionLiteralStyle,
+            StringLiteralStyle = StringLiteralStyle,
             ConfigureKnownObjects = ConfigureKnownObjects,
             DateKind = DateKind,
             DateTimeInstantiation = DateTimeInstantiation,

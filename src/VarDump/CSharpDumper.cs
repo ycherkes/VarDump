@@ -35,14 +35,14 @@ public sealed class CSharpDumper : IDumper
             throw new FormatException($"Bad format specifier. {options.IntegralNumericFormat}");
         }
 
-        if (!Enum.IsDefined(typeof(CSharpStringLiteralStyle), options.CSharpStringLiteralStyle))
+        if (!Enum.IsDefined(typeof(StringLiteralStyle), options.StringLiteralStyle))
         {
-            throw new ArgumentOutOfRangeException(nameof(options.CSharpStringLiteralStyle));
+            throw new ArgumentOutOfRangeException(nameof(options.StringLiteralStyle));
         }
 
-        if (!Enum.IsDefined(typeof(CSharpCollectionLiteralStyle), options.CSharpCollectionLiteralStyle))
+        if (!Enum.IsDefined(typeof(CollectionLiteralStyle), options.CollectionLiteralStyle))
         {
-            throw new ArgumentOutOfRangeException(nameof(options.CSharpCollectionLiteralStyle));
+            throw new ArgumentOutOfRangeException(nameof(options.CollectionLiteralStyle));
         }
 
         if (!Enum.IsDefined(typeof(NewLineStyle), options.NewLineStyle))
@@ -76,8 +76,8 @@ public sealed class CSharpDumper : IDumper
     {
         var codeWriterOptions = new CodeWriterOptions
         {
-            CSharpCollectionLiteralStyle = _options.CSharpCollectionLiteralStyle,
-            CSharpStringLiteralStyle = _options.CSharpStringLiteralStyle,
+            CSharpCollectionLiteralStyle = _options.CollectionLiteralStyle,
+            CSharpStringLiteralStyle = _options.StringLiteralStyle,
             TypeNamePolicy = _options.TypeNamePolicy,
             IndentString = _options.IndentString,
             NewLineStyle = _options.NewLineStyle
@@ -91,7 +91,7 @@ public sealed class CSharpDumper : IDumper
         {
             CodeTypeInfo declarationType = new CodeVarTypeInfo();
 
-            if (_options.CSharpCollectionLiteralStyle == CSharpCollectionLiteralStyle.Expression
+            if (_options.CollectionLiteralStyle == CollectionLiteralStyle.Expression
                 && obj is System.Collections.IEnumerable)
             {
                 declarationType = obj.GetType();

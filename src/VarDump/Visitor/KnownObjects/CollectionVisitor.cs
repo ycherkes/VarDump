@@ -201,7 +201,7 @@ internal sealed class CollectionVisitor : IKnownObjectVisitor
 
         Action ResolveCollectionCreateAction(CodeTypeInfo collectionTypeInfo, IEnumerable<Action> initializers, bool useSingleLine)
         {
-            if (_options.CSharpCollectionLiteralStyle == CSharpCollectionLiteralStyle.Expression
+            if (_options.CollectionLiteralStyle == CollectionLiteralStyle.Expression
                 && _codeWriter.SupportsCollectionExpression)
             {
                 return () => _codeWriter.WriteCollectionExpression(initializers, useSingleLine);

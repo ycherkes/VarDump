@@ -40,4 +40,6 @@ public abstract record MemberDescription: ReflectionDescription
             _value = value;
         }
     }
+
+    public object DefaultValueAttributeValue { get; set; }
 }

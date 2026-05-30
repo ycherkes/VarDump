@@ -222,7 +222,7 @@ public class DictionarySpec
 
         var dumper = new CSharpDumper(new DumpOptions
         {
-            CSharpCollectionLiteralStyle = CSharpCollectionLiteralStyle.Expression
+            CollectionLiteralStyle = CollectionLiteralStyle.Expression
         });
 
         var result = dumper.Dump(dict);

@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.ComponentModel;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.CompilerServices;
@@ -9,6 +10,7 @@ using System.Text;
 using VarDump.CodeDom.CSharp;
 using VarDump.CodeDom.VisualBasic;
 using VarDump.Extensions;
+using VarDump.Visitor.Descriptors;
 
 namespace VarDump.Utils;
 
@@ -307,16 +309,23 @@ internal static class ReflectionUtils
             case "System.Boolean":
                 return false;
             case "System.Char":
+                return '\0';
             case "System.SByte":
+                return (sbyte)0;
             case "System.Byte":
+                    return (byte)0;
             case "System.Int16":
+                    return (short)0;
             case "System.UInt16":
+                return (ushort)0;
             case "System.Int32":
-            case "System.UInt32":
                 return 0;
+            case "System.UInt32":
+                return 0U;
             case "System.Int64":
-            case "System.UInt64":
                 return 0L;
+            case "System.UInt64":
+                return 0UL;
             case "System.Single":
                 return 0f;
             case "System.Double":
@@ -328,9 +337,9 @@ internal static class ReflectionUtils
             case "System.Numerics.BigInteger":
                 return new System.Numerics.BigInteger();
             case "System.Guid":
-                return new Guid();
+                return Guid.Empty;
             case "System.DateTimeOffset":
-                return new DateTimeOffset();
+                return DateTimeOffset.MinValue;
         }
 
         if (IsNullable(type))
@@ -347,6 +356,11 @@ internal static class ReflectionUtils
         {
             return 0;
         }
+    }
+
+    public static object GetDefaultValue(MemberDescription memberDescription)
+    {
+        return memberDescription.DefaultValueAttributeValue ?? GetDefaultValue(memberDescription.Type);
     }
 
     public static bool IsInterface(this Type type)

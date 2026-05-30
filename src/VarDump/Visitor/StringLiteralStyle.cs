@@ -1,6 +1,6 @@
 namespace VarDump.Visitor;
 
-public enum CSharpStringLiteralStyle
+public enum StringLiteralStyle
 {
     Auto = 0,
     Escaped = 1,

@@ -36,7 +36,7 @@ public class StringSpec
 
         var dumper = new CSharpDumper(new DumpOptions
         {
-            CSharpStringLiteralStyle = CSharpStringLiteralStyle.Escaped
+            StringLiteralStyle = StringLiteralStyle.Escaped
         });
 
         var result = dumper.Dump(stringVar);
@@ -51,7 +51,7 @@ public class StringSpec
 
         var dumper = new CSharpDumper(new DumpOptions
         {
-            CSharpStringLiteralStyle = CSharpStringLiteralStyle.Verbatim
+            StringLiteralStyle = StringLiteralStyle.Verbatim
         });
 
         var result = dumper.Dump(stringVar);
@@ -75,7 +75,7 @@ public class StringSpec
 
         var dumper = new CSharpDumper(new DumpOptions
         {
-            CSharpStringLiteralStyle = CSharpStringLiteralStyle.Raw
+            StringLiteralStyle = StringLiteralStyle.Raw
         });
 
         var result = dumper.Dump(objColl);
@@ -102,7 +102,7 @@ public class StringSpec
 
         var dumper = new CSharpDumper(new DumpOptions
         {
-            CSharpStringLiteralStyle = CSharpStringLiteralStyle.Raw
+            StringLiteralStyle = StringLiteralStyle.Raw
         });
 
         var result = dumper.Dump(stringVar);

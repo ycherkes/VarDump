@@ -139,10 +139,10 @@ internal sealed class CSharpCodeWriter : ICodeWriter
     {
         switch (_options.CSharpStringLiteralStyle)
         {
-            case CSharpStringLiteralStyle.Escaped:
+            case StringLiteralStyle.Escaped:
                 QuoteSnippetStringCStyle(value);
                 return;
-            case CSharpStringLiteralStyle.Verbatim:
+            case StringLiteralStyle.Verbatim:
                 if (value.IndexOf('\0') != -1)
                 {
                     QuoteSnippetStringCStyle(value);
@@ -151,10 +151,10 @@ internal sealed class CSharpCodeWriter : ICodeWriter
 
                 QuoteSnippetStringVerbatimStyle(value);
                 return;
-            case CSharpStringLiteralStyle.Raw:
+            case StringLiteralStyle.Raw:
                 QuoteSnippetStringRawStyle(value);
                 return;
-            case CSharpStringLiteralStyle.Auto:
+            case StringLiteralStyle.Auto:
                 break;
             default:
                 throw new ArgumentOutOfRangeException();

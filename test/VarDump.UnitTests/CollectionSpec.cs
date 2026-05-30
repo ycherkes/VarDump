@@ -150,7 +150,7 @@ public class CollectionSpec
 
         var dumper = new CSharpDumper(new DumpOptions
         {
-            CSharpCollectionLiteralStyle = CSharpCollectionLiteralStyle.Expression,
+            CollectionLiteralStyle = CollectionLiteralStyle.Expression,
             PrimitiveCollectionLayout = CollectionLayout.SingleLine
         });
 
@@ -166,7 +166,7 @@ public class CollectionSpec
 
         var dumper = new CSharpDumper(new DumpOptions
         {
-            CSharpCollectionLiteralStyle = CSharpCollectionLiteralStyle.Expression,
+            CollectionLiteralStyle = CollectionLiteralStyle.Expression,
             PrimitiveCollectionLayout = CollectionLayout.MultiLine
         });
 

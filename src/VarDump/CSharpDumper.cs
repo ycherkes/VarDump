@@ -1,5 +1,6 @@
 ﻿using System;
 using System.IO;
+using System.Linq;
 using VarDump.CodeDom.Common;
 using VarDump.CodeDom.Compiler;
 using VarDump.CodeDom.CSharp;
@@ -94,7 +95,12 @@ public sealed class CSharpDumper : IDumper
             if (_options.CollectionLiteralStyle == CollectionLiteralStyle.Expression
                 && obj is System.Collections.IEnumerable)
             {
-                declarationType = obj.GetType();
+                var objectType = obj.GetType();
+                var queryableType = objectType.GetInterfaces()
+                    .FirstOrDefault(x => x.IsGenericType && x.GetGenericTypeDefinition() == typeof(IQueryable<>));
+
+                if(queryableType == null)
+                    declarationType = objectType;
             }
 
             codeWriter.WriteVariableDeclarationStatement(declarationType,

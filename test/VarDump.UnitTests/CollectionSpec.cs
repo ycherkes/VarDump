@@ -172,6 +172,6 @@ public class CollectionSpec
 
         var result = dumper.Dump(collection);
 
-        Assert.Equal("List<int> listOfInt = \r\n    [\r\n    1,\r\n    2,\r\n    3\r\n];\r\n", result, ignoreLineEndingDifferences: true);
+        Assert.Equal("List<int> listOfInt = \r\n[\r\n    1,\r\n    2,\r\n    3\r\n];\r\n", result, ignoreLineEndingDifferences: true);
     }
 }

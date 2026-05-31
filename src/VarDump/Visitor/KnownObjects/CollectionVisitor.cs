@@ -163,6 +163,20 @@ internal sealed class CollectionVisitor : IKnownObjectVisitor
 
             void WriteArrayCreate() => _codeWriter.WriteArrayCreate(arrayType, items, singleLine: singleLine);
 
+            void WriteArrayOrCollectionExpression()
+            {
+                if (type.IsArray
+                    && ((Array)enumerable).Rank == 1
+                    && _options.CollectionLiteralStyle == CollectionLiteralStyle.Expression
+                    && _codeWriter.SupportsCollectionExpression)
+                {
+                    _codeWriter.WriteCollectionExpression(items, singleLine);
+                    return;
+                }
+
+                WriteArrayCreate();
+            }
+
             if (isImmutableOrFrozen)
             {
                 _codeWriter.WriteMethodInvoke(() =>
@@ -175,7 +189,7 @@ internal sealed class CollectionVisitor : IKnownObjectVisitor
             }
             else
             {
-                WriteArrayCreate();
+                WriteArrayOrCollectionExpression();
             }
 
             return;

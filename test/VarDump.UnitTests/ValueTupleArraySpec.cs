@@ -77,6 +77,30 @@ public class ValueTupleArraySpec
     }
 
     [Fact]
+    public void DumpValueTupleArrayCollectionExpressionCSharp()
+    {
+        ValueTuple<int, string>[] tupleArray =
+        [
+            (1, "First"),
+            (2, "Second")
+        ];
+
+        var dumper = new CSharpDumper(new DumpOptions{ CollectionLiteralStyle = CollectionLiteralStyle.Expression});
+
+        var result = dumper.Dump(tupleArray);
+
+        Assert.Equal(
+            """
+            ValueTuple<int, string>[] arrayOfValueTuple = 
+            [
+                (1, "First"),
+                (2, "Second")
+            ];
+            
+            """, result, ignoreLineEndingDifferences: true);
+    }
+
+    [Fact]
     public void DumpValueTupleArrayWithNamedArgumentsCSharp()
     {
         var tupleArray = new ValueTuple<int, string>[]

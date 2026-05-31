@@ -338,7 +338,7 @@ internal sealed class CSharpCodeWriter : ICodeWriter
         else
         {
             _output.WriteLine();
-            _output.OutputIndents(Indent + 1);
+            _output.OutputIndents(Indent);
             _output.WriteLine("[");
             OutputActions(initializers, newlineBetweenItems: true);
             _output.WriteLine();

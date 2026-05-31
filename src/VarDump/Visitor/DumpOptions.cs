@@ -13,16 +13,6 @@ namespace VarDump.Visitor;
 public class DumpOptions
 {
     /// <summary>
-    /// Controls C# collection literal emission style.
-    /// </summary>
-    public CollectionLiteralStyle CollectionLiteralStyle { get; set; } = CollectionLiteralStyle.Initializer;
-
-    /// <summary>
-    /// Controls C# string literal emission style.
-    /// </summary>
-    public StringLiteralStyle StringLiteralStyle { get; set; } = StringLiteralStyle.Auto;
-
-    /// <summary>
     /// Configure the known objects collection.
     /// </summary>
     public Action<IKnownObjectsCollection, INextDepthVisitor, DumpOptions, ICodeWriter> ConfigureKnownObjects { get; set; }
@@ -128,15 +118,14 @@ public class DumpOptions
     public bool UsePredefinedMethods { get; set; } = true;
 
     /// <summary>
-    /// Use the full name of the type when dumping, default is <c>false</c>.
+    /// Controls C# collection literal emission style, default is <see cref="CollectionLiteralStyle.Initializer"/>.
     /// </summary>
-    [Obsolete("Use TypeNamePolicy instead")]
-    [EditorBrowsable(EditorBrowsableState.Never)]
-    public bool UseTypeFullName
-    {
-        get => TypeNamePolicy == TypeNamingPolicy.FullName;
-        set => TypeNamePolicy = value ? TypeNamingPolicy.FullName : TypeNamingPolicy.ShortName;
-    }
+    public CollectionLiteralStyle CollectionLiteralStyle { get; set; }
+
+    /// <summary>
+    /// Controls C# string literal emission style, default is <see cref="StringLiteralStyle.Auto"/>.
+    /// </summary>
+    public StringLiteralStyle StringLiteralStyle { get; set; }
 
     /// <summary>
     /// Gets or sets the policy for naming types during the dumping process.
@@ -152,23 +141,11 @@ public class DumpOptions
     /// </remarks>
     public TypeNamingPolicy TypeNamePolicy { get; set; } = TypeNamingPolicy.ShortName;
 
-    /// <summary>
-    /// Gets or sets a value indicating whether to dump only writable properties.
-    /// </summary>
-    [Obsolete("Use IgnoreReadonlyProperties instead")]
-    [EditorBrowsable(EditorBrowsableState.Never)]
-    public bool WritablePropertiesOnly
-    {
-        get => IgnoreReadonlyProperties;
-        set => IgnoreReadonlyProperties = value;
-    }
-
     public DumpOptions Clone()
     {
         return new DumpOptions
         {
             CollectionLiteralStyle = CollectionLiteralStyle,
-            StringLiteralStyle = StringLiteralStyle,
             ConfigureKnownObjects = ConfigureKnownObjects,
             DateKind = DateKind,
             DateTimeInstantiation = DateTimeInstantiation,
@@ -183,14 +160,15 @@ public class DumpOptions
             IndentString = IndentString,
             IntegralNumericFormat = IntegralNumericFormat,
             MaxCollectionSize = MaxCollectionSize,
-            NewLineStyle = NewLineStyle,
             MaxDepth = MaxDepth,
+            NewLineStyle = NewLineStyle,
             PrimitiveCollectionLayout = PrimitiveCollectionLayout,
             SortDirection = SortDirection,
+            StringLiteralStyle = StringLiteralStyle,
+            TypeNamePolicy = TypeNamePolicy,
             UseNamedArgumentsInConstructors = UseNamedArgumentsInConstructors,
             UsePredefinedConstants = UsePredefinedConstants,
-            UsePredefinedMethods = UsePredefinedMethods,
-            TypeNamePolicy = TypeNamePolicy
+            UsePredefinedMethods = UsePredefinedMethods
         };
     }
 }

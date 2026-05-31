@@ -31,13 +31,14 @@ var text = dumper.Dump(new { Name = "Nick", Age = 23, Tags = new[] { "a", "b" } 
 
 | Property | Type | Default | Description | Variations / Notes |
 | --- | --- | --- | --- | --- |
+| `CollectionLiteralStyle` | `CollectionLiteralStyle` | `CollectionLiteralStyle.Initializer` | Controls C# collection literal emission style. | Enum values: `Initializer` emits `new [] { ... }`; `Expression` emits `[ ... ]` (when supported). |
 | `ConfigureKnownObjects` | `Action<IKnownObjectsCollection, INextDepthVisitor, DumpOptions, ICodeWriter>` | `null` | Lets you register/replace known object visitors. | Use to call `knownObjects.Add(...)` with custom `IKnownObjectVisitor` implementations. |
 | `DateKind` | `DateKind` | `DateKind.Original` | Controls date kind behavior in dumped `DateTime` values. | Enum values: `DateKind.Original` keeps original kind/value; `DateKind.ConvertToUtc` converts to UTC before dump. |
 | `DateTimeInstantiation` | `DateTimeInstantiation` | `DateTimeInstantiation.Parse` | Controls how `DateTime` instances are emitted in code. | Enum values: `DateTimeInstantiation.Parse` emits parse-style construction; `DateTimeInstantiation.New` emits constructor-style creation. |
 | `Descriptors` | `List<IObjectDescriptorMiddleware>` | empty list | Middleware pipeline for object description customization. | Add descriptor middleware (for example replacers/maskers) to transform values before writing. |
 | `GenerateVariableInitializer` | `bool` | `true` | Emits variable initializer in top-level output. | Set `false` to emit object expression only. |
-| `GetFieldsBindingFlags` | `BindingFlags?` | `null` | Controls **which fields** are inspected, and enables field dumping when set. | Important: when `null` (default), fields are not included in output at all. Set a value like `BindingFlags.Instance \| BindingFlags.Public \| BindingFlags.NonPublic` to include fields. |
 | `GetBaseClassFields` | `bool` | `false` | Controls whether fields from base classes are included. | Applies only when `GetFieldsBindingFlags` is set. `false` = current type only; `true` = walk inheritance chain and include base fields too. |
+| `GetFieldsBindingFlags` | `BindingFlags?` | `null` | Controls **which fields** are inspected, and enables field dumping when set. | Important: when `null` (default), fields are not included in output at all. Set a value like `BindingFlags.Instance \| BindingFlags.Public \| BindingFlags.NonPublic` to include fields. |
 | `GetPropertiesBindingFlags` | `BindingFlags` | `BindingFlags.Public \| BindingFlags.Instance` | Controls **which properties** are inspected. | Default includes public instance properties only. Add `NonPublic` for private/protected/internal properties, and `Static` for static properties. |
 | `IgnoreDefaultValues` | `bool` | `true` | Skips members equal to type default values. | Set `false` to always include defaults like `0`, `false`, etc. |
 | `IgnoreNullValues` | `bool` | `true` | Skips members with `null` values. | Set `false` to include explicit `null` assignments. |
@@ -46,14 +47,14 @@ var text = dumper.Dump(new { Name = "Nick", Age = 23, Tags = new[] { "a", "b" } 
 | `IntegralNumericFormat` | `string` | `""` | Numeric format string for integral values (`sbyte`, `byte`, `short`, `ushort`, `int`, `uint`, `long`, `ulong`). | VarDump-specific grammar: `<fmt><digits>_<groupSize>` where `<fmt>` is `d/D` (decimal), `b/B` (binary), `x/X` (hex). `digits` and `_groupSize` are optional. |
 | `MaxCollectionSize` | `int` | `int.MaxValue` | Maximum number of items emitted per collection. | Lower value truncates output after limit. |
 | `MaxDepth` | `int` | `25` | Maximum recursion depth for object graph traversal. | Lower value prevents deep/recursive graphs from expanding too far. |
+| `NewLineStyle` | `NewLineStyle` | `NewLineStyle.Auto` | Controls line endings in generated output. | Enum values: `Auto` (environment default), `Windows` (`\r\n`), `Unix` (`\n`). |
 | `PrimitiveCollectionLayout` | `CollectionLayout` | `CollectionLayout.MultiLine` | Layout for collections of primitive values. | Enum values: `CollectionLayout.MultiLine` writes one item per line; `CollectionLayout.SingleLine` writes inline. |
 | `SortDirection` | `ListSortDirection?` | `null` | Sort order for properties/fields. | Enum values: `ListSortDirection.Ascending` or `ListSortDirection.Descending`; `null` keeps reflection/native order. |
+| `StringLiteralStyle` | `StringLiteralStyle` | `StringLiteralStyle.Auto` | Controls C# string literal emission style. | Enum values: `Auto`, `Escaped`, `Verbatim`, `Raw`. |
+| `TypeNamePolicy` | `TypeNamingPolicy` | `TypeNamingPolicy.ShortName` | Controls how type names are emitted. | Enum values: `TypeNamingPolicy.ShortName` (type only), `TypeNamingPolicy.NestedQualified` (includes enclosing type for nested types), `TypeNamingPolicy.FullName` (fully qualified namespace + type). |
 | `UseNamedArgumentsInConstructors` | `bool` | `false` | Uses named constructor arguments in emitted code where supported. | Example: `new Regex(pattern: "\\d+", options: RegexOptions.IgnoreCase)` instead of positional arguments. |
 | `UsePredefinedConstants` | `bool` | `true` | Uses predefined constants where possible. | Example: emits `int.MaxValue` instead of `2147483647` when applicable. |
 | `UsePredefinedMethods` | `bool` | `true` | Enables method-based output for known types that support it (currently `TimeSpan`). | For `TimeSpan`, `true` can emit `TimeSpan.FromSeconds(5)` / `FromHours(3)` / `FromTicks(...)`; `false` falls back to `TimeSpan.ParseExact(...)` (default) or `new TimeSpan(...)` when `DateTimeInstantiation = New`. |
-| `TypeNamePolicy` | `TypeNamingPolicy` | `TypeNamingPolicy.ShortName` | Controls how type names are emitted. | Enum values: `TypeNamingPolicy.ShortName` (type only), `TypeNamingPolicy.NestedQualified` (includes enclosing type for nested types), `TypeNamingPolicy.FullName` (fully qualified namespace + type). |
-| `UseTypeFullName` (obsolete) | `bool` | derived from `TypeNamePolicy` | Legacy alias for full name behavior. | Use `TypeNamePolicy` instead. `true` maps to `FullName`, `false` maps to `ShortName`. |
-| `WritablePropertiesOnly` (obsolete) | `bool` | mirrors `IgnoreReadonlyProperties` | Legacy alias for writable-only behavior. | Use `IgnoreReadonlyProperties` instead. |
 
 ### Binding flags quick guide
 
@@ -113,6 +114,8 @@ using VarDump.Visitor.Format;
 
 var options = new DumpOptions
 {
+    CollectionLiteralStyle = CollectionLiteralStyle.Initializer,
+    StringLiteralStyle = StringLiteralStyle.Auto,
     ConfigureKnownObjects = (knownObjects, nextDepthVisitor, opts, codeWriter) =>
     {
         // Add custom IKnownObjectVisitor instances here.
@@ -132,8 +135,9 @@ var options = new DumpOptions
     IgnoreNullValues = true,
     IgnoreReadonlyProperties = true,
     IndentString = "    ",
-    IntegralNumericFormat = "N0",
+    IntegralNumericFormat = "d_3",
     MaxCollectionSize = int.MaxValue,
+    NewLineStyle = NewLineStyle.Auto,
     MaxDepth = 25,
     PrimitiveCollectionLayout = CollectionLayout.MultiLine,
     SortDirection = ListSortDirection.Ascending,
@@ -198,11 +202,6 @@ sealed class GuidVisitor(INextDepthVisitor nextDepthVisitor, ICodeWriter codeWri
     }
 }
 ```
-
-## Deprecated options
-
-- `UseTypeFullName` is obsolete; use `TypeNamePolicy`.
-- `WritablePropertiesOnly` is obsolete; use `IgnoreReadonlyProperties`.
 
 ## Reusing options safely
 

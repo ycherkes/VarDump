@@ -28,13 +28,26 @@ internal sealed class CSharpCodeWriter : ICodeWriter
     }
 
     public string NullToken => "null";
-
-    public TextWriter Output => _output;
+    public bool SupportsCollectionExpression => true;
 
     public CSharpCodeWriter(TextWriter w, CodeWriterOptions o)
     {
         _options = o ?? new CodeWriterOptions();
         _output = new ExposedTabStringIndentedTextWriter(w, _options.IndentString);
+
+        switch (_options.NewLineStyle)
+        {
+            case NewLineStyle.Unix:
+                _output.NewLine = "\n";
+                break;
+            case NewLineStyle.Windows:
+                _output.NewLine = "\r\n";
+                break;
+            case NewLineStyle.Auto:
+                break;
+            default:
+                throw new ArgumentOutOfRangeException();
+        }
     }
 
     private void QuoteSnippetStringCStyle(string value)
@@ -124,6 +137,29 @@ internal sealed class CSharpCodeWriter : ICodeWriter
 
     private void OutputQuoteSnippetString(string value)
     {
+        switch (_options.CSharpStringLiteralStyle)
+        {
+            case StringLiteralStyle.Escaped:
+                QuoteSnippetStringCStyle(value);
+                return;
+            case StringLiteralStyle.Verbatim:
+                if (value.IndexOf('\0') != -1)
+                {
+                    QuoteSnippetStringCStyle(value);
+                    return;
+                }
+
+                QuoteSnippetStringVerbatimStyle(value);
+                return;
+            case StringLiteralStyle.Raw:
+                QuoteSnippetStringRawStyle(value);
+                return;
+            case StringLiteralStyle.Auto:
+                break;
+            default:
+                throw new ArgumentOutOfRangeException();
+        }
+
         // If the string is short, use C style quoting (e.g "\r\n")
         // Also do it if it is too long to fit in one line
         // If the string contains '\0', verbatim style won't work.
@@ -135,6 +171,91 @@ internal sealed class CSharpCodeWriter : ICodeWriter
         {
             // Otherwise, use 'verbatim' style quoting (e.g. @"foo")
             QuoteSnippetStringVerbatimStyle(value);
+        }
+    }
+
+    private void QuoteSnippetStringRawStyle(string value)
+    {
+        if (value.IndexOf('\0') != -1)
+        {
+            QuoteSnippetStringCStyle(value);
+            return;
+        }
+
+        var maxQuoteRun = 0;
+        var currentRun = 0;
+
+        foreach (var c in value)
+        {
+            if (c == '"')
+            {
+                currentRun++;
+                if (currentRun > maxQuoteRun)
+                {
+                    maxQuoteRun = currentRun;
+                }
+            }
+            else
+            {
+                currentRun = 0;
+            }
+        }
+
+        var delimiterLength = Math.Max(3, maxQuoteRun + 1);
+        var delimiter = new string('"', delimiterLength);
+        var hasNewLine = value.IndexOf('\n') >= 0 || value.IndexOf('\r') >= 0;
+
+        if (!hasNewLine)
+        {
+            _output.Write(delimiter);
+            _output.Write(value);
+            _output.Write(delimiter);
+            return;
+        }
+
+        var extraAlignment = _output.ExtraAlignment;
+
+        _output.Write(delimiter);
+        _output.WriteLine();
+        WriteRawMultilineContentAligned(value, extraAlignment);
+
+        if (!value.EndsWith("\n", StringComparison.Ordinal) && !value.EndsWith("\r", StringComparison.Ordinal))
+        {
+            _output.WriteLine();
+        }
+
+        WriteSpaces(extraAlignment);
+        _output.Write(delimiter);
+    }
+
+    private void WriteRawMultilineContentAligned(string value, int extraAlignment)
+    {
+        WriteSpaces(extraAlignment);
+
+        for (var i = 0; i < value.Length; i++)
+        {
+            var ch = value[i];
+
+            if (ch == '\r')
+            {
+                continue;
+            }
+
+            _output.Write(ch);
+
+            if (ch != '\n' || i >= value.Length - 1) continue;
+
+            _output.OutputIndents(Indent);
+
+            WriteSpaces(extraAlignment);
+        }
+    }
+
+    private void WriteSpaces(int count)
+    {
+        for (var i = 0; i < count; i++)
+        {
+            _output.Write(' ');
         }
     }
 
@@ -203,6 +324,25 @@ internal sealed class CSharpCodeWriter : ICodeWriter
             OutputActions(initializers, newlineBetweenItems: true);
             _output.WriteLine();
             _output.Write("}");
+        }
+    }
+
+    public void WriteCollectionExpression(IEnumerable<Action> initializers, bool singleLine = false)
+    {
+        if (singleLine)
+        {
+            _output.Write("[");
+            OutputActions(initializers, newlineBetweenItems: false);
+            _output.Write("]");
+        }
+        else
+        {
+            _output.WriteLine();
+            _output.OutputIndents(Indent);
+            _output.WriteLine("[");
+            OutputActions(initializers, newlineBetweenItems: true);
+            _output.WriteLine();
+            _output.Write("]");
         }
     }
 

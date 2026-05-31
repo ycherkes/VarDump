@@ -67,7 +67,7 @@ public class DataTableSpec
 
         var result = dumper.Dump(products);
 
-        Assert.Equal(@"", result);
+        Assert.Equal(@"", result, ignoreLineEndingDifferences: true);
     }
 }
 

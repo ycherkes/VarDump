@@ -4,13 +4,13 @@
     <TargetFrameworks>net45;netstandard2.0</TargetFrameworks>
     <LangVersion>latest</LangVersion>
     <AssemblyName>VarDump</AssemblyName>
-    <AssemblyVersion>1.0.6.0</AssemblyVersion>
-    <FileVersion>1.0.6.0</FileVersion>
+    <AssemblyVersion>2.0.0.0</AssemblyVersion>
+    <FileVersion>2.0.0.0</FileVersion>
     <PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
     <Copyright>Copyright 2023 - $([System.DateTime]::Now.Year) Yevhen Cherkes</Copyright>
     <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
     <Title>VarDump</Title>
-    <Version>1.0.6.0</Version>
+    <Version>2.0.0.0</Version>
     <Description>VarDump is a utility for serialization runtime objects to C# and Visual Basic string.</Description>
     <PackageProjectUrl>https://github.com/ycherkes/VarDump</PackageProjectUrl>
     <PackageReadmeFile>README.md</PackageReadmeFile>
@@ -21,7 +21,7 @@
 	<PublishRepositoryUrl>true</PublishRepositoryUrl>
 	<EmbedUntrackedSources>true</EmbedUntrackedSources>
 	<AllowedOutputExtensionsInPackageBuildOutputFolder>$(AllowedOutputExtensionsInPackageBuildOutputFolder);.pdb</AllowedOutputExtensionsInPackageBuildOutputFolder>
-	<Authors>YevhenCherkes</Authors>
+	<Authors>Yevhen Cherkes</Authors>
 	<IncludeSymbols>true</IncludeSymbols>
 	<SymbolPackageFormat>snupkg</SymbolPackageFormat>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>

@@ -1,4 +1,5 @@
 using System.Linq;
+using VarDump.Visitor;
 using Xunit;
 
 namespace VarDump.UnitTests;
@@ -22,7 +23,28 @@ public class EnumerableQuerySpec
                 6
             }.AsQueryable();
             
-            """, result);
+            """, result, ignoreLineEndingDifferences: true);
+    }
+
+    [Fact]
+    public void DumpEnumerableQueryCollectionExpressionCSharp()
+    {
+        var query = new[] { 5, 6 }.AsQueryable();
+
+        var dumper = new CSharpDumper(new DumpOptions { CollectionLiteralStyle = CollectionLiteralStyle.Expression });
+
+        var result = dumper.Dump(query);
+
+        // Queryable must be output as an initializer regardless of the CollectionLiteralStyle
+        Assert.Equal(
+            """
+            var enumerableQueryOfInt = new int[]
+            {
+                5,
+                6
+            }.AsQueryable();
+
+            """, result, ignoreLineEndingDifferences: true);
     }
 
     [Fact]
@@ -41,6 +63,6 @@ public class EnumerableQuerySpec
                 6
             }.AsQueryable()
             
-            """, result);
+            """, result, ignoreLineEndingDifferences: true);
     }
 }

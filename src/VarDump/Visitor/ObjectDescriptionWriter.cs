@@ -28,8 +28,8 @@ public sealed class ObjectDescriptionWriter(INextDepthVisitor nextDepthVisitor, 
 
         var memberInitializers = members
             .Where(m => (!options.IgnoreNullValues || options.IgnoreNullValues && m.Value != null) &&
-                        (!options.IgnoreDefaultValues || !m.Type.IsValueType || options.IgnoreDefaultValues &&
-                            ReflectionUtils.GetDefaultValue(m.Type)?.Equals(m.Value) != true))
+                        (!options.IgnoreDefaultValues ||
+                            ReflectionUtils.GetDefaultValue(m)?.Equals(m.Value) != true))
             .Select(m => (Action)(() => codeWriter.WriteAssign(
                 () => codeWriter.WritePropertyReference(m.Name, null),
                 () => nextDepthVisitor.Visit(m.Value, context))));

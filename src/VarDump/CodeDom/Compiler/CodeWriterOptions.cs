@@ -8,6 +8,9 @@ namespace VarDump.CodeDom.Compiler;
 
 public sealed class CodeWriterOptions
 {
+    public CollectionLiteralStyle CSharpCollectionLiteralStyle { get; set; }
+    public StringLiteralStyle CSharpStringLiteralStyle { get; set; }
     public string IndentString { get; set; }
+    public NewLineStyle NewLineStyle { get; set; }
     public TypeNamingPolicy TypeNamePolicy { get; set; }
 }

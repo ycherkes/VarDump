@@ -1,4 +1,5 @@
 ﻿using Xunit;
+using VarDump.Visitor;
 
 namespace VarDump.UnitTests;
 
@@ -26,5 +27,86 @@ public class StringSpec
         var result = dumper.Dump(stringVar);
 
         Assert.DoesNotContain("& _", result);
+    }
+
+    [Fact]
+    public void DumpStringEscapedCSharp()
+    {
+        var stringVar = "line1\r\npath\\file\"name\"";
+
+        var dumper = new CSharpDumper(new DumpOptions
+        {
+            StringLiteralStyle = StringLiteralStyle.Escaped
+        });
+
+        var result = dumper.Dump(stringVar);
+
+        Assert.Equal("var stringValue = \"line1\\r\\npath\\\\file\\\"name\\\"\";\r\n", result, ignoreLineEndingDifferences: true);
+    }
+
+    [Fact]
+    public void DumpStringVerbatimCSharp()
+    {
+        var stringVar = "line1\r\n\"quoted\"";
+
+        var dumper = new CSharpDumper(new DumpOptions
+        {
+            StringLiteralStyle = StringLiteralStyle.Verbatim
+        });
+
+        var result = dumper.Dump(stringVar);
+
+        Assert.Equal("var stringValue = @\"line1\r\n\"\"quoted\"\"\";\r\n", result, ignoreLineEndingDifferences: true);
+    }
+
+    [Fact]
+    public void DumpStringRawCSharp()
+    {
+        var objColl  = new[]
+        {
+            new
+            {
+                Description = """
+                              line1
+                              line2
+                              """
+            }
+        };
+
+        var dumper = new CSharpDumper(new DumpOptions
+        {
+            StringLiteralStyle = StringLiteralStyle.Raw
+        });
+
+        var result = dumper.Dump(objColl);
+
+        Assert.Equal(""""
+                     var arrayOfAnonymousType = new []
+                     {
+                         new 
+                         {
+                             Description = """
+                                           line1
+                                           line2
+                                           """
+                         }
+                     };
+                     
+                     """", result, ignoreLineEndingDifferences: true);
+    }
+
+    [Fact]
+    public void DumpStringRawWithTripleQuotesCSharp()
+    {
+        var stringVar = "aa\"\"\"bb";
+
+        var dumper = new CSharpDumper(new DumpOptions
+        {
+            StringLiteralStyle = StringLiteralStyle.Raw
+        });
+
+        var result = dumper.Dump(stringVar);
+
+        Assert.Equal("var stringValue = \"\"\"\"aa\"\"\"bb\"\"\"\";\r\n", result, ignoreLineEndingDifferences: true);
     }
 }

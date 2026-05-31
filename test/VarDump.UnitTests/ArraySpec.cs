@@ -26,7 +26,7 @@ public class ArraySpec
                 }
             };
 
-            """, result);
+            """, result, ignoreLineEndingDifferences: true);
     }
 
     [Fact]
@@ -48,7 +48,7 @@ public class ArraySpec
                 new int[]{ 1, 2, 3 }
             };
             
-            """, result);
+            """, result, ignoreLineEndingDifferences: true);
     }
 
     [Fact]
@@ -75,7 +75,7 @@ public class ArraySpec
                 { 4, 5, 6 }
             };
             
-            """, result);
+            """, result, ignoreLineEndingDifferences: true);
     }
 
     [Fact]
@@ -114,7 +114,7 @@ public class ArraySpec
                 }
             };
 
-            """, result);
+            """, result, ignoreLineEndingDifferences: true);
     }
 
     [Fact]
@@ -130,7 +130,7 @@ public class ArraySpec
             """
             var arrayOfInt = new int[0, 0];
             
-            """, result);
+            """, result, ignoreLineEndingDifferences: true);
     }
 
     [Fact]
@@ -152,7 +152,7 @@ public class ArraySpec
                 }
             }.ToImmutableArray();
 
-            """, result);
+            """, result, ignoreLineEndingDifferences: true);
     }
 
     [Fact]
@@ -179,7 +179,7 @@ public class ArraySpec
                 }
             };
 
-            """, result);
+            """, result, ignoreLineEndingDifferences: true);
     }
 
     [Fact]
@@ -208,7 +208,7 @@ public class ArraySpec
                 }
             };
 
-            """, result);
+            """, result, ignoreLineEndingDifferences: true);
     }
 
     [Fact]
@@ -233,7 +233,7 @@ public class ArraySpec
                 }
             };
 
-            """, result);
+            """, result, ignoreLineEndingDifferences: true);
     }
 
     [Fact]
@@ -253,7 +253,7 @@ public class ArraySpec
                 }
             }
 
-            """, result);
+            """, result, ignoreLineEndingDifferences: true);
     }
 
     [Fact]
@@ -274,7 +274,7 @@ public class ArraySpec
                 New Integer(){ 1, 2, 3 }
             }
             
-            """, result);
+            """, result, ignoreLineEndingDifferences: true);
     }
 
     [Fact]
@@ -300,7 +300,7 @@ public class ArraySpec
                 { 4, 5, 6 }
             }
             
-            """, result);
+            """, result, ignoreLineEndingDifferences: true);
     }
 
     [Fact]
@@ -338,7 +338,7 @@ public class ArraySpec
                 }
             }
 
-            """, result);
+            """, result, ignoreLineEndingDifferences: true);
     }
 
     [Fact]
@@ -354,7 +354,7 @@ public class ArraySpec
             """
             Dim arrayOfInteger = New Integer(0, 0) {}
             
-            """, result);
+            """, result, ignoreLineEndingDifferences: true);
     }
 
     [Fact]
@@ -380,7 +380,7 @@ public class ArraySpec
                 }
             }
 
-            """, result);
+            """, result, ignoreLineEndingDifferences: true);
     }
 
     [Fact]
@@ -406,7 +406,7 @@ public class ArraySpec
                 }
             }
 
-            """, result);
+            """, result, ignoreLineEndingDifferences: true);
     }
 
     [Fact]
@@ -428,6 +428,6 @@ public class ArraySpec
                 }
             }
 
-            """, result);
+            """, result, ignoreLineEndingDifferences: true);
     }
 }

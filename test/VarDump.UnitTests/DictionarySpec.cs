@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
@@ -41,7 +41,7 @@ public class DictionarySpec
                          }
                      }
 
-                     """, result);
+                     """, result, ignoreLineEndingDifferences: true);
     }
 
     [Fact]
@@ -78,7 +78,7 @@ public class DictionarySpec
                          }
                      };
 
-                     """, result);
+                     """, result, ignoreLineEndingDifferences: true);
     }
 
     [Fact]
@@ -118,7 +118,7 @@ public class DictionarySpec
                 }
             }.ToDictionary(kvp => kvp.Key, kvp => kvp.Value);
 
-            """, result);
+            """, result, ignoreLineEndingDifferences: true);
     }
 
     [Fact]
@@ -161,7 +161,7 @@ public class DictionarySpec
                          }
                      };
 
-                     """, result);
+                     """, result, ignoreLineEndingDifferences: true);
     }
 
     [Fact]
@@ -185,7 +185,7 @@ public class DictionarySpec
                          }
                      }.ToImmutableDictionary();
 
-                     """, result);
+                     """, result, ignoreLineEndingDifferences: true);
     }
 
     [Fact]
@@ -208,6 +208,28 @@ public class DictionarySpec
                          }
                      }.ToImmutableDictionary()
 
-                     """, result);
+                     """, result, ignoreLineEndingDifferences: true);
+    }
+
+    [Fact]
+    public void DumpDictionaryCollectionExpressionCSharpFallsBackToInitializer()
+    {
+        var dict = new Dictionary<string, int>
+        {
+            { "A", 1 },
+            { "B", 2 }
+        };
+
+        var dumper = new CSharpDumper(new DumpOptions
+        {
+            CollectionLiteralStyle = CollectionLiteralStyle.Expression
+        });
+
+        var result = dumper.Dump(dict);
+
+        Assert.Contains("Dictionary<string, int>", result);
+        Assert.Contains("{", result);
+        Assert.DoesNotContain(" = [", result);
+        Assert.Contains("\"A\"", result);
     }
 }

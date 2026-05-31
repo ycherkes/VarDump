@@ -17,7 +17,7 @@ public class UriSpec
             """
             var uri = new Uri("https://user:password@www.contoso.com:80/Home/Index.htm?q1=v1&q2=v2#FragmentName");
             
-            """, result);
+            """, result, ignoreLineEndingDifferences: true);
     }
 
     [Fact]
@@ -33,7 +33,7 @@ public class UriSpec
             """
             Dim uriValue = New Uri("https://user:password@www.contoso.com:80/Home/Index.htm?q1=v1&q2=v2#FragmentName")
             
-            """, result);
+            """, result, ignoreLineEndingDifferences: true);
     }
 
     [Fact]
@@ -51,7 +51,7 @@ public class UriSpec
             """
             var uri = new Uri("index.htm?date=today", UriKind.Relative);
             
-            """, result);
+            """, result, ignoreLineEndingDifferences: true);
     }
 
     [Fact]
@@ -69,6 +69,6 @@ public class UriSpec
             """
             Dim uriValue = New Uri("index.htm?date=today", UriKind.Relative)
 
-            """, result);
+            """, result, ignoreLineEndingDifferences: true);
     }
 }

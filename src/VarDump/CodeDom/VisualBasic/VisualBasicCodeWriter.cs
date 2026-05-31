@@ -27,15 +27,28 @@ internal sealed class VisualBasicCodeWriter : ICodeWriter
         set => _output.Indent = value;
     }
 
-    public TextWriter Output => _output;
-
     public string NullToken => "Nothing";
+    public bool SupportsCollectionExpression => false;
 
 
     public VisualBasicCodeWriter(TextWriter w, CodeWriterOptions o)
     {
         _options = o ?? new CodeWriterOptions();
         _output = new ExposedTabStringIndentedTextWriter(w, _options.IndentString);
+
+        switch (_options.NewLineStyle)
+        {
+            case NewLineStyle.Unix:
+                _output.NewLine = "\n";
+                break;
+            case NewLineStyle.Windows:
+                _output.NewLine = "\r\n";
+                break;
+            case NewLineStyle.Auto:
+                break;
+            default:
+                throw new ArgumentOutOfRangeException();
+        }
     }
 
     public void WriteType(CodeTypeInfo typeInfo) => OutputType(typeInfo);
@@ -456,6 +469,11 @@ internal sealed class VisualBasicCodeWriter : ICodeWriter
         }
     }
 
+    public void WriteCollectionExpression(IEnumerable<Action> initializers, bool singleLine = false)
+    {
+        WriteArrayDimension(initializers, singleLine);
+    }
+
     public void WriteCast(CodeTypeInfo typeInfo, Action action)
     {
         _output.Write("CType(");
@@ -674,12 +692,12 @@ internal sealed class VisualBasicCodeWriter : ICodeWriter
                     _output.Write('\n');
                     i++;
                 }
-                ((ExposedTabStringIndentedTextWriter)Output).OutputIndents();
+                _output.OutputIndents();
                 _output.Write(commentLineStart);
             }
             else if (value[i] == '\n')
             {
-                ((ExposedTabStringIndentedTextWriter)Output).OutputIndents();
+                _output.OutputIndents();
                 _output.Write(commentLineStart);
             }
             else if (value[i] == '\u2028' || value[i] == '\u2029' || value[i] == '\u0085')

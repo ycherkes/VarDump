@@ -13,7 +13,7 @@ public class IgnoreIndexersSpec
 
         var result = dumper.Dump(index);
 
-        Assert.Equal("var myClassWithIndexer = new MyClassWithIndexer\r\n{\r\n    Caption = \"A Default caption\"\r\n};\r\n", result);
+        Assert.Equal("var myClassWithIndexer = new MyClassWithIndexer\r\n{\r\n    Caption = \"A Default caption\"\r\n};\r\n", result, ignoreLineEndingDifferences: true);
     }
 
     [Fact]
@@ -25,7 +25,7 @@ public class IgnoreIndexersSpec
 
         var result = dumper.Dump(index);
 
-        Assert.Equal("Dim myClassWithIndexerValue = New MyClassWithIndexer With {\r\n    .Caption = \"A Default caption\"\r\n}\r\n", result);
+        Assert.Equal("Dim myClassWithIndexerValue = New MyClassWithIndexer With {\r\n    .Caption = \"A Default caption\"\r\n}\r\n", result, ignoreLineEndingDifferences: true);
     }
 
     private class MyClassWithIndexer

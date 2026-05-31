@@ -15,7 +15,7 @@ public class PredefinedConstantsSpec
 
         var result = dumper.Dump(max);
 
-        Assert.Equal("var floatValue = float.MaxValue;\r\n", result);
+        Assert.Equal("var floatValue = float.MaxValue;\r\n", result, ignoreLineEndingDifferences: true);
     }
     
     [Fact]
@@ -27,7 +27,7 @@ public class PredefinedConstantsSpec
 
         var result = dumper.Dump(max);
 
-        Assert.Equal("var intValue = 2147483647;\r\n", result);
+        Assert.Equal("var intValue = 2147483647;\r\n", result, ignoreLineEndingDifferences: true);
     }
 
     [Fact]
@@ -39,7 +39,7 @@ public class PredefinedConstantsSpec
 
         var result = dumper.Dump(max);
 
-        Assert.Equal("var dateTime = DateTime.ParseExact(\"9999-12-31T23:59:59.9999999\", \"O\", CultureInfo.InvariantCulture, DateTimeStyles.RoundtripKind);\r\n", result);
+        Assert.Equal("var dateTime = DateTime.ParseExact(\"9999-12-31T23:59:59.9999999\", \"O\", CultureInfo.InvariantCulture, DateTimeStyles.RoundtripKind);\r\n", result, ignoreLineEndingDifferences: true);
     }
 
     [Fact]
@@ -50,7 +50,7 @@ public class PredefinedConstantsSpec
         var dumper = new CSharpDumper();
         var result = dumper.Dump(min);
 
-        Assert.Equal("var floatValue = float.MinValue;\r\n", result);
+        Assert.Equal("var floatValue = float.MinValue;\r\n", result, ignoreLineEndingDifferences: true);
     }
 
     [Fact]
@@ -61,7 +61,7 @@ public class PredefinedConstantsSpec
         var dumper = new CSharpDumper();
         var result = dumper.Dump(nan);
 
-        Assert.Equal("var floatValue = float.NaN;\r\n", result);
+        Assert.Equal("var floatValue = float.NaN;\r\n", result, ignoreLineEndingDifferences: true);
     }
 
     [Fact]
@@ -72,7 +72,7 @@ public class PredefinedConstantsSpec
         var dumper = new VisualBasicDumper();
         var result = dumper.Dump(max);
 
-        Assert.Equal("Dim singleValue = Single.MaxValue\r\n", result);
+        Assert.Equal("Dim singleValue = Single.MaxValue\r\n", result, ignoreLineEndingDifferences: true);
     }
 
     [Fact]
@@ -84,7 +84,7 @@ public class PredefinedConstantsSpec
 
         var result = dumper.Dump(zero);
 
-        Assert.Equal("var byteValue = 0;\r\n", result);
+        Assert.Equal("var byteValue = 0;\r\n", result, ignoreLineEndingDifferences: true);
     }
 
     [Fact]
@@ -96,7 +96,7 @@ public class PredefinedConstantsSpec
 
         var result = dumper.Dump(zero);
 
-        Assert.Equal("Dim byteValue = 0\r\n", result);
+        Assert.Equal("Dim byteValue = 0\r\n", result, ignoreLineEndingDifferences: true);
     }
 
     [Fact]
@@ -108,7 +108,7 @@ public class PredefinedConstantsSpec
 
         var result = dumper.Dump(zero);
 
-        Assert.Equal("var ushortValue = 0;\r\n", result);
+        Assert.Equal("var ushortValue = 0;\r\n", result, ignoreLineEndingDifferences: true);
     }
 
     [Fact]
@@ -120,7 +120,7 @@ public class PredefinedConstantsSpec
 
         var result = dumper.Dump(zero);
 
-        Assert.Equal("Dim uShortValue = 0US\r\n", result);
+        Assert.Equal("Dim uShortValue = 0US\r\n", result, ignoreLineEndingDifferences: true);
     }
 
     [Fact]
@@ -132,7 +132,7 @@ public class PredefinedConstantsSpec
 
         var result = dumper.Dump(max);
 
-        Assert.Equal("Dim integerValue = 2147483647\r\n", result);
+        Assert.Equal("Dim integerValue = 2147483647\r\n", result, ignoreLineEndingDifferences: true);
     }
 
     [Fact]
@@ -144,6 +144,6 @@ public class PredefinedConstantsSpec
 
         var result = dumper.Dump(max);
 
-        Assert.Equal("Dim dateValue = Date.ParseExact(\"9999-12-31T23:59:59.9999999\", \"O\", CultureInfo.InvariantCulture, DateTimeStyles.RoundtripKind)\r\n", result);
+        Assert.Equal("Dim dateValue = Date.ParseExact(\"9999-12-31T23:59:59.9999999\", \"O\", CultureInfo.InvariantCulture, DateTimeStyles.RoundtripKind)\r\n", result, ignoreLineEndingDifferences: true);
     }
 }

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.IO;
+using System.Linq;
 using VarDump.CodeDom.Common;
 using VarDump.CodeDom.Compiler;
 using VarDump.CodeDom.CSharp;
@@ -34,6 +35,21 @@ public sealed class CSharpDumper : IDumper
         {
             throw new FormatException($"Bad format specifier. {options.IntegralNumericFormat}");
         }
+
+        if (!Enum.IsDefined(typeof(StringLiteralStyle), options.StringLiteralStyle))
+        {
+            throw new ArgumentOutOfRangeException(nameof(options.StringLiteralStyle));
+        }
+
+        if (!Enum.IsDefined(typeof(CollectionLiteralStyle), options.CollectionLiteralStyle))
+        {
+            throw new ArgumentOutOfRangeException(nameof(options.CollectionLiteralStyle));
+        }
+
+        if (!Enum.IsDefined(typeof(NewLineStyle), options.NewLineStyle))
+        {
+            throw new ArgumentOutOfRangeException(nameof(options.NewLineStyle));
+        }
     }
 
     public string Dump(object obj)
@@ -61,8 +77,11 @@ public sealed class CSharpDumper : IDumper
     {
         var codeWriterOptions = new CodeWriterOptions
         {
+            CSharpCollectionLiteralStyle = _options.CollectionLiteralStyle,
+            CSharpStringLiteralStyle = _options.StringLiteralStyle,
             TypeNamePolicy = _options.TypeNamePolicy,
-            IndentString = _options.IndentString
+            IndentString = _options.IndentString,
+            NewLineStyle = _options.NewLineStyle
         };
 
         ICodeWriter codeWriter = new CSharpCodeWriter(textWriter, codeWriterOptions);
@@ -71,7 +90,20 @@ public sealed class CSharpDumper : IDumper
 
         if (_options.GenerateVariableInitializer)
         {
-            codeWriter.WriteVariableDeclarationStatement(new CodeVarTypeInfo(),
+            CodeTypeInfo declarationType = new CodeVarTypeInfo();
+
+            if (_options.CollectionLiteralStyle == CollectionLiteralStyle.Expression
+                && obj is System.Collections.IEnumerable)
+            {
+                var objectType = obj.GetType();
+                var queryableType = objectType.GetInterfaces()
+                    .FirstOrDefault(x => x.IsGenericType && x.GetGenericTypeDefinition() == typeof(IQueryable<>));
+
+                if(queryableType == null)
+                    declarationType = objectType;
+            }
+
+            codeWriter.WriteVariableDeclarationStatement(declarationType,
                 obj != null ? ReflectionUtils.ComposeCSharpVariableName(obj.GetType()) : "nullValue", () => objectVisitor.Visit(obj));
         }
         else

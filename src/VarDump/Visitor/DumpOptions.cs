@@ -83,6 +83,11 @@ public class DumpOptions
     public int MaxCollectionSize { get; set; } = int.MaxValue;
 
     /// <summary>
+    /// Controls line endings in generated output.
+    /// </summary>
+    public NewLineStyle NewLineStyle { get; set; } = NewLineStyle.Auto;
+
+    /// <summary>
     /// The maximum depth to dump, default is <c>25</c>.
     /// </summary>
     public int MaxDepth { get; set; } = 25;
@@ -113,15 +118,14 @@ public class DumpOptions
     public bool UsePredefinedMethods { get; set; } = true;
 
     /// <summary>
-    /// Use the full name of the type when dumping, default is <c>false</c>.
+    /// Controls C# collection literal emission style, default is <see cref="CollectionLiteralStyle.Initializer"/>.
     /// </summary>
-    [Obsolete("Use TypeNamePolicy instead")]
-    [EditorBrowsable(EditorBrowsableState.Never)]
-    public bool UseTypeFullName
-    {
-        get => TypeNamePolicy == TypeNamingPolicy.FullName;
-        set => TypeNamePolicy = value ? TypeNamingPolicy.FullName : TypeNamingPolicy.ShortName;
-    }
+    public CollectionLiteralStyle CollectionLiteralStyle { get; set; }
+
+    /// <summary>
+    /// Controls C# string literal emission style, default is <see cref="StringLiteralStyle.Auto"/>.
+    /// </summary>
+    public StringLiteralStyle StringLiteralStyle { get; set; }
 
     /// <summary>
     /// Gets or sets the policy for naming types during the dumping process.
@@ -137,21 +141,11 @@ public class DumpOptions
     /// </remarks>
     public TypeNamingPolicy TypeNamePolicy { get; set; } = TypeNamingPolicy.ShortName;
 
-    /// <summary>
-    /// Gets or sets a value indicating whether to dump only writable properties.
-    /// </summary>
-    [Obsolete("Use IgnoreReadonlyProperties instead")]
-    [EditorBrowsable(EditorBrowsableState.Never)]
-    public bool WritablePropertiesOnly
-    {
-        get => IgnoreReadonlyProperties;
-        set => IgnoreReadonlyProperties = value;
-    }
-
     public DumpOptions Clone()
     {
         return new DumpOptions
         {
+            CollectionLiteralStyle = CollectionLiteralStyle,
             ConfigureKnownObjects = ConfigureKnownObjects,
             DateKind = DateKind,
             DateTimeInstantiation = DateTimeInstantiation,
@@ -167,12 +161,14 @@ public class DumpOptions
             IntegralNumericFormat = IntegralNumericFormat,
             MaxCollectionSize = MaxCollectionSize,
             MaxDepth = MaxDepth,
+            NewLineStyle = NewLineStyle,
             PrimitiveCollectionLayout = PrimitiveCollectionLayout,
             SortDirection = SortDirection,
+            StringLiteralStyle = StringLiteralStyle,
+            TypeNamePolicy = TypeNamePolicy,
             UseNamedArgumentsInConstructors = UseNamedArgumentsInConstructors,
             UsePredefinedConstants = UsePredefinedConstants,
-            UsePredefinedMethods = UsePredefinedMethods,
-            TypeNamePolicy = TypeNamePolicy
+            UsePredefinedMethods = UsePredefinedMethods
         };
     }
 }

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using VarDump.Visitor;
 using Xunit;
 
@@ -26,7 +26,7 @@ public class ValueTupleArraySpec
                 (2, "Second")
             }
             
-            """, result);
+            """, result, ignoreLineEndingDifferences: true);
     }
 
     [Fact]
@@ -49,7 +49,7 @@ public class ValueTupleArraySpec
                 (item1:=2, item2:="Second")
             }
             
-            """, result);
+            """, result, ignoreLineEndingDifferences: true);
     }
 
     [Fact]
@@ -73,7 +73,31 @@ public class ValueTupleArraySpec
                 (2, "Second")
             };
             
-            """, result);
+            """, result, ignoreLineEndingDifferences: true);
+    }
+
+    [Fact]
+    public void DumpValueTupleArrayCollectionExpressionCSharp()
+    {
+        ValueTuple<int, string>[] tupleArray =
+        [
+            (1, "First"),
+            (2, "Second")
+        ];
+
+        var dumper = new CSharpDumper(new DumpOptions{ CollectionLiteralStyle = CollectionLiteralStyle.Expression});
+
+        var result = dumper.Dump(tupleArray);
+
+        Assert.Equal(
+            """
+            ValueTuple<int, string>[] arrayOfValueTuple = 
+            [
+                (1, "First"),
+                (2, "Second")
+            ];
+            
+            """, result, ignoreLineEndingDifferences: true);
     }
 
     [Fact]
@@ -97,6 +121,6 @@ public class ValueTupleArraySpec
                 (item1: 2, item2: "Second")
             };
             
-            """, result);
+            """, result, ignoreLineEndingDifferences: true);
     }
 }

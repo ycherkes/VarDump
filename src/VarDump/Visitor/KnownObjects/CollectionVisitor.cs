@@ -163,6 +163,20 @@ internal sealed class CollectionVisitor : IKnownObjectVisitor
 
             void WriteArrayCreate() => _codeWriter.WriteArrayCreate(arrayType, items, singleLine: singleLine);
 
+            void WriteArrayOrCollectionExpression()
+            {
+                if (type.IsArray
+                    && ((Array)enumerable).Rank == 1
+                    && _options.CollectionLiteralStyle == CollectionLiteralStyle.Expression
+                    && _codeWriter.SupportsCollectionExpression)
+                {
+                    _codeWriter.WriteCollectionExpression(items, singleLine);
+                    return;
+                }
+
+                WriteArrayCreate();
+            }
+
             if (isImmutableOrFrozen)
             {
                 _codeWriter.WriteMethodInvoke(() =>
@@ -175,7 +189,7 @@ internal sealed class CollectionVisitor : IKnownObjectVisitor
             }
             else
             {
-                WriteArrayCreate();
+                WriteArrayOrCollectionExpression();
             }
 
             return;
@@ -186,13 +200,29 @@ internal sealed class CollectionVisitor : IKnownObjectVisitor
             var typeInfo =
                 new CodeCollectionTypeInfo(typeof(List<>).MakeGenericType(elementType));
 
+            var createAction = ResolveCollectionCreateAction(typeInfo, items, singleLine);
+
             _codeWriter.WriteMethodInvoke(() => _codeWriter.WriteMethodReference(() =>
-               _codeWriter.WriteObjectCreateAndInitialize(typeInfo, [], items, singleLine), "AsReadOnly"), []);
+               createAction(), "AsReadOnly"), []);
 
             return;
         }
 
-        _codeWriter.WriteObjectCreateAndInitialize(new CodeCollectionTypeInfo(type), [], items, singleLine);
+        var collectionTypeInfo = new CodeCollectionTypeInfo(type);
+        ResolveCollectionCreateAction(collectionTypeInfo, items, singleLine)();
+
+        return;
+
+        Action ResolveCollectionCreateAction(CodeTypeInfo collectionTypeInfo, IEnumerable<Action> initializers, bool useSingleLine)
+        {
+            if (_options.CollectionLiteralStyle == CollectionLiteralStyle.Expression
+                && _codeWriter.SupportsCollectionExpression)
+            {
+                return () => _codeWriter.WriteCollectionExpression(initializers, useSingleLine);
+            }
+
+            return () => _codeWriter.WriteObjectCreateAndInitialize(collectionTypeInfo, [], initializers, useSingleLine);
+        }
     }
 
     private static bool IsQueryable(Type type)

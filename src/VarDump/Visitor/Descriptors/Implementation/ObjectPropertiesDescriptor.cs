@@ -1,4 +1,5 @@
 ﻿using System;
+using System.ComponentModel;
 using System.Linq;
 using System.Reflection;
 using VarDump.Extensions;
@@ -19,6 +20,7 @@ internal sealed class ObjectPropertiesDescriptor(BindingFlags getPropertiesBindi
             .Select(p => new PropertyDescription(() => ReflectionUtils.GetValue(p, @object))
             {
                 CanWrite = p.CanWrite,
+                DefaultValueAttributeValue = p.GetCustomAttribute<DefaultValueAttribute>()?.Value,
                 Name = p.Name,
                 Type = p.PropertyType
             });

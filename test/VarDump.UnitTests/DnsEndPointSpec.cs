@@ -18,7 +18,7 @@ public class DnsEndPointSpec
             """
             var dnsEndPoint = new DnsEndPoint("google.com", 12345);
 
-            """, result);
+            """, result, ignoreLineEndingDifferences: true);
     }
 
 
@@ -35,6 +35,6 @@ public class DnsEndPointSpec
             """
             Dim dnsEndPointValue = New DnsEndPoint("google.com", 12345)
 
-            """, result);
+            """, result, ignoreLineEndingDifferences: true);
     }
 }

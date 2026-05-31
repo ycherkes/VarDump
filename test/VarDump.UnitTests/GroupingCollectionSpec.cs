@@ -1,4 +1,4 @@
-﻿using System.Linq;
+using System.Linq;
 using VarDump.UnitTests.TestModel;
 using Xunit;
 
@@ -45,7 +45,7 @@ public class GroupingCollectionSpec
                 }
             }.ToLookup(Function (grp) grp.Key, Function (grp) grp.Element)
 
-            """, result);
+            """, result, ignoreLineEndingDifferences: true);
     }
 
     [Fact]
@@ -85,7 +85,7 @@ public class GroupingCollectionSpec
                 }
             }.GroupBy(grp => grp.Key, grp => grp.Element).ToArray();
 
-            """, result);
+            """, result, ignoreLineEndingDifferences: true);
     }
 
     [Fact]
@@ -114,6 +114,6 @@ public class GroupingCollectionSpec
                 }
             }.GroupBy(grp => grp.Key, grp => grp.Element).Single();
 
-            """, result);
+            """, result, ignoreLineEndingDifferences: true);
     }
 }

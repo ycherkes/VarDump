@@ -37,7 +37,7 @@ public class VarDumpExtensionsSpec
                 }
             };
             
-            """, result);
+            """, result, ignoreLineEndingDifferences: true);
     }
 
     [Fact]
@@ -86,7 +86,7 @@ public class VarDumpExtensionsSpec
                 }
             };
             
-            """, result);
+            """, result, ignoreLineEndingDifferences: true);
     }
 
     [Fact]
@@ -117,6 +117,6 @@ public class VarDumpExtensionsSpec
                 }
             }
 
-            """, result);
+            """, result, ignoreLineEndingDifferences: true);
     }
 }

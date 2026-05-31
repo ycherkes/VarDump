@@ -23,7 +23,7 @@ public class CollectionSpec
                          1
                      }.AsReadOnly();
 
-                     """, result);
+                     """, result, ignoreLineEndingDifferences: true);
     }
 
     [Fact]
@@ -38,7 +38,7 @@ public class CollectionSpec
         Assert.Equal("""
                      var readOnlyCollectionOfInt = new List<int> { 1 }.AsReadOnly();
                      
-                     """, result);
+                     """, result, ignoreLineEndingDifferences: true);
     }
 
     [Fact]
@@ -58,7 +58,7 @@ public class CollectionSpec
                          2
                      };
                      
-                     """, result);
+                     """, result, ignoreLineEndingDifferences: true);
     }
 
     [Fact]
@@ -83,7 +83,7 @@ public class CollectionSpec
                 new List<int> { 1, 2, 3 }
             };
 
-            """, result);
+            """, result, ignoreLineEndingDifferences: true);
     }
 
     [Fact]
@@ -101,7 +101,7 @@ public class CollectionSpec
                 1
             }.AsReadOnly()
 
-            """, result);
+            """, result, ignoreLineEndingDifferences: true);
     }
 
     [Fact]
@@ -116,7 +116,7 @@ public class CollectionSpec
         Assert.Equal("""
                      Dim readOnlyCollectionOfInteger = New List(Of Integer) From { 1 }.AsReadOnly()
                      
-                     """, result);
+                     """, result, ignoreLineEndingDifferences: true);
     }
 
     [Fact]
@@ -140,6 +140,38 @@ public class CollectionSpec
                 New List(Of Integer) From { 1, 2, 3 }
             }
             
-            """, result);
+            """, result, ignoreLineEndingDifferences: true);
+    }
+
+    [Fact]
+    public void DumpListCollectionExpressionCSharp()
+    {
+        var collection = new List<int> { 1, 2, 3 };
+
+        var dumper = new CSharpDumper(new DumpOptions
+        {
+            CollectionLiteralStyle = CollectionLiteralStyle.Expression,
+            PrimitiveCollectionLayout = CollectionLayout.SingleLine
+        });
+
+        var result = dumper.Dump(collection);
+
+        Assert.Equal("List<int> listOfInt = [1, 2, 3];\r\n", result, ignoreLineEndingDifferences: true);
+    }
+
+    [Fact]
+    public void DumpListCollectionMultiLineExpressionCSharp()
+    {
+        var collection = new List<int> { 1, 2, 3 };
+
+        var dumper = new CSharpDumper(new DumpOptions
+        {
+            CollectionLiteralStyle = CollectionLiteralStyle.Expression,
+            PrimitiveCollectionLayout = CollectionLayout.MultiLine
+        });
+
+        var result = dumper.Dump(collection);
+
+        Assert.Equal("List<int> listOfInt = \r\n[\r\n    1,\r\n    2,\r\n    3\r\n];\r\n", result, ignoreLineEndingDifferences: true);
     }
 }

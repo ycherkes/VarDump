@@ -28,7 +28,10 @@ internal sealed class ExposedTabStringIndentedTextWriter(TextWriter writer, stri
         get => _indentLevel;
         set => _indentLevel = Math.Max(value, 0);
     }
-    
+
+    // This property is not used by the writer itself, but can be used by external code to track the current alignment after indents and tabs.
+    public int ExtraAlignment { get; private set; }
+
     public void Close() => _innerWriter.Close();
 
     public void Flush() => _innerWriter.Flush();
@@ -41,25 +44,36 @@ internal sealed class ExposedTabStringIndentedTextWriter(TextWriter writer, stri
         {
             _innerWriter.Write(TabString);
         }
+        ExtraAlignment = 0;
         _tabsPending = false;
     }
 
     public void Write(string s)
     {
         OutputTabs();
-        _innerWriter.Write(s);
+
+        if (s == null)
+            return;
+
+        foreach (var c in s)
+        {
+            WriteWithoutIndents(c);
+        }
     }
 
     public void Write(int value)
     {
-        OutputTabs();
-        _innerWriter.Write(value);
+        var stringValue = value.ToString(null, _innerWriter.FormatProvider);
+        Write(stringValue);
     }
 
     public void Write(object value)
     {
-        OutputTabs();
-        _innerWriter.Write(value);
+        var stringValue = value is IFormattable formattable
+            ? formattable.ToString(null, _innerWriter.FormatProvider)
+            : value?.ToString();
+
+        Write(stringValue);
     }
 
     public void WriteLine(string s)
@@ -93,38 +107,26 @@ internal sealed class ExposedTabStringIndentedTextWriter(TextWriter writer, stri
         for (int i = 0; i < indent; i++)
         {
             _innerWriter.Write(TabString);
-            _currentColumn += TabString.Length;
         }
-    }
-
-    private int _currentColumn;
-
-    internal int GetCurrentColumnFromBuffer()
-    {
-        if (_innerWriter is not StringWriter sw)
-        {
-            return _currentColumn;
-        }
-
-        var text = sw.ToString();
-        var lastLf = text.LastIndexOf('\n');
-        var lastCr = text.LastIndexOf('\r');
-        var lineStart = Math.Max(lastLf, lastCr) + 1;
-
-        return text.Length - lineStart;
+        ExtraAlignment = 0;
     }
 
     public void Write(char value)
     {
         OutputTabs();
+        WriteWithoutIndents(value);
+    }
+
+    private void WriteWithoutIndents(char value)
+    {
         _innerWriter.Write(value);
 
         if (value is '\n' or '\r')
         {
-            _currentColumn = 0;
+            ExtraAlignment = 0;
             return;
         }
 
-        _currentColumn++;
+        ExtraAlignment++;
     }
 }

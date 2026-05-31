@@ -185,9 +185,9 @@ internal sealed class CSharpCodeWriter : ICodeWriter
         var maxQuoteRun = 0;
         var currentRun = 0;
 
-        for (var i = 0; i < value.Length; i++)
+        foreach (var c in value)
         {
-            if (value[i] == '"')
+            if (c == '"')
             {
                 currentRun++;
                 if (currentRun > maxQuoteRun)
@@ -213,8 +213,7 @@ internal sealed class CSharpCodeWriter : ICodeWriter
             return;
         }
 
-        var rawContentColumn = _output.GetCurrentColumnFromBuffer();
-        var extraAlignment = Math.Max(0, rawContentColumn - (Indent * _output.TabString.Length));
+        var extraAlignment = _output.ExtraAlignment;
 
         _output.Write(delimiter);
         _output.WriteLine();
@@ -244,10 +243,11 @@ internal sealed class CSharpCodeWriter : ICodeWriter
 
             _output.Write(ch);
 
-            if (ch == '\n' && i < value.Length - 1)
-            {
-                WriteSpaces((Indent * _output.TabString.Length) + extraAlignment);
-            }
+            if (ch != '\n' || i >= value.Length - 1) continue;
+
+            _output.OutputIndents(Indent);
+
+            WriteSpaces(extraAlignment);
         }
     }
 

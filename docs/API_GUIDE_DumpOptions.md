@@ -55,8 +55,6 @@ var text = dumper.Dump(new { Name = "Nick", Age = 23, Tags = new[] { "a", "b" } 
 | `UsePredefinedConstants` | `bool` | `true` | Uses predefined constants where possible. | Example: emits `int.MaxValue` instead of `2147483647` when applicable. |
 | `UsePredefinedMethods` | `bool` | `true` | Enables method-based output for known types that support it (currently `TimeSpan`). | For `TimeSpan`, `true` can emit `TimeSpan.FromSeconds(5)` / `FromHours(3)` / `FromTicks(...)`; `false` falls back to `TimeSpan.ParseExact(...)` (default) or `new TimeSpan(...)` when `DateTimeInstantiation = New`. |
 | `TypeNamePolicy` | `TypeNamingPolicy` | `TypeNamingPolicy.ShortName` | Controls how type names are emitted. | Enum values: `TypeNamingPolicy.ShortName` (type only), `TypeNamingPolicy.NestedQualified` (includes enclosing type for nested types), `TypeNamingPolicy.FullName` (fully qualified namespace + type). |
-| `UseTypeFullName` (obsolete) | `bool` | derived from `TypeNamePolicy` | Legacy alias for full name behavior. | Use `TypeNamePolicy` instead. `true` maps to `FullName`, `false` maps to `ShortName`. |
-| `WritablePropertiesOnly` (obsolete) | `bool` | mirrors `IgnoreReadonlyProperties` | Legacy alias for writable-only behavior. | Use `IgnoreReadonlyProperties` instead. |
 
 ### Binding flags quick guide
 
@@ -204,11 +202,6 @@ sealed class GuidVisitor(INextDepthVisitor nextDepthVisitor, ICodeWriter codeWri
     }
 }
 ```
-
-## Deprecated options
-
-- `UseTypeFullName` is obsolete; use `TypeNamePolicy`.
-- `WritablePropertiesOnly` is obsolete; use `IgnoreReadonlyProperties`.
 
 ## Reusing options safely
 

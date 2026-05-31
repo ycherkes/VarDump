@@ -31,8 +31,8 @@ var text = dumper.Dump(new { Name = "Nick", Age = 23, Tags = new[] { "a", "b" } 
 
 | Property | Type | Default | Description | Variations / Notes |
 | --- | --- | --- | --- | --- |
-| `CSharpCollectionLiteralStyle` | `CSharpCollectionLiteralStyle` | `CSharpCollectionLiteralStyle.Initializer` | Controls C# collection literal emission style. | Enum values: `Initializer` emits `new [] { ... }`; `CollectionExpression` emits `[ ... ]` (when supported). |
-| `CSharpStringLiteralStyle` | `CSharpStringLiteralStyle` | `CSharpStringLiteralStyle.Auto` | Controls C# string literal emission style. | Enum values: `Auto`, `Escaped`, `Verbatim`, `Raw`. |
+| `CollectionLiteralStyle` | `CollectionLiteralStyle` | `CollectionLiteralStyle.Initializer` | Controls C# collection literal emission style. | Enum values: `Initializer` emits `new [] { ... }`; `Expression` emits `[ ... ]` (when supported). |
+| `StringLiteralStyle` | `StringLiteralStyle` | `StringLiteralStyle.Auto` | Controls C# string literal emission style. | Enum values: `Auto`, `Escaped`, `Verbatim`, `Raw`. |
 | `ConfigureKnownObjects` | `Action<IKnownObjectsCollection, INextDepthVisitor, DumpOptions, ICodeWriter>` | `null` | Lets you register/replace known object visitors. | Use to call `knownObjects.Add(...)` with custom `IKnownObjectVisitor` implementations. |
 | `DateKind` | `DateKind` | `DateKind.Original` | Controls date kind behavior in dumped `DateTime` values. | Enum values: `DateKind.Original` keeps original kind/value; `DateKind.ConvertToUtc` converts to UTC before dump. |
 | `DateTimeInstantiation` | `DateTimeInstantiation` | `DateTimeInstantiation.Parse` | Controls how `DateTime` instances are emitted in code. | Enum values: `DateTimeInstantiation.Parse` emits parse-style construction; `DateTimeInstantiation.New` emits constructor-style creation. |
@@ -116,8 +116,8 @@ using VarDump.Visitor.Format;
 
 var options = new DumpOptions
 {
-    CSharpCollectionLiteralStyle = CSharpCollectionLiteralStyle.Initializer,
-    CSharpStringLiteralStyle = CSharpStringLiteralStyle.Auto,
+    CollectionLiteralStyle = CollectionLiteralStyle.Initializer,
+    StringLiteralStyle = StringLiteralStyle.Auto,
     ConfigureKnownObjects = (knownObjects, nextDepthVisitor, opts, codeWriter) =>
     {
         // Add custom IKnownObjectVisitor instances here.

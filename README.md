@@ -74,15 +74,15 @@ using VarDump.Visitor;
 
 var options = new DumpOptions
 {
-    CSharpStringLiteralStyle = CSharpStringLiteralStyle.Raw,
-    CSharpCollectionLiteralStyle = CSharpCollectionLiteralStyle.Expression
+    StringLiteralStyle = StringLiteralStyle.Raw,
+    CollectionLiteralStyle = CollectionLiteralStyle.Expression
 };
 
 var dumper = new CSharpDumper(options);
 ```
 
-- `CSharpStringLiteralStyle`: `Auto`, `Escaped`, `Verbatim`, `Raw`
-- `CSharpCollectionLiteralStyle`: `Initializer`, `Expression`
+- `StringLiteralStyle`: `Auto`, `Escaped`, `Verbatim`, `Raw`
+- `CollectionLiteralStyle`: `Initializer`, `Expression`
 
 `Raw` string literals require modern C# language support. `Expression` collection literals require C# 12 support.
 

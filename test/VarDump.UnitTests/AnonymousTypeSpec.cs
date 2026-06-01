@@ -42,6 +42,40 @@ public class AnonymousTypeSpec
     }
 
     [Fact]
+    public void DumpAnonymousTypeCSharp_ShouldIgnoreCollectionExpression()
+    {
+        var anonymous = new[]
+        {
+            new { Name = "Steeve", Age = (int?)int.MaxValue, Reference = "Test reference" },
+            new { Name = "Peter", Age = (int?)null, Reference = (string)null }
+        };
+
+        var dumper = new CSharpDumper(new DumpOptions{ CollectionLiteralStyle = CollectionLiteralStyle.Expression});
+
+        var result = dumper.Dump(anonymous);
+
+        Assert.Equal(
+            """
+            var arrayOfAnonymousType = new []
+            {
+                new 
+                {
+                    Name = "Steeve",
+                    Age = (int?)int.MaxValue,
+                    Reference = "Test reference"
+                },
+                new 
+                {
+                    Name = "Peter",
+                    Age = (int?)null,
+                    Reference = (string)null
+                }
+            };
+
+            """, result, ignoreLineEndingDifferences: true);
+    }
+
+    [Fact]
     public void DumpAnonymousTypeVb()
     {
         var anonymous = new[]

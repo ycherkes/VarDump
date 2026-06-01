@@ -99,7 +99,7 @@ public sealed class CSharpDumper : IDumper
                 var queryableType = objectType.GetInterfaces()
                     .FirstOrDefault(x => x.IsGenericType && x.GetGenericTypeDefinition() == typeof(IQueryable<>));
 
-                if(queryableType == null)
+                if(queryableType == null && !objectType.ContainsAnonymousType())
                     declarationType = objectType;
             }
 

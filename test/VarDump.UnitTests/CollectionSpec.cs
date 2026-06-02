@@ -174,4 +174,34 @@ public class CollectionSpec
 
         Assert.Equal("List<int> listOfInt = \r\n[\r\n    1,\r\n    2,\r\n    3\r\n];\r\n", result, ignoreLineEndingDifferences: true);
     }
+
+    [Fact]
+    public void DumpComplexObjectWithListCollectionExpressionCSharp()
+    {
+        var person = new Person { Aliases = ["name1", "name2"] };
+
+        var dumper = new CSharpDumper(new DumpOptions
+        {
+            CollectionLiteralStyle = CollectionLiteralStyle.Expression
+        });
+
+        var result = dumper.Dump(person);
+
+        Assert.Equal("""
+                     var person = new Person
+                     {
+                         Aliases = 
+                         [
+                             "name1",
+                             "name2"
+                         ]
+                     };
+                     
+                     """, result, ignoreLineEndingDifferences: true);
+    }
+
+    private class Person
+    {
+        public List<string> Aliases { get; set; }
+    }
 }

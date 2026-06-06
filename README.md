@@ -53,7 +53,7 @@ Console.WriteLine(source);
 
 ## Core Features
 
-VarDump is built for source-code output, not console-style object inspection.
+VarDump is built for source-code output.
 
 | Feature | Notes |
 | --- | --- |

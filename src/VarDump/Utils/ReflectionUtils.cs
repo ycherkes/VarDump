@@ -281,7 +281,7 @@ internal static class ReflectionUtils
 
     public static bool IsValueTuple(this Type type)
     {
-        if (!type.IsGenericType || !type.IsValueType())
+        if (!type.IsGenericType || !type.IsValueType)
             return false;
 
         var openType = type.GetGenericTypeDefinition();
@@ -292,62 +292,51 @@ internal static class ReflectionUtils
 
     public static bool IsKeyValuePair(this Type type)
     {
-        if (type.IsGenericType())
-        {
-            return type.GetGenericTypeDefinition() == typeof(KeyValuePair<,>);
-        }
-        return false;
+        return type.IsGenericType && type.GetGenericTypeDefinition() == typeof(KeyValuePair<,>);
     }
 
     public static object GetDefaultValue(Type type)
     {
-        if (!type.IsValueType())
-        {
+        if (!type.IsValueType)
             return null;
-        }
-
-        switch (type)
-        {
-            case not null when type == typeof(bool):
-                return false;
-            case not null when type == typeof(char):
-                return '\0';
-            case not null when type == typeof(sbyte):
-                return (sbyte)0;
-            case not null when type == typeof(byte):
-                return (byte)0;
-            case not null when type == typeof(short):
-                return (short)0;
-            case not null when type == typeof(ushort):
-                return (ushort)0;
-            case not null when type == typeof(int):
-                return 0;
-            case not null when type == typeof(uint):
-                return 0U;
-            case not null when type == typeof(long):
-                return 0L;
-            case not null when type == typeof(ulong):
-                return 0UL;
-            case not null when type == typeof(float):
-                return 0f;
-            case not null when type == typeof(double):
-                return 0.0;
-            case not null when type == typeof(decimal):
-                return 0m;
-            case not null when type == typeof(DateTime):
-                return new DateTime();
-            case not null when type == typeof(BigInteger):
-                return new BigInteger();
-            case not null when type == typeof(Guid):
-                return Guid.Empty;
-            case not null when type == typeof(DateTimeOffset):
-                return DateTimeOffset.MinValue;
-        }
-
+        if (type == typeof(bool))
+            return false;
+        if (type == typeof(char))
+            return '\0';
+        if (type == typeof(sbyte))
+            return (sbyte)0;
+        if (type == typeof(byte))
+            return (byte)0;
+        if (type == typeof(short))
+            return (short)0;
+        if (type == typeof(ushort))
+            return (ushort)0;
+        if (type == typeof(int))
+            return 0;
+        if (type == typeof(uint))
+            return 0U;
+        if (type == typeof(long))
+            return 0L;
+        if (type == typeof(ulong))
+            return 0UL;
+        if (type == typeof(float))
+            return 0f;
+        if (type == typeof(double))
+            return 0.0;
+        if (type == typeof(decimal))
+            return 0m;
+        if (type == typeof(DateTime))
+            return new DateTime();
+        if (type == typeof(BigInteger))
+            return new BigInteger();
+        if (type == typeof(Guid))
+            return Guid.Empty;
+        if (type == typeof(DateTimeOffset))
+            return DateTimeOffset.MinValue;
+        if (type == typeof(TimeSpan))
+            return TimeSpan.Zero;
         if (IsNullableType(type))
-        {
             return null;
-        }
 
         try
         {
@@ -367,22 +356,7 @@ internal static class ReflectionUtils
 
     public static bool IsNullableType(this Type t)
     {
-        return t.IsGenericType() && t.GetGenericTypeDefinition() == typeof(Nullable<>);
-    }
-
-    private static bool IsGenericType(this Type type)
-    {
-        return type.IsGenericType;
-    }
-
-    private static bool IsValueType(this Type type)
-    {
-        return type.IsValueType;
-    }
-
-    private static bool IsNullable(this Type t)
-    {
-        return !t.IsValueType() || IsNullableType(t);
+        return t.IsGenericType && t.GetGenericTypeDefinition() == typeof(Nullable<>);
     }
 
     public static bool IsGrouping(this Type type)

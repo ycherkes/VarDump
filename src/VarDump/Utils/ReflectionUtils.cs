@@ -328,7 +328,7 @@ internal static class ReflectionUtils
         if (type == typeof(DateTime))
             return new DateTime();
         if (type == typeof(BigInteger))
-            return new BigInteger();
+            return BigInteger.Zero;
         if (type == typeof(Guid))
             return Guid.Empty;
         if (type == typeof(DateTimeOffset))

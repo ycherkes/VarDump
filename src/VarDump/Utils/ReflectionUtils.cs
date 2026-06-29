@@ -2,8 +2,8 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.ComponentModel;
 using System.Linq;
+using System.Numerics;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Text;
@@ -39,6 +39,7 @@ internal static class ReflectionUtils
 
         return result;
     }
+
     private static string ComposeVariableName(Type type, Func<Type, string> typeNameFormatter)
     {
         var stringBuilder = new StringBuilder();
@@ -55,7 +56,8 @@ internal static class ReflectionUtils
             stringBuilder.Append("Of");
             if (type.Name.Contains("Dictionary"))
             {
-                innerType = type.GetGenericArguments().LastOrDefault() ?? typeof(object);
+                var args = type.GetGenericArguments();
+                innerType = args.Length > 0 ? args[args.Length - 1] : typeof(object);
             }
             stringBuilder.Append(typeNameFormatter(innerType).ToPascalCase());
             type = innerType;
@@ -118,7 +120,7 @@ internal static class ReflectionUtils
                     ? typeName.Split(['<'], StringSplitOptions.RemoveEmptyEntries)[0].Split('>')[0]
                     : typeName.Split('`')[0];
 
-        if (type.IsInterface() && result.StartsWith("I", StringComparison.OrdinalIgnoreCase))
+        if (type.IsInterface && result.StartsWith("I", StringComparison.OrdinalIgnoreCase))
         {
             result = result.Substring(1);
         }
@@ -133,7 +135,7 @@ internal static class ReflectionUtils
         }
         if (ImplementsGenericDefinition(type, typeof(IEnumerable<>), out Type genericListType))
         {
-            if (genericListType.IsGenericTypeDefinition())
+            if (genericListType.IsGenericTypeDefinition)
             {
                 throw new Exception($"Type {type} is not a collection.");
             }
@@ -151,14 +153,14 @@ internal static class ReflectionUtils
 
     private static bool ImplementsGenericDefinition(Type type, Type genericInterfaceDefinition, out Type implementingType)
     {
-        if (!genericInterfaceDefinition.IsInterface() || !genericInterfaceDefinition.IsGenericTypeDefinition())
+        if (!genericInterfaceDefinition.IsInterface || !genericInterfaceDefinition.IsGenericTypeDefinition)
         {
             throw new ArgumentNullException($"'{genericInterfaceDefinition}' is not a generic interface definition.");
         }
 
-        if (type.IsInterface())
+        if (type.IsInterface)
         {
-            if (type.IsGenericType())
+            if (type.IsGenericType)
             {
                 Type interfaceDefinition = type.GetGenericTypeDefinition();
 
@@ -172,7 +174,7 @@ internal static class ReflectionUtils
 
         foreach (Type i in type.GetInterfaces())
         {
-            if (i.IsGenericType())
+            if (i.IsGenericType)
             {
                 Type interfaceDefinition = i.GetGenericTypeDefinition();
 
@@ -279,7 +281,7 @@ internal static class ReflectionUtils
 
     public static bool IsValueTuple(this Type type)
     {
-        if (!type.IsGenericType || !type.IsValueType())
+        if (!type.IsGenericType || !type.IsValueType)
             return false;
 
         var openType = type.GetGenericTypeDefinition();
@@ -290,62 +292,51 @@ internal static class ReflectionUtils
 
     public static bool IsKeyValuePair(this Type type)
     {
-        if (type.IsGenericType())
-        {
-            return type.GetGenericTypeDefinition() == typeof(KeyValuePair<,>);
-        }
-        return false;
+        return type.IsGenericType && type.GetGenericTypeDefinition() == typeof(KeyValuePair<,>);
     }
 
     public static object GetDefaultValue(Type type)
     {
-        if (!type.IsValueType())
-        {
+        if (!type.IsValueType)
             return null;
-        }
-
-        switch (type.FullName)
-        {
-            case "System.Boolean":
-                return false;
-            case "System.Char":
-                return '\0';
-            case "System.SByte":
-                return (sbyte)0;
-            case "System.Byte":
-                    return (byte)0;
-            case "System.Int16":
-                    return (short)0;
-            case "System.UInt16":
-                return (ushort)0;
-            case "System.Int32":
-                return 0;
-            case "System.UInt32":
-                return 0U;
-            case "System.Int64":
-                return 0L;
-            case "System.UInt64":
-                return 0UL;
-            case "System.Single":
-                return 0f;
-            case "System.Double":
-                return 0.0;
-            case "System.Decimal":
-                return 0m;
-            case "System.DateTime":
-                return new DateTime();
-            case "System.Numerics.BigInteger":
-                return new System.Numerics.BigInteger();
-            case "System.Guid":
-                return Guid.Empty;
-            case "System.DateTimeOffset":
-                return DateTimeOffset.MinValue;
-        }
-
-        if (IsNullable(type))
-        {
+        if (type == typeof(bool))
+            return false;
+        if (type == typeof(char))
+            return '\0';
+        if (type == typeof(sbyte))
+            return (sbyte)0;
+        if (type == typeof(byte))
+            return (byte)0;
+        if (type == typeof(short))
+            return (short)0;
+        if (type == typeof(ushort))
+            return (ushort)0;
+        if (type == typeof(int))
+            return 0;
+        if (type == typeof(uint))
+            return 0U;
+        if (type == typeof(long))
+            return 0L;
+        if (type == typeof(ulong))
+            return 0UL;
+        if (type == typeof(float))
+            return 0f;
+        if (type == typeof(double))
+            return 0.0;
+        if (type == typeof(decimal))
+            return 0m;
+        if (type == typeof(DateTime))
+            return new DateTime();
+        if (type == typeof(BigInteger))
+            return BigInteger.Zero;
+        if (type == typeof(Guid))
+            return Guid.Empty;
+        if (type == typeof(DateTimeOffset))
+            return DateTimeOffset.MinValue;
+        if (type == typeof(TimeSpan))
+            return TimeSpan.Zero;
+        if (IsNullableType(type))
             return null;
-        }
 
         try
         {
@@ -363,49 +354,23 @@ internal static class ReflectionUtils
         return memberDescription.DefaultValueAttributeValue ?? GetDefaultValue(memberDescription.Type);
     }
 
-    public static bool IsInterface(this Type type)
-    {
-        return type.IsInterface;
-    }
-
-    public static bool IsGenericTypeDefinition(this Type type)
-    {
-        return type.IsGenericTypeDefinition;
-    }
-
-
     public static bool IsNullableType(this Type t)
     {
-        return t.IsGenericType() && t.GetGenericTypeDefinition() == typeof(Nullable<>);
-    }
-
-    private static bool IsGenericType(this Type type)
-    {
-        return type.IsGenericType;
-    }
-
-    private static bool IsValueType(this Type type)
-    {
-        return type.IsValueType;
-    }
-
-    private static bool IsNullable(this Type t)
-    {
-        return !t.IsValueType() || IsNullableType(t);
+        return t.IsGenericType && t.GetGenericTypeDefinition() == typeof(Nullable<>);
     }
 
     public static bool IsGrouping(this Type type)
     {
-        var hasIGrouping = type.GetInterfaces().Concat([type]).FirstOrDefault(x => x.IsGenericType && x.GetGenericTypeDefinition() == typeof(IGrouping<,>)) != null;
-
-        return hasIGrouping;
+        return type.GetInterfaces()
+            .Concat([type])
+            .Any(x => x.IsGenericType && x.GetGenericTypeDefinition() == typeof(IGrouping<,>));
     }
 
     public static bool IsLookup(this Type type)
     {
-        var hasILookup = type.GetInterfaces().Concat([type]).FirstOrDefault(x => x.IsGenericType && x.GetGenericTypeDefinition() == typeof(ILookup<,>)) != null;
-
-        return hasILookup;
+        return type.GetInterfaces()
+            .Concat([type])
+            .Any(x => x.IsGenericType && x.GetGenericTypeDefinition() == typeof(ILookup<,>));
     }
 
     public static bool IsPrimitiveOrNull(object @object)
@@ -453,7 +418,9 @@ internal static class ReflectionUtils
 
         var properties = objectType.GetProperties(BindingFlags.Public | BindingFlags.Instance | BindingFlags.NonPublic).Where(x => x.CanWrite);
 
-        return constructor.GetParameters().Select(x => new { x.Name, Type = x.ParameterType })
+        return constructor
+            .GetParameters()
+            .Select(x => new { x.Name, Type = x.ParameterType })
             .SequenceEqual(properties.Select(x => new { x.Name, Type = x.PropertyType }));
     }
 

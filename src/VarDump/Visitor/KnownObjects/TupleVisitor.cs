@@ -23,13 +23,11 @@ internal sealed class TupleVisitor(INextDepthVisitor nextDepthVisitor, ICodeWrit
 
     public void Visit(object o, Type objectType, VisitContext context)
     {
-        if (context.IsVisited(o))
+        if (!context.TryAddVisited(o))
         {
             codeWriter.WriteCircularReferenceDetected();
             return;
         }
-
-        context.PushVisited(o);
 
         try
         {
@@ -43,7 +41,7 @@ internal sealed class TupleVisitor(INextDepthVisitor nextDepthVisitor, ICodeWrit
         }
         finally
         {
-            context.PopVisited();
+            context.RemoveVisited(o);
         }
     }
 }

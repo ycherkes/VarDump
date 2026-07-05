@@ -43,13 +43,11 @@ internal sealed class DictionaryVisitor : IKnownObjectVisitor
     public void Visit(object obj, Type objectType, VisitContext context)
     {
         IDictionary dict = (IDictionary)obj;
-        if (context.IsVisited(dict))
+        if (!context.TryAddVisited(dict))
         {
             _codeWriter.WriteCircularReferenceDetected();
             return;
         }
-
-        context.PushVisited(dict);
 
         try
         {
@@ -67,7 +65,7 @@ internal sealed class DictionaryVisitor : IKnownObjectVisitor
         }
         finally
         {
-            context.PopVisited();
+            context.RemoveVisited(dict);
         }
     }
 

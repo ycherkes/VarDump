@@ -44,17 +44,16 @@ internal sealed class CollectionVisitor : IKnownObjectVisitor
 
     public void Visit(object obj, Type collectionType, VisitContext context)
     {
-        IEnumerable collection = (IEnumerable)obj;
-        if (context.IsVisited(collection))
+        if (!context.TryAddVisited(obj))
         {
             _codeWriter.WriteCircularReferenceDetected();
             return;
         }
 
-        context.PushVisited(collection);
-
         try
         {
+            IEnumerable collection = (IEnumerable)obj;
+
             var elementType = ReflectionUtils.GetInnerElementType(collectionType);
 
             if (elementType.IsGrouping())
@@ -73,7 +72,7 @@ internal sealed class CollectionVisitor : IKnownObjectVisitor
         }
         finally
         {
-            context.PopVisited();
+            context.RemoveVisited(obj);
         }
     }
 
@@ -202,8 +201,7 @@ internal sealed class CollectionVisitor : IKnownObjectVisitor
 
             var createAction = ResolveCollectionCreateAction(typeInfo, items, singleLine);
 
-            _codeWriter.WriteMethodInvoke(() => _codeWriter.WriteMethodReference(() =>
-               createAction(), "AsReadOnly"), []);
+            _codeWriter.WriteMethodInvoke(() => _codeWriter.WriteMethodReference(createAction, "AsReadOnly"), []);
 
             return;
         }

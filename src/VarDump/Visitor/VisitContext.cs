@@ -1,5 +1,4 @@
 ﻿using System.Collections.Generic;
-using System.Linq;
 using VarDump.Collections;
 
 namespace VarDump.Visitor;
@@ -7,23 +6,22 @@ namespace VarDump.Visitor;
 public sealed class VisitContext(int maxDepth)
 {
     private static readonly IEqualityComparer<object> IdentityComparer = new ObjectIdentityComparer();
-    private readonly Stack<object> _visitedObjects = new();
+    private readonly HashSet<object> _visitedObjects = new(IdentityComparer);
 
     public int CurrentDepth { get; set; }
 
-    public void PushVisited(object value)
+    public bool TryAddVisited(object value)
     {
-        _visitedObjects.Push(value);
+        return value is null
+               || value.GetType().IsValueType
+               || _visitedObjects.Add(value);
     }
 
-    public void PopVisited()
+    public void RemoveVisited(object value)
     {
-        _visitedObjects.Pop();
-    }
+        if(value is null || value.GetType().IsValueType) return;
 
-    public bool IsVisited(object value)
-    {
-        return value != null && _visitedObjects.Contains(value, IdentityComparer);
+        _visitedObjects.Remove(value);
     }
 
     public bool IsMaxDepth()

@@ -37,13 +37,11 @@ internal sealed class DescriptionBasedVisitor : ISpecificVisitor
 
     public void Visit(object o, Type objectType, VisitContext context)
     {
-        if (context.IsVisited(o))
+        if (!context.TryAddVisited(o))
         {
             _codeWriter.WriteCircularReferenceDetected();
             return;
         }
-
-        context.PushVisited(o);
 
         try
         {
@@ -53,7 +51,7 @@ internal sealed class DescriptionBasedVisitor : ISpecificVisitor
         }
         finally
         {
-            context.PopVisited();
+            context.RemoveVisited(o);
         }
     }
 }

@@ -1,4 +1,6 @@
-﻿using System.Linq;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 using VarDump.CodeDom.Compiler;
 using VarDump.Collections;
 using VarDump.Extensions;
@@ -12,17 +14,21 @@ internal sealed class ObjectVisitor : IObjectVisitor, INextDepthVisitor
     private readonly IKnownObjectsCollection _knownObjects;
     private readonly int _maxDepth;
     private readonly ISpecificVisitor _descriptionBasedVisitor;
+    private readonly IKnownObjectVisitor _nullValueVisitor;
+    private readonly Dictionary<Type, ISpecificVisitor> _typeDispatch;
 
     public ObjectVisitor(DumpOptions options, ICodeWriter codeWriter)
     {
         _codeWriter = codeWriter;
         _maxDepth = options.MaxDepth;
 
+        _typeDispatch = new Dictionary<Type, ISpecificVisitor>();
+        _nullValueVisitor = new PrimitiveVisitor(codeWriter, options);
         _descriptionBasedVisitor = new DescriptionBasedVisitor(codeWriter, this, options);
 
         _knownObjects = new KnownObjectsCollection
         {
-            new PrimitiveVisitor(codeWriter, options),
+            _nullValueVisitor,
             new TimeSpanVisitor(codeWriter, options),
             new DateTimeVisitor(codeWriter, options),
             new DateTimeOffsetVisitor(this, codeWriter, options),
@@ -68,12 +74,36 @@ internal sealed class ObjectVisitor : IObjectVisitor, INextDepthVisitor
         {
             context.CurrentDepth++;
 
-            var objectType = @object?.GetType();
+            
+            if (@object == null)
+            {
+                _nullValueVisitor.Visit(null, null, context);
+            }
+            else
+            {
+                var objectType = @object.GetType();
 
-            var specificVisitor = _knownObjects.Values.FirstOrDefault(v => v.IsSuitableFor(@object, objectType))
-                                  ?? _descriptionBasedVisitor;
+                if (_typeDispatch.TryGetValue(objectType, out var cachedVisitor))
+                {
+                    cachedVisitor.Visit(@object, objectType, context);
+                    return;
+                }
 
-            specificVisitor.Visit(@object, objectType, context);
+                foreach (var visitor in _knownObjects.Values)
+                {
+                    if (!visitor.IsSuitableFor(@object, objectType)) continue;
+
+                    _typeDispatch[objectType] = visitor;
+
+                    visitor.Visit(@object, objectType, context);
+                    return;
+                }
+
+                _typeDispatch[objectType] = _descriptionBasedVisitor;
+
+                _descriptionBasedVisitor.Visit(@object, objectType, context);
+            }
+            
         }
         finally
         {

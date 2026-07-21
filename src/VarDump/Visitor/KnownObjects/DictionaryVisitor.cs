@@ -71,6 +71,12 @@ internal sealed class DictionaryVisitor : IKnownObjectVisitor
 
     private void VisitSimpleDictionary(IDictionary dict, VisitContext context)
     {
+        if (_options.MaxCollectionSize == int.MaxValue)
+        {
+            VisitSimpleDictionaryStreaming(dict, context);
+            return;
+        }
+
         var items = dict.Cast<object>().Select(item => (Action)(() => VisitKeyValuePairWriteImplicitly(item, context)));
 
         if (_options.MaxCollectionSize < int.MaxValue)
@@ -103,6 +109,33 @@ internal sealed class DictionaryVisitor : IKnownObjectVisitor
         {
             return () => _codeWriter.WriteObjectCreateAndInitialize(dictionaryTypeInfo, [], initializers);
         }
+    }
+
+    private void VisitSimpleDictionaryStreaming(IDictionary dict, VisitContext context)
+    {
+        var type = dict.GetType();
+        var isImmutableOrFrozen = type.IsPublicImmutableOrFrozenCollection();
+        var dictionaryType = isImmutableOrFrozen
+            ? typeof(Dictionary<,>).MakeGenericType(
+                ReflectionUtils.GetInnerElementType(dict.Keys.GetType()),
+                ReflectionUtils.GetInnerElementType(dict.Values.GetType()))
+            : type;
+
+        void WriteDictionaryCreate() => _codeWriter.WriteDictionaryCreateItems(
+            new CodeCollectionTypeInfo(dictionaryType),
+            dict,
+            key => _nextDepthVisitor.Visit(key, context),
+            value => _nextDepthVisitor.Visit(value, context));
+
+        if (isImmutableOrFrozen)
+        {
+            _codeWriter.WriteMethodInvoke(
+                () => _codeWriter.WriteMethodReference(WriteDictionaryCreate, $"To{type.GetImmutableOrFrozenTypeName()}"),
+                []);
+            return;
+        }
+
+        WriteDictionaryCreate();
     }
 
     private void VisitAnonymousDictionary(IEnumerable dictionary, VisitContext context)

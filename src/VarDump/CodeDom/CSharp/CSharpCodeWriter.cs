@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
@@ -345,6 +346,29 @@ internal sealed class CSharpCodeWriter : ICodeWriter
         }
     }
 
+    public void WriteCollectionExpressionItems(IEnumerable items, Action<object> writeItem, bool singleLine = false)
+    {
+        var enumerator = items.GetEnumerator();
+        using var enumeratorDisposable = enumerator as IDisposable;
+        var hasItems = enumerator.MoveNext();
+        if (singleLine)
+        {
+            _output.Write("[");
+            if (hasItems)
+                OutputItems(enumerator, writeItem, newlineBetweenItems: false);
+            _output.Write("]");
+        }
+        else
+        {
+            _output.WriteLine();
+            _output.WriteLine("[");
+            if (hasItems)
+                OutputItems(enumerator, writeItem, newlineBetweenItems: true);
+            _output.WriteLine();
+            _output.Write("]");
+        }
+    }
+
     public void WriteCast(CodeTypeInfo typeInfo, Action action)
     {
         _output.Write("(");
@@ -358,6 +382,12 @@ internal sealed class CSharpCodeWriter : ICodeWriter
         left();
         _output.Write(" = ");
         right();
+    }
+
+    public void WriteMemberAssignmentStart(string memberName)
+    {
+        WritePropertyReference(memberName, null);
+        _output.Write(" = ");
     }
 
     public void WriteDefaultValue(CodeTypeInfo typeInfo)
@@ -830,6 +860,104 @@ internal sealed class CSharpCodeWriter : ICodeWriter
         _output.Write(')');
     }
 
+    public void WriteArrayCreateItems(CodeTypeInfo typeInfo, IEnumerable items, Action<object> writeItem, bool singleLine, int size = 0)
+    {
+        _output.Write("new ");
+        var enumerator = items.GetEnumerator();
+        using var enumeratorDisposable = enumerator as IDisposable;
+
+        if (enumerator.MoveNext())
+        {
+            if (singleLine)
+            {
+                OutputType(typeInfo);
+                _output.Write("{ ");
+                OutputItems(enumerator, writeItem, newlineBetweenItems: false);
+                _output.Write(" }");
+            }
+            else
+            {
+                OutputType(typeInfo);
+                _output.WriteLine("");
+                _output.WriteLine("{");
+                OutputItems(enumerator, writeItem, newlineBetweenItems: true);
+                _output.WriteLine();
+                _output.Write("}");
+            }
+        }
+        else
+        {
+            BaseTypeOutput(typeInfo);
+            _output.Write('[');
+            _output.Write(size);
+            for (int i = 0; i < typeInfo.ArrayRank - 1; i++)
+            {
+                _output.Write(", ");
+                _output.Write(size);
+            }
+            _output.Write(']');
+        }
+    }
+
+    public void WriteDictionaryCreateItems(CodeTypeInfo typeInfo, IDictionary items, Action<object> writeKey,
+        Action<object> writeValue)
+    {
+        _output.Write("new ");
+        OutputType(typeInfo);
+
+        var enumerator = items.GetEnumerator();
+        using var enumeratorDisposable = enumerator as IDisposable;
+        if (!enumerator.MoveNext())
+        {
+            _output.Write("()");
+            return;
+        }
+
+        _output.WriteLine();
+        _output.WriteLine('{');
+        OutputDictionaryItems(enumerator, writeKey, writeValue);
+        _output.WriteLine();
+        _output.Write('}');
+    }
+
+    public void WriteObjectCreateAndInitializeItems(CodeTypeInfo typeInfo, IEnumerable<Action> parametersActions,
+        IEnumerable initializers, Action<object> writeInitializer, bool singleLine = false)
+    {
+        _output.Write("new ");
+        OutputType(typeInfo);
+        using var parametersEnumerator = parametersActions.GetEnumerator();
+        var initializerEnumerator = initializers.GetEnumerator();
+        using var initializerEnumeratorDisposable = initializerEnumerator as IDisposable;
+        var parametersExist = parametersEnumerator.MoveNext();
+        var initializerExists = initializerEnumerator.MoveNext();
+
+        if (parametersExist || !initializerExists)
+        {
+            _output.Write('(');
+            if (parametersExist)
+                OutputActions(parametersEnumerator, newlineBetweenItems: false);
+            _output.Write(')');
+        }
+
+        if (!initializerExists)
+            return;
+
+        if (singleLine)
+        {
+            _output.Write(" { ");
+            OutputItems(initializerEnumerator, writeInitializer, newlineBetweenItems: false);
+            _output.Write(" }");
+        }
+        else
+        {
+            _output.WriteLine();
+            _output.WriteLine('{');
+            OutputItems(initializerEnumerator, writeInitializer, newlineBetweenItems: true);
+            _output.WriteLine();
+            _output.Write("}");
+        }
+    }
+
     private void OutputActions(IEnumerable<Action> actions, bool newlineBetweenItems)
     {
         using var enumerator = actions.GetEnumerator();
@@ -837,6 +965,47 @@ internal sealed class CSharpCodeWriter : ICodeWriter
         {
             OutputActions(enumerator, newlineBetweenItems);
         }
+    }
+
+    private void OutputItems(IEnumerator items, Action<object> writeItem, bool newlineBetweenItems)
+    {
+        bool first = true;
+        Indent++;
+        do
+        {
+            if (first)
+                first = false;
+            else if (newlineBetweenItems)
+                ContinueOnNewLine(",");
+            else
+                _output.Write(", ");
+
+            writeItem(items.Current);
+        } while (items.MoveNext());
+        Indent--;
+    }
+
+    private void OutputDictionaryItems(IDictionaryEnumerator items, Action<object> writeKey, Action<object> writeValue)
+    {
+        var first = true;
+        Indent++;
+        do
+        {
+            if (first)
+                first = false;
+            else
+                ContinueOnNewLine(",");
+
+            _output.WriteLine('{');
+            Indent++;
+            writeKey(items.Key);
+            ContinueOnNewLine(",");
+            writeValue(items.Value);
+            Indent--;
+            _output.WriteLine();
+            _output.Write('}');
+        } while (items.MoveNext());
+        Indent--;
     }
 
     private void OutputActions(IEnumerator<Action> actions, bool newlineBetweenItems)

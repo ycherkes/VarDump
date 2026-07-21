@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
@@ -26,19 +26,29 @@ public sealed class ObjectDescriptionWriter(INextDepthVisitor nextDepthVisitor, 
                 ? () => codeWriter.WriteNamedArgument(ca.Name, () => nextDepthVisitor.Visit(ca.Value, context))
                 : (Action)(() => nextDepthVisitor.Visit(ca.Value, context)));
 
-        var memberInitializers = members
-            .Where(m => (!options.IgnoreNullValues || options.IgnoreNullValues && m.Value != null) &&
-                        (!options.IgnoreDefaultValues ||
-                            ReflectionUtils.GetDefaultValue(m)?.Equals(m.Value) != true))
-            .Select(m => (Action)(() => codeWriter.WriteAssign(
-                () => codeWriter.WritePropertyReference(m.Name, null),
-                () => nextDepthVisitor.Visit(m.Value, context))));
-
-        codeWriter.WriteObjectCreateAndInitialize
-        (
+        codeWriter.WriteObjectCreateAndInitializeItems(
             objectDescription.Type,
             constructorArguments,
-            memberInitializers
-        );
+            FilterMembers(members, options),
+            member =>
+            {
+                var description = (MemberDescription)member;
+                codeWriter.WriteMemberAssignmentStart(description.Name);
+                nextDepthVisitor.Visit(description.Value, context);
+            });
+    }
+
+    private static IEnumerable<MemberDescription> FilterMembers(IEnumerable<MemberDescription> members, DumpOptions options)
+    {
+        foreach (var member in members)
+        {
+            var value = member.Value;
+            if (options.IgnoreNullValues && value == null)
+                continue;
+            if (options.IgnoreDefaultValues && ReflectionUtils.GetDefaultValue(member)?.Equals(value) == true)
+                continue;
+
+            yield return member;
+        }
     }
 }

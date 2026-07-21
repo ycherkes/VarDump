@@ -1,5 +1,4 @@
-﻿using System.Linq;
-using VarDump.CodeDom.Compiler;
+﻿using VarDump.CodeDom.Compiler;
 using VarDump.Collections;
 using VarDump.Extensions;
 using VarDump.Visitor.KnownObjects;
@@ -70,8 +69,7 @@ internal sealed class ObjectVisitor : IObjectVisitor, INextDepthVisitor
 
             var objectType = @object?.GetType();
 
-            var specificVisitor = _knownObjects.Values.FirstOrDefault(v => v.IsSuitableFor(@object, objectType))
-                                  ?? _descriptionBasedVisitor;
+            var specificVisitor = FindSpecificVisitor(@object, objectType);
 
             specificVisitor.Visit(@object, objectType, context);
         }
@@ -79,5 +77,17 @@ internal sealed class ObjectVisitor : IObjectVisitor, INextDepthVisitor
         {
             context.CurrentDepth--;
         }
+    }
+
+    private ISpecificVisitor FindSpecificVisitor(object @object, System.Type objectType)
+    {
+        for (var index = 0; index < _knownObjects.Count; index++)
+        {
+            var visitor = _knownObjects[index].Value;
+            if (visitor.IsSuitableFor(@object, objectType))
+                return visitor;
+        }
+
+        return _descriptionBasedVisitor;
     }
 }

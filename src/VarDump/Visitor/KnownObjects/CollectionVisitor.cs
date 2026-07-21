@@ -132,6 +132,12 @@ internal sealed class CollectionVisitor : IKnownObjectVisitor
 
     private void VisitSimpleCollection(IEnumerable enumerable, Type elementType, VisitContext context)
     {
+        if (_options.MaxCollectionSize == int.MaxValue && (enumerable is not Array array || array.Rank == 1))
+        {
+            VisitSimpleCollectionStreaming(enumerable, elementType, context);
+            return;
+        }
+
         var items = enumerable.Cast<object>().Select(item => (Action)(() => _nextDepthVisitor.Visit(item, context)));
 
         if (_options.MaxCollectionSize < int.MaxValue)
@@ -223,6 +229,66 @@ internal sealed class CollectionVisitor : IKnownObjectVisitor
         }
     }
 
+    private void VisitSimpleCollectionStreaming(IEnumerable enumerable, Type elementType, VisitContext context)
+    {
+        var type = enumerable.GetType();
+        var isImmutableOrFrozen = type.IsPublicImmutableOrFrozenCollection();
+        var isCollection = IsCollection(enumerable);
+        var singleLine = typeof(string) != elementType
+                         && ReflectionUtils.IsPrimitive(elementType)
+                         && _options.PrimitiveCollectionLayout == CollectionLayout.SingleLine;
+        Action<object> writeItem = item => _nextDepthVisitor.Visit(item, context);
+
+        if (type.IsArray || isImmutableOrFrozen || !type.IsPublic || !isCollection)
+        {
+            var isQueryable = IsQueryable(type);
+            var arrayType = isImmutableOrFrozen || !type.IsPublic || isQueryable ? elementType.MakeArrayType() : type;
+
+            void WriteArrayCreate() => _codeWriter.WriteArrayCreateItems(arrayType, enumerable, writeItem, singleLine);
+
+            if (isImmutableOrFrozen)
+            {
+                _codeWriter.WriteMethodInvoke(() =>
+                    _codeWriter.WriteMethodReference(WriteArrayCreate, $"To{type.GetImmutableOrFrozenTypeName()}"), []);
+            }
+            else if (isQueryable)
+            {
+                _codeWriter.WriteMethodInvoke(() =>
+                    _codeWriter.WriteMethodReference(WriteArrayCreate, "AsQueryable"), []);
+            }
+            else if (type.IsArray
+                     && _options.CollectionLiteralStyle == CollectionLiteralStyle.Expression
+                     && _codeWriter.SupportsCollectionExpression)
+            {
+                _codeWriter.WriteCollectionExpressionItems(enumerable, writeItem, singleLine);
+            }
+            else
+            {
+                WriteArrayCreate();
+            }
+
+            return;
+        }
+
+        if (type.IsReadonlyCollection())
+        {
+            var typeInfo = new CodeCollectionTypeInfo(typeof(List<>).MakeGenericType(elementType));
+            void WriteCollectionCreate() => _codeWriter.WriteObjectCreateAndInitializeItems(typeInfo, [], enumerable, writeItem, singleLine);
+            _codeWriter.WriteMethodInvoke(() => _codeWriter.WriteMethodReference(WriteCollectionCreate, "AsReadOnly"), []);
+            return;
+        }
+
+        var collectionTypeInfo = new CodeCollectionTypeInfo(type);
+        if (_options.CollectionLiteralStyle == CollectionLiteralStyle.Expression && _codeWriter.SupportsCollectionExpression)
+        {
+            _codeWriter.WriteCollectionExpressionItems(enumerable, writeItem, singleLine);
+        }
+        else
+        {
+            _codeWriter.WriteObjectCreateAndInitializeItems(collectionTypeInfo, [], enumerable, writeItem, singleLine);
+        }
+    }
+
     private static bool IsQueryable(Type type)
     {
         var isGenericType = type.IsGenericType;
@@ -264,6 +330,16 @@ internal sealed class CollectionVisitor : IKnownObjectVisitor
 
     private void VisitAnonymousCollection(IEnumerable enumerable, VisitContext context)
     {
+        if (_options.MaxCollectionSize == int.MaxValue && enumerable is Array { Rank: 1 })
+        {
+            _codeWriter.WriteArrayCreateItems(
+                new CodeAnonymousTypeInfo { ArrayRank = 1 },
+                enumerable,
+                item => _nextDepthVisitor.Visit(item, context),
+                singleLine: false);
+            return;
+        }
+
         var items = enumerable.Cast<object>().Select(item => (Action)(() => _nextDepthVisitor.Visit(item, context)));
 
         if (_options.MaxCollectionSize < int.MaxValue)

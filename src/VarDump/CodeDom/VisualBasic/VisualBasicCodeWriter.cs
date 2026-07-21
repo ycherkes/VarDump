@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
@@ -196,6 +197,12 @@ internal sealed class VisualBasicCodeWriter : ICodeWriter
         left();
         _output.Write(" = ");
         right();
+    }
+
+    public void WriteMemberAssignmentStart(string memberName)
+    {
+        WritePropertyReference(memberName, null);
+        _output.Write(" = ");
     }
 
     public void WriteDefaultValue(CodeTypeInfo typeInfo)
@@ -451,6 +458,104 @@ internal sealed class VisualBasicCodeWriter : ICodeWriter
         Indent--;
     }
 
+    public void WriteArrayCreateItems(CodeTypeInfo typeInfo, IEnumerable items, Action<object> writeItem, bool singleLine, int size = 0)
+    {
+        if (typeInfo is not CodeEmptyTypeInfo)
+            _output.Write("New ");
+
+        var enumerator = items.GetEnumerator();
+        using var enumeratorDisposable = enumerator as IDisposable;
+        if (enumerator.MoveNext())
+        {
+            if (typeInfo is not CodeEmptyTypeInfo)
+                TypeOutput(typeInfo);
+
+            if (singleLine)
+            {
+                _output.Write("{ ");
+                OutputItems(enumerator, writeItem, newlineBetweenItems: false, newLineContinuation: false);
+                _output.Write(" }");
+            }
+            else
+            {
+                _output.Write("{");
+                _output.WriteLine("");
+                OutputItems(enumerator, writeItem, newlineBetweenItems: true, newLineContinuation: false);
+                _output.WriteLine("");
+                _output.Write('}');
+            }
+        }
+        else
+        {
+            OutputTypeWithoutArrayPostFix(typeInfo);
+            OutputArrayPostfixInternal(typeInfo, size);
+            _output.Write(" {}");
+        }
+    }
+
+    public void WriteDictionaryCreateItems(CodeTypeInfo typeInfo, IDictionary items, Action<object> writeKey,
+        Action<object> writeValue)
+    {
+        _output.Write("New ");
+        OutputType(typeInfo);
+
+        var enumerator = items.GetEnumerator();
+        using var enumeratorDisposable = enumerator as IDisposable;
+        if (!enumerator.MoveNext())
+        {
+            _output.Write("()");
+            return;
+        }
+
+        _output.Write(" From ");
+        _output.WriteLine('{');
+        OutputDictionaryItems(enumerator, writeKey, writeValue);
+        _output.WriteLine();
+        _output.Write('}');
+    }
+
+    private void OutputItems(IEnumerator items, Action<object> writeItem, bool newlineBetweenItems,
+        bool newLineContinuation = true)
+    {
+        var first = true;
+        Indent++;
+        do
+        {
+            if (first)
+                first = false;
+            else if (newlineBetweenItems)
+                ContinueOnNewLine(",", newLineContinuation);
+            else
+                _output.Write(", ");
+
+            writeItem(items.Current);
+        } while (items.MoveNext());
+        Indent--;
+    }
+
+    private void OutputDictionaryItems(IDictionaryEnumerator items, Action<object> writeKey, Action<object> writeValue)
+    {
+        var first = true;
+        Indent++;
+        do
+        {
+            if (first)
+                first = false;
+            else
+                ContinueOnNewLine(",", newLineContinuation: false);
+
+            _output.WriteLine('{');
+            Indent++;
+            writeKey(items.Key);
+            ContinueOnNewLine(",", newLineContinuation: false);
+            writeValue(items.Value);
+            Indent--;
+            _output.WriteLine();
+            _output.Write('}');
+        } while (items.MoveNext());
+        Indent--;
+    }
+
     public void WriteArrayDimension(IEnumerable<Action> initializers, bool singleLine = false)
     {
         if (singleLine)
@@ -472,6 +577,11 @@ internal sealed class VisualBasicCodeWriter : ICodeWriter
     public void WriteCollectionExpression(IEnumerable<Action> initializers, bool singleLine = false)
     {
         WriteArrayDimension(initializers, singleLine);
+    }
+
+    public void WriteCollectionExpressionItems(IEnumerable items, Action<object> writeItem, bool singleLine = false)
+    {
+        WriteArrayCreateItems(new CodeEmptyTypeInfo(), items, writeItem, singleLine);
     }
 
     public void WriteCast(CodeTypeInfo typeInfo, Action action)
@@ -628,6 +738,49 @@ internal sealed class VisualBasicCodeWriter : ICodeWriter
         {
             _output.WriteLine('{');
             OutputActions(initializeEnumerator, newlineBetweenItems: true, newLineContinuation: false);
+            _output.WriteLine();
+            _output.Write('}');
+        }
+    }
+
+    public void WriteObjectCreateAndInitializeItems(CodeTypeInfo typeInfo, IEnumerable<Action> parametersActions,
+        IEnumerable initializers, Action<object> writeInitializer, bool singleLine = false)
+    {
+        _output.Write("New ");
+        OutputType(typeInfo);
+        using var parametersEnumerator = parametersActions.GetEnumerator();
+        var initializerEnumerator = initializers.GetEnumerator();
+        using var initializerEnumeratorDisposable = initializerEnumerator as IDisposable;
+        var parametersExist = parametersEnumerator.MoveNext();
+        var initializerExists = initializerEnumerator.MoveNext();
+
+        if (parametersExist || !initializerExists)
+        {
+            _output.Write('(');
+            if (parametersExist)
+                OutputActions(parametersEnumerator, newlineBetweenItems: false);
+            _output.Write(')');
+        }
+        if (!initializerExists)
+            return;
+
+        _output.Write(typeInfo switch
+        {
+            CodeEmptyTypeInfo => "With ",
+            CodeCollectionTypeInfo => " From ",
+            _ => " With "
+        });
+
+        if (singleLine)
+        {
+            _output.Write("{ ");
+            OutputItems(initializerEnumerator, writeInitializer, newlineBetweenItems: false, newLineContinuation: false);
+            _output.Write(" }");
+        }
+        else
+        {
+            _output.WriteLine('{');
+            OutputItems(initializerEnumerator, writeInitializer, newlineBetweenItems: true, newLineContinuation: false);
             _output.WriteLine();
             _output.Write('}');
         }

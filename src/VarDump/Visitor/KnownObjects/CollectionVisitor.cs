@@ -80,12 +80,7 @@ internal sealed class CollectionVisitor : IKnownObjectVisitor
     {
         var type = collection.GetType();
 
-        var items = VisitGroupings(collection.Cast<object>(), context);
-
-        if (_options.MaxCollectionSize < int.MaxValue)
-        {
-            items = items.Take(_options.MaxCollectionSize + 1).Replace(_options.MaxCollectionSize, () => _codeWriter.WriteTooManyItems(_options.MaxCollectionSize));
-        }
+        var items = GetItems(VisitGroupings(collection.Cast<object>()));
 
         var isLookup = type.IsLookup();
 
@@ -122,7 +117,8 @@ internal sealed class CollectionVisitor : IKnownObjectVisitor
                 WriteValueLambdaExpression
             ]);
 
-        void WriteArrayCreate() => _codeWriter.WriteArrayCreate(new CodeAnonymousTypeInfo { ArrayRank = 1 }, items, false);
+        void WriteArrayCreate() => _codeWriter.WriteArrayCreateItems(
+            new CodeAnonymousTypeInfo { ArrayRank = 1 }, items, item => WriteCollectionItem(item, context), false);
         void WriteVariableReference() => _codeWriter.WriteVariableReference("grp");
         void WriteKeyLambdaPropertyExpression() => _codeWriter.WritePropertyReference("Key", WriteVariableReference);
         void WriteKeyLambdaExpression() => _codeWriter.WriteLambdaExpression(WriteKeyLambdaPropertyExpression, [WriteVariableReference]);
@@ -132,18 +128,7 @@ internal sealed class CollectionVisitor : IKnownObjectVisitor
 
     private void VisitSimpleCollection(IEnumerable enumerable, Type elementType, VisitContext context)
     {
-        if (_options.MaxCollectionSize == int.MaxValue && (enumerable is not Array array || array.Rank == 1))
-        {
-            VisitSimpleCollectionStreaming(enumerable, elementType, context);
-            return;
-        }
-
-        var items = enumerable.Cast<object>().Select(item => (Action)(() => _nextDepthVisitor.Visit(item, context)));
-
-        if (_options.MaxCollectionSize < int.MaxValue)
-        {
-            items = items.Take(_options.MaxCollectionSize + 1).Replace(_options.MaxCollectionSize, () => _codeWriter.WriteTooManyItems(_options.MaxCollectionSize));
-        }
+        IEnumerable items = GetItems(enumerable);
 
         var type = enumerable.GetType();
 
@@ -158,7 +143,7 @@ internal sealed class CollectionVisitor : IKnownObjectVisitor
         {
             if (type.IsArray && ((Array)enumerable).Rank > 1 && ((Array)enumerable).Length > 0)
             {
-                items = ChunkMultiDimensionalArrayExpression((Array)enumerable, items, singleLine);
+                items = ChunkMultiDimensionalArrayItems((Array)enumerable, items, singleLine);
                 singleLine = false;
             }
 
@@ -166,7 +151,8 @@ internal sealed class CollectionVisitor : IKnownObjectVisitor
 
             var arrayType = isImmutableOrFrozen || !type.IsPublic || isQueryable ? elementType.MakeArrayType() : type;
 
-            void WriteArrayCreate() => _codeWriter.WriteArrayCreate(arrayType, items, singleLine: singleLine);
+            void WriteArrayCreate() => _codeWriter.WriteArrayCreateItems(
+                arrayType, items, item => WriteArrayItem(item, context), singleLine);
 
             void WriteArrayOrCollectionExpression()
             {
@@ -175,7 +161,7 @@ internal sealed class CollectionVisitor : IKnownObjectVisitor
                     && _options.CollectionLiteralStyle == CollectionLiteralStyle.Expression
                     && _codeWriter.SupportsCollectionExpression)
                 {
-                    _codeWriter.WriteCollectionExpression(items, singleLine);
+                    _codeWriter.WriteCollectionExpressionItems(items, item => WriteArrayItem(item, context), singleLine);
                     return;
                 }
 
@@ -217,75 +203,17 @@ internal sealed class CollectionVisitor : IKnownObjectVisitor
 
         return;
 
-        Action ResolveCollectionCreateAction(CodeTypeInfo collectionTypeInfo, IEnumerable<Action> initializers, bool useSingleLine)
+        Action ResolveCollectionCreateAction(CodeTypeInfo collectionType, IEnumerable initializers, bool useSingleLine)
         {
             if (_options.CollectionLiteralStyle == CollectionLiteralStyle.Expression
                 && _codeWriter.SupportsCollectionExpression)
             {
-                return () => _codeWriter.WriteCollectionExpression(initializers, useSingleLine);
+                return () => _codeWriter.WriteCollectionExpressionItems(initializers,
+                    item => WriteCollectionItem(item, context), useSingleLine);
             }
 
-            return () => _codeWriter.WriteObjectCreateAndInitialize(collectionTypeInfo, [], initializers, useSingleLine);
-        }
-    }
-
-    private void VisitSimpleCollectionStreaming(IEnumerable enumerable, Type elementType, VisitContext context)
-    {
-        var type = enumerable.GetType();
-        var isImmutableOrFrozen = type.IsPublicImmutableOrFrozenCollection();
-        var isCollection = IsCollection(enumerable);
-        var singleLine = typeof(string) != elementType
-                         && ReflectionUtils.IsPrimitive(elementType)
-                         && _options.PrimitiveCollectionLayout == CollectionLayout.SingleLine;
-        Action<object> writeItem = item => _nextDepthVisitor.Visit(item, context);
-
-        if (type.IsArray || isImmutableOrFrozen || !type.IsPublic || !isCollection)
-        {
-            var isQueryable = IsQueryable(type);
-            var arrayType = isImmutableOrFrozen || !type.IsPublic || isQueryable ? elementType.MakeArrayType() : type;
-
-            void WriteArrayCreate() => _codeWriter.WriteArrayCreateItems(arrayType, enumerable, writeItem, singleLine);
-
-            if (isImmutableOrFrozen)
-            {
-                _codeWriter.WriteMethodInvoke(() =>
-                    _codeWriter.WriteMethodReference(WriteArrayCreate, $"To{type.GetImmutableOrFrozenTypeName()}"), []);
-            }
-            else if (isQueryable)
-            {
-                _codeWriter.WriteMethodInvoke(() =>
-                    _codeWriter.WriteMethodReference(WriteArrayCreate, "AsQueryable"), []);
-            }
-            else if (type.IsArray
-                     && _options.CollectionLiteralStyle == CollectionLiteralStyle.Expression
-                     && _codeWriter.SupportsCollectionExpression)
-            {
-                _codeWriter.WriteCollectionExpressionItems(enumerable, writeItem, singleLine);
-            }
-            else
-            {
-                WriteArrayCreate();
-            }
-
-            return;
-        }
-
-        if (type.IsReadonlyCollection())
-        {
-            var typeInfo = new CodeCollectionTypeInfo(typeof(List<>).MakeGenericType(elementType));
-            void WriteCollectionCreate() => _codeWriter.WriteObjectCreateAndInitializeItems(typeInfo, [], enumerable, writeItem, singleLine);
-            _codeWriter.WriteMethodInvoke(() => _codeWriter.WriteMethodReference(WriteCollectionCreate, "AsReadOnly"), []);
-            return;
-        }
-
-        var collectionTypeInfo = new CodeCollectionTypeInfo(type);
-        if (_options.CollectionLiteralStyle == CollectionLiteralStyle.Expression && _codeWriter.SupportsCollectionExpression)
-        {
-            _codeWriter.WriteCollectionExpressionItems(enumerable, writeItem, singleLine);
-        }
-        else
-        {
-            _codeWriter.WriteObjectCreateAndInitializeItems(collectionTypeInfo, [], enumerable, writeItem, singleLine);
+            return () => _codeWriter.WriteObjectCreateAndInitializeItems(collectionType, [], initializers,
+                item => WriteCollectionItem(item, context), useSingleLine);
         }
     }
 
@@ -306,7 +234,7 @@ internal sealed class CollectionVisitor : IKnownObjectVisitor
         return type.GetInterfaces().Any(i => i.IsGenericType && i.GetGenericTypeDefinition() == typeof(IQueryable<>));
     }
 
-    private IEnumerable<Action> ChunkMultiDimensionalArrayExpression(Array array, IEnumerable<Action> enumerable,
+    private static IEnumerable<object> ChunkMultiDimensionalArrayItems(Array array, IEnumerable enumerable,
         bool singleLine)
     {
         var dimensions = new int[array.Rank - 1];
@@ -316,13 +244,14 @@ internal sealed class CollectionVisitor : IKnownObjectVisitor
             dimensions[i] = array.GetLength(i + 1);
         }
 
-        IEnumerable<Action> result = enumerable;
+        IEnumerable<object> result = enumerable.Cast<object>();
 
         for (var index = dimensions.Length - 1; index >= 0; index--)
         {
             var dimension = dimensions[index];
             var index1 = index;
-            result = result.Chunk(dimension).Select(x => (Action)(() => _codeWriter.WriteArrayDimension(x, singleLine && index1 == dimensions.Length - 1)));
+            result = result.Chunk(dimension).Select(object (x) => new ArrayDimension(x,
+                singleLine && index1 == dimensions.Length - 1));
         }
 
         return result;
@@ -330,22 +259,7 @@ internal sealed class CollectionVisitor : IKnownObjectVisitor
 
     private void VisitAnonymousCollection(IEnumerable enumerable, VisitContext context)
     {
-        if (_options.MaxCollectionSize == int.MaxValue && enumerable is Array { Rank: 1 })
-        {
-            _codeWriter.WriteArrayCreateItems(
-                new CodeAnonymousTypeInfo { ArrayRank = 1 },
-                enumerable,
-                item => _nextDepthVisitor.Visit(item, context),
-                singleLine: false);
-            return;
-        }
-
-        var items = enumerable.Cast<object>().Select(item => (Action)(() => _nextDepthVisitor.Visit(item, context)));
-
-        if (_options.MaxCollectionSize < int.MaxValue)
-        {
-            items = items.Take(_options.MaxCollectionSize + 1).Replace(_options.MaxCollectionSize, () => _codeWriter.WriteTooManyItems(_options.MaxCollectionSize));
-        }
+        IEnumerable items = GetItems(enumerable);
 
         var type = enumerable.GetType();
 
@@ -356,12 +270,13 @@ internal sealed class CollectionVisitor : IKnownObjectVisitor
         if (type.IsArray && ((Array)enumerable).Rank > 1 && ((Array)enumerable).Length > 0)
         {
             typeInfo.ArrayRank = ((Array)enumerable).Rank;
-            items = ChunkMultiDimensionalArrayExpression((Array)enumerable, items, false);
+            items = ChunkMultiDimensionalArrayItems((Array)enumerable, items, false);
         }
 
-        Action createAction = () => _codeWriter.WriteArrayCreate(typeInfo, items, false);
+        Action createAction = () => _codeWriter.WriteArrayCreateItems(typeInfo, items,
+            item => WriteArrayItem(item, context), false);
 
-        if (isImmutableOrFrozen || enumerable is IList && !type.IsArray)
+        if (isImmutableOrFrozen || (enumerable is IList && !type.IsArray))
         {
             _codeWriter.WriteMethodInvoke(() =>
                 _codeWriter.WriteMethodReference(createAction, $"To{type.GetImmutableOrFrozenTypeName()}"), []);
@@ -388,11 +303,60 @@ internal sealed class CollectionVisitor : IKnownObjectVisitor
         return new KeyValuePair<object, IEnumerable>(fieldValues[0], (IEnumerable)fieldValues[1]);
     }
 
-    private IEnumerable<Action> VisitGroupings(IEnumerable<object> objects, VisitContext context)
+    private void WriteArrayItem(object item, VisitContext context)
+    {
+        if (item is ArrayDimension dimension)
+        {
+            _codeWriter.WriteArrayDimensionItems(dimension.Items,
+                nestedItem => WriteArrayItem(nestedItem, context), dimension.SingleLine);
+            return;
+        }
+
+        WriteCollectionItem(item, context);
+    }
+
+    private void WriteCollectionItem(object item, VisitContext context)
+    {
+        if (ReferenceEquals(item, CollectionItemMarker.TooManyItems))
+        {
+            _codeWriter.WriteTooManyItems(_options.MaxCollectionSize);
+            return;
+        }
+
+        _nextDepthVisitor.Visit(item, context);
+    }
+
+    private IEnumerable GetItems(IEnumerable items)
+    {
+        return _options.MaxCollectionSize == int.MaxValue ? items : TakeItems(items);
+    }
+
+    private IEnumerable<object> TakeItems(IEnumerable items)
+    {
+        var count = 0;
+        foreach (var item in items)
+        {
+            if (count++ == _options.MaxCollectionSize)
+            {
+                yield return CollectionItemMarker.TooManyItems;
+                yield break;
+            }
+
+            yield return item;
+        }
+    }
+
+    private static IEnumerable<object> VisitGroupings(IEnumerable<object> objects)
     {
         var items = objects.Select(GetIGroupingValue)
             .SelectMany(g => g.Value.Cast<object>().Select(e => new { g.Key, Element = e }));
 
-        return items.Select(item => (Action)(() => _nextDepthVisitor.Visit(item, context)));
+        return items;
+    }
+
+    private sealed class ArrayDimension(IEnumerable items, bool singleLine)
+    {
+        public IEnumerable Items { get; } = items;
+        public bool SingleLine { get; } = singleLine;
     }
 }

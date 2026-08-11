@@ -260,7 +260,7 @@ internal sealed class CSharpCodeWriter : ICodeWriter
         }
     }
 
-    private void ContinueOnNewLine(string st) => _output.WriteLine(st);
+    private void ContinueOnNewLine(char ch) => _output.WriteLine(ch);
 
     private void OutputIdentifier(string ident) => _output.Write(CSharpHelpers.CreateEscapedIdentifier(ident));
 
@@ -872,7 +872,7 @@ internal sealed class CSharpCodeWriter : ICodeWriter
             if (first)
                 first = false;
             else if (newlineBetweenItems)
-                ContinueOnNewLine(",");
+                ContinueOnNewLine(',');
             else
                 _output.Write(", ");
 
@@ -894,7 +894,7 @@ internal sealed class CSharpCodeWriter : ICodeWriter
             else
             {
                 if (newlineBetweenItems)
-                    ContinueOnNewLine(",");
+                    ContinueOnNewLine(',');
                 else
                     _output.Write(", ");
             }

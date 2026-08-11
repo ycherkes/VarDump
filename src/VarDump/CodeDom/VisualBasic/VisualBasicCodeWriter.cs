@@ -401,7 +401,7 @@ internal sealed class VisualBasicCodeWriter : ICodeWriter
             else
             {
                 if (newlineBetweenItems)
-                    ContinueOnNewLine(",", newLineContinuation);
+                    ContinueOnNewLine(',', newLineContinuation);
                 else
                     _output.Write(", ");
             }
@@ -476,7 +476,7 @@ internal sealed class VisualBasicCodeWriter : ICodeWriter
             if (first)
                 first = false;
             else if (newlineBetweenItems)
-                ContinueOnNewLine(",", newLineContinuation);
+                ContinueOnNewLine(',', newLineContinuation);
             else
                 _output.Write(", ");
 
@@ -961,9 +961,9 @@ internal sealed class VisualBasicCodeWriter : ICodeWriter
         }
     }
 
-    public void ContinueOnNewLine(string st, bool newLineContinuation = true)
+    private void ContinueOnNewLine(char ch, bool newLineContinuation = true)
     {
-        _output.Write(st);
+        _output.Write(ch);
         _output.WriteLine(newLineContinuation ? " _" : "");
-    }
+    }   
 }

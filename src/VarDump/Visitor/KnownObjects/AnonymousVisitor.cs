@@ -1,5 +1,4 @@
-﻿using System;
-using System.Linq;
+using System;
 using VarDump.CodeDom.Common;
 using VarDump.CodeDom.Compiler;
 using VarDump.Utils;
@@ -20,12 +19,10 @@ internal sealed class AnonymousVisitor : IKnownObjectVisitor
     {
         _nextDepthVisitor = nextDepthVisitor;
         _codeWriter = codeWriter;
-
         _anonymousObjectDescriptor = new ObjectPropertiesDescriptor(options.GetPropertiesBindingFlags, false);
+
         if (options.Descriptors?.Count > 0)
-        {
             _anonymousObjectDescriptor = _anonymousObjectDescriptor.ApplyMiddleware(options.Descriptors);
-        }
     }
 
     public string Id => "Anonymous";
@@ -41,22 +38,20 @@ internal sealed class AnonymousVisitor : IKnownObjectVisitor
 
     public void Visit(object obj, Type objectType, VisitContext context)
     {
-        var initializeActions = _anonymousObjectDescriptor.GetObjectDescription(obj, objectType)
-            .Properties
-            .Select(pv => (Action)(() => _codeWriter.WriteAssign(
-                () => _codeWriter.WritePropertyReference(pv.Name, null),
-                () =>
-                {
-                    if (pv.Type.IsNullableType() || pv.Value == null)
-                    {
-                        _codeWriter.WriteCast(pv.Type, () => _nextDepthVisitor.Visit(pv.Value, context));
-                    }
-                    else
-                    {
-                        _nextDepthVisitor.Visit(pv.Value, context);
-                    }
-                })));
+        var properties = _anonymousObjectDescriptor.GetObjectDescription(obj, objectType).Properties;
 
-        _codeWriter.WriteObjectCreateAndInitialize(new CodeAnonymousTypeInfo(), [], initializeActions);
+        _codeWriter.WriteObjectCreateAndInitializeItems(new CodeAnonymousTypeInfo(), [], properties, property =>
+        {
+            var description = (PropertyDescription)property;
+            _codeWriter.WriteMemberAssignmentStart(description.Name);
+            if (description.Type.IsNullableType() || description.Value == null)
+            {
+                _codeWriter.WriteCast(description.Type, () => _nextDepthVisitor.Visit(description.Value, context));
+            }
+            else
+            {
+                _nextDepthVisitor.Visit(description.Value, context);
+            }
+        });
     }
 }

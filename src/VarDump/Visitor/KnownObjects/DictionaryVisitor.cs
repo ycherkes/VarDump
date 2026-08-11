@@ -71,12 +71,7 @@ internal sealed class DictionaryVisitor : IKnownObjectVisitor
 
     private void VisitSimpleDictionary(IDictionary dict, VisitContext context)
     {
-        var items = dict.Cast<object>().Select(item => (Action)(() => VisitKeyValuePairWriteImplicitly(item, context)));
-
-        if (_options.MaxCollectionSize < int.MaxValue)
-        {
-            items = items.Take(_options.MaxCollectionSize + 1).Replace(_options.MaxCollectionSize, () => _codeWriter.WriteTooManyItems(_options.MaxCollectionSize));
-        }
+        var items = GetItems(dict);
 
         var type = dict.GetType();
         var isImmutableOrFrozen = type.IsPublicImmutableOrFrozenCollection();
@@ -88,20 +83,21 @@ internal sealed class DictionaryVisitor : IKnownObjectVisitor
 
             var dictionaryType = typeof(Dictionary<,>).MakeGenericType(keyType, valueType);
 
-            var dictionaryCreateAction = ResolveDictionaryCreateAction(new CodeCollectionTypeInfo(dictionaryType), items);
+            var dictionaryCreateAction = WriteDictionaryCreate(new CodeCollectionTypeInfo(dictionaryType));
 
             _codeWriter.WriteMethodInvoke(() => _codeWriter.WriteMethodReference(dictionaryCreateAction, $"To{type.GetImmutableOrFrozenTypeName()}"), []);
 
             return;
         }
 
-        ResolveDictionaryCreateAction(new CodeCollectionTypeInfo(type), items)();
+        WriteDictionaryCreate(new CodeCollectionTypeInfo(type))();
 
         return;
 
-        Action ResolveDictionaryCreateAction(CodeTypeInfo dictionaryTypeInfo, IEnumerable<Action> initializers)
+        Action WriteDictionaryCreate(CodeTypeInfo dictionaryTypeInfo)
         {
-            return () => _codeWriter.WriteObjectCreateAndInitialize(dictionaryTypeInfo, [], initializers);
+            return () => _codeWriter.WriteDictionaryCreateItems(dictionaryTypeInfo, items,
+                item => WriteDictionaryItem(item, context));
         }
     }
 
@@ -109,12 +105,7 @@ internal sealed class DictionaryVisitor : IKnownObjectVisitor
     {
         const string keyName = "Key";
         const string valueName = "Value";
-        var items = dictionary.Cast<object>().Select(o => (Action)(() => VisitKeyValuePairWriteAnonymousType(o, keyName, valueName, context)));
-
-        if (_options.MaxCollectionSize < int.MaxValue)
-        {
-            items = items.Take(_options.MaxCollectionSize + 1).Replace(_options.MaxCollectionSize, () => _codeWriter.WriteTooManyItems(_options.MaxCollectionSize));
-        }
+        var items = GetItems(dictionary);
         
         var type = dictionary.GetType();
 
@@ -126,7 +117,8 @@ internal sealed class DictionaryVisitor : IKnownObjectVisitor
 
         _codeWriter.WriteMethodInvoke(() =>
                 _codeWriter.WriteMethodReference(
-                    () => _codeWriter.WriteArrayCreate(new CodeAnonymousTypeInfo { ArrayRank = 1 }, items, false),
+                    () => _codeWriter.WriteArrayCreateItems(new CodeAnonymousTypeInfo { ArrayRank = 1 }, items,
+                        item => WriteAnonymousDictionaryItem(item, keyName, valueName, context), false),
                     methodName),
             [
                 WriteKeyLambda,
@@ -148,15 +140,66 @@ internal sealed class DictionaryVisitor : IKnownObjectVisitor
         _codeWriter.WriteImplicitKeyValuePairCreate(() => _nextDepthVisitor.Visit(propertyValues[0], context), () => _nextDepthVisitor.Visit(propertyValues[1], context));
     }
 
+    private void WriteDictionaryItem(object item, VisitContext context)
+    {
+        if (ReferenceEquals(item, CollectionItemMarker.TooManyItems))
+        {
+            _codeWriter.WriteTooManyItems(_options.MaxCollectionSize);
+            return;
+        }
+
+        VisitKeyValuePairWriteImplicitly(item, context);
+    }
+
+    private void WriteAnonymousDictionaryItem(object item, string keyName, string valueName, VisitContext context)
+    {
+        if (ReferenceEquals(item, CollectionItemMarker.TooManyItems))
+        {
+            _codeWriter.WriteTooManyItems(_options.MaxCollectionSize);
+            return;
+        }
+
+        VisitKeyValuePairWriteAnonymousType(item, keyName, valueName, context);
+    }
+
+    private IEnumerable GetItems(IEnumerable items)
+    {
+        return _options.MaxCollectionSize == int.MaxValue ? items : TakeItems(items);
+    }
+
+    private IEnumerable<object> TakeItems(IEnumerable items)
+    {
+        var count = 0;
+        foreach (var item in items)
+        {
+            if (count++ == _options.MaxCollectionSize)
+            {
+                yield return CollectionItemMarker.TooManyItems;
+                yield break;
+            }
+
+            yield return item;
+        }
+    }
+
     private void VisitKeyValuePairWriteAnonymousType(object o, string keyName, string valueName, VisitContext context)
     {
         var objectType = o.GetType();
         var propertyValues = objectType.GetProperties().Select(p => ReflectionUtils.GetValue(p, o)).Take(2).ToArray();
         
-        _codeWriter.WriteObjectCreateAndInitialize(new CodeAnonymousTypeInfo(), [],
-            [
-                () => _codeWriter.WriteAssign(() => _codeWriter.WritePropertyReference(keyName, null), () => _nextDepthVisitor.Visit(propertyValues[0], context)),
-                () => _codeWriter.WriteAssign(() => _codeWriter.WritePropertyReference(valueName, null), () => _nextDepthVisitor.Visit(propertyValues[1], context)),
-            ]);
+        _codeWriter.WriteObjectCreateAndInitializeItems(
+            new CodeAnonymousTypeInfo(),
+            [],
+            new[]
+            {
+                new KeyValuePair<string, object>(keyName, propertyValues[0]),
+                new KeyValuePair<string, object>(valueName, propertyValues[1])
+            },
+            initializer =>
+            {
+                var pair = (KeyValuePair<string, object>)initializer;
+                _codeWriter.WriteMemberAssignmentStart(pair.Key);
+                _nextDepthVisitor.Visit(pair.Value, context);
+            });
     }
 }

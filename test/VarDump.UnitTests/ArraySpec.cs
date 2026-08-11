@@ -134,6 +134,19 @@ public class ArraySpec
     }
 
     [Fact]
+    public void DumpEmptyJaggedArrayCSharp()
+    {
+        int[][] array = [];
+
+        var result = new CSharpDumper().Dump(array);
+
+        Assert.Equal(
+            "var arrayOfArrayOfInt = new int[0][];\n",
+            result,
+            ignoreLineEndingDifferences: true);
+    }
+
+    [Fact]
     public void DumpImmutableArrayOfArraysCSharp()
     {
         var array = new[] { new[] { 1 } }.ToImmutableArray();

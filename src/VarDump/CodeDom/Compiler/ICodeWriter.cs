@@ -1,3 +1,4 @@
+using System.Collections;
 using System.Collections.Generic;
 using System;
 using VarDump.CodeDom.Common;
@@ -9,12 +10,13 @@ public interface ICodeWriter
     int Indent { get; set; }
     bool SupportsCollectionExpression { get; }
 
-    void WriteArrayCreate(CodeTypeInfo typeInfo, IEnumerable<Action> initializers, bool singleLine, int size = 0);
+    void WriteArrayCreateItems(CodeTypeInfo typeInfo, IEnumerable items, Action<object> writeItem, bool singleLine, int size = 0);
+    void WriteDictionaryCreateItems(CodeTypeInfo typeInfo, IEnumerable items, Action<object> writeItem);
     void WriteCast(CodeTypeInfo typeInfo, Action action);
 
-    void WriteArrayDimension(IEnumerable<Action> initializers, bool singleLine = false);
-    void WriteCollectionExpression(IEnumerable<Action> initializers, bool singleLine = false);
-    void WriteAssign(Action left, Action right);
+    void WriteArrayDimensionItems(IEnumerable items, Action<object> writeItem, bool singleLine = false);
+    void WriteCollectionExpressionItems(IEnumerable items, Action<object> writeItem, bool singleLine = false);
+    void WriteMemberAssignmentStart(string memberName);
 
     void WriteImplicitKeyValuePairCreate(Action keyAction, Action valueAction);
 
@@ -33,7 +35,7 @@ public interface ICodeWriter
 
     void WriteNamedArgument(string argumentName, Action value);
 
-    void WriteObjectCreateAndInitialize(CodeTypeInfo typeInfo, IEnumerable<Action> parametersActions, IEnumerable<Action> initializeActions, bool singleLine = false);
+    void WriteObjectCreateAndInitializeItems(CodeTypeInfo typeInfo, IEnumerable<Action> parametersActions, IEnumerable initializers, Action<object> writeInitializer, bool singleLine = false);
 
     void WriteObjectCreate(CodeTypeInfo typeInfo, IEnumerable<Action> parametersActions);
 

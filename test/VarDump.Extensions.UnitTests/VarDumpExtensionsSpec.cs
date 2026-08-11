@@ -61,7 +61,7 @@ public class VarDumpExtensionsSpec
         VarDumpExtensions.VarDumpFactory = VarDumpFactories.CSharp;
         VarDumpExtensions.DefaultDumpOptions = new DumpOptions
         {
-            UseTypeFullName = true
+            TypeNamePolicy = TypeNamingPolicy.FullName
         };
 
         var result = anonymous.DumpText();

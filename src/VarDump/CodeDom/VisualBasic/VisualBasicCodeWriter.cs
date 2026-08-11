@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
@@ -191,11 +192,10 @@ internal sealed class VisualBasicCodeWriter : ICodeWriter
         value();
     }
 
-    public void WriteAssign(Action left, Action right)
+    public void WriteMemberAssignmentStart(string memberName)
     {
-        left();
+        WritePropertyReference(memberName, null);
         _output.Write(" = ");
-        right();
     }
 
     public void WriteDefaultValue(CodeTypeInfo typeInfo)
@@ -377,46 +377,6 @@ internal sealed class VisualBasicCodeWriter : ICodeWriter
         }
     }
 
-    public void WriteArrayCreate(CodeTypeInfo typeInfo, IEnumerable<Action> initializers, bool singleLine, int size = 0)
-    {
-        if (typeInfo is not CodeEmptyTypeInfo)
-        {
-            _output.Write("New ");
-        }
-
-        using var initializersEnumerator = initializers.GetEnumerator();
-
-        if (initializersEnumerator.MoveNext())
-        {
-            if (typeInfo is not CodeEmptyTypeInfo)
-            {
-                TypeOutput(typeInfo);
-            }
-
-            if (singleLine)
-            {
-                _output.Write("{ ");
-                OutputActions(initializersEnumerator, newlineBetweenItems: false, newLineContinuation: false);
-                _output.Write(" }");
-            }
-            else
-            {
-                _output.Write("{");
-                _output.WriteLine("");
-                OutputActions(initializersEnumerator, newlineBetweenItems: true, newLineContinuation: false);
-                _output.WriteLine("");
-                _output.Write('}');
-            }
-        }
-        else
-        {
-            OutputTypeWithoutArrayPostFix(typeInfo);
-            OutputArrayPostfixInternal(typeInfo, size);
-
-            _output.Write(" {}");
-        }
-    }
-
     public void OutputActions(IEnumerable<Action> actions, bool newlineBetweenItems,
         bool newLineContinuation = true)
     {
@@ -441,7 +401,7 @@ internal sealed class VisualBasicCodeWriter : ICodeWriter
             else
             {
                 if (newlineBetweenItems)
-                    ContinueOnNewLine(",", newLineContinuation);
+                    ContinueOnNewLine(',', newLineContinuation);
                 else
                     _output.Write(", ");
             }
@@ -451,27 +411,107 @@ internal sealed class VisualBasicCodeWriter : ICodeWriter
         Indent--;
     }
 
-    public void WriteArrayDimension(IEnumerable<Action> initializers, bool singleLine = false)
+    public void WriteArrayCreateItems(CodeTypeInfo typeInfo, IEnumerable items, Action<object> writeItem, bool singleLine, int size = 0)
     {
+        if (typeInfo is not CodeEmptyTypeInfo)
+            _output.Write("New ");
+
+        var enumerator = items.GetEnumerator();
+        using var enumeratorDisposable = enumerator as IDisposable;
+        if (enumerator.MoveNext())
+        {
+            if (typeInfo is not CodeEmptyTypeInfo)
+                TypeOutput(typeInfo);
+
+            if (singleLine)
+            {
+                _output.Write("{ ");
+                OutputItems(enumerator, writeItem, newlineBetweenItems: false, newLineContinuation: false);
+                _output.Write(" }");
+            }
+            else
+            {
+                _output.Write("{");
+                _output.WriteLine("");
+                OutputItems(enumerator, writeItem, newlineBetweenItems: true, newLineContinuation: false);
+                _output.WriteLine("");
+                _output.Write('}');
+            }
+        }
+        else
+        {
+            OutputTypeWithoutArrayPostFix(typeInfo);
+            OutputArrayPostfixInternal(typeInfo, size);
+            _output.Write(" {}");
+        }
+    }
+
+    public void WriteDictionaryCreateItems(CodeTypeInfo typeInfo, IEnumerable items, Action<object> writeItem)
+    {
+        _output.Write("New ");
+        OutputType(typeInfo);
+
+        var enumerator = items.GetEnumerator();
+        using var enumeratorDisposable = enumerator as IDisposable;
+        if (!enumerator.MoveNext())
+        {
+            _output.Write("()");
+            return;
+        }
+
+        _output.Write(" From ");
+        _output.WriteLine('{');
+        OutputItems(enumerator, writeItem, newlineBetweenItems: true, newLineContinuation: false);
+        _output.WriteLine();
+        _output.Write('}');
+    }
+
+    private void OutputItems(IEnumerator items, Action<object> writeItem, bool newlineBetweenItems,
+        bool newLineContinuation = true)
+    {
+        var first = true;
+        Indent++;
+        do
+        {
+            if (first)
+                first = false;
+            else if (newlineBetweenItems)
+                ContinueOnNewLine(',', newLineContinuation);
+            else
+                _output.Write(", ");
+
+            writeItem(items.Current);
+        } while (items.MoveNext());
+        Indent--;
+    }
+
+    public void WriteArrayDimensionItems(IEnumerable items, Action<object> writeItem, bool singleLine = false)
+    {
+        var enumerator = items.GetEnumerator();
+        using var enumeratorDisposable = enumerator as IDisposable;
+        var hasItems = enumerator.MoveNext();
+
         if (singleLine)
         {
             _output.Write("{ ");
-            OutputActions(initializers, newlineBetweenItems: false, newLineContinuation: false);
+            if (hasItems)
+                OutputItems(enumerator, writeItem, newlineBetweenItems: false, newLineContinuation: false);
             _output.Write(" }");
         }
         else
         {
             _output.Write("{");
             _output.WriteLine();
-            OutputActions(initializers, newlineBetweenItems: true, newLineContinuation: false);
+            if (hasItems)
+                OutputItems(enumerator, writeItem, newlineBetweenItems: true, newLineContinuation: false);
             _output.WriteLine();
             _output.Write("}");
         }
     }
 
-    public void WriteCollectionExpression(IEnumerable<Action> initializers, bool singleLine = false)
+    public void WriteCollectionExpressionItems(IEnumerable items, Action<object> writeItem, bool singleLine = false)
     {
-        WriteArrayDimension(initializers, singleLine);
+        WriteArrayCreateItems(new CodeEmptyTypeInfo(), items, writeItem, singleLine);
     }
 
     public void WriteCast(CodeTypeInfo typeInfo, Action action)
@@ -584,32 +624,26 @@ internal sealed class VisualBasicCodeWriter : ICodeWriter
         _output.Write(')');
     }
 
-    public void WriteObjectCreateAndInitialize(CodeTypeInfo typeInfo, IEnumerable<Action> parametersActions, IEnumerable<Action> initializeActions, bool singleLine = false)
+    public void WriteObjectCreateAndInitializeItems(CodeTypeInfo typeInfo, IEnumerable<Action> parametersActions,
+        IEnumerable initializers, Action<object> writeInitializer, bool singleLine = false)
     {
         _output.Write("New ");
         OutputType(typeInfo);
-
         using var parametersEnumerator = parametersActions.GetEnumerator();
-        using var initializeEnumerator = initializeActions.GetEnumerator();
-
+        var initializerEnumerator = initializers.GetEnumerator();
+        using var initializerEnumeratorDisposable = initializerEnumerator as IDisposable;
         var parametersExist = parametersEnumerator.MoveNext();
-        var initializeExist = initializeEnumerator.MoveNext();
+        var initializerExists = initializerEnumerator.MoveNext();
 
-        if (parametersExist || !initializeExist)
+        if (parametersExist || !initializerExists)
         {
-            // always write out the () to disambiguate cases like "New System.Random().Next(x,y)"
             _output.Write('(');
             if (parametersExist)
-            {
                 OutputActions(parametersEnumerator, newlineBetweenItems: false);
-            }
             _output.Write(')');
         }
-
-        if (!initializeExist)
-        {
+        if (!initializerExists)
             return;
-        }
 
         _output.Write(typeInfo switch
         {
@@ -621,13 +655,13 @@ internal sealed class VisualBasicCodeWriter : ICodeWriter
         if (singleLine)
         {
             _output.Write("{ ");
-            OutputActions(initializeEnumerator, newlineBetweenItems: false, newLineContinuation: false);
+            OutputItems(initializerEnumerator, writeInitializer, newlineBetweenItems: false, newLineContinuation: false);
             _output.Write(" }");
         }
         else
         {
             _output.WriteLine('{');
-            OutputActions(initializeEnumerator, newlineBetweenItems: true, newLineContinuation: false);
+            OutputItems(initializerEnumerator, writeInitializer, newlineBetweenItems: true, newLineContinuation: false);
             _output.WriteLine();
             _output.Write('}');
         }
@@ -927,9 +961,9 @@ internal sealed class VisualBasicCodeWriter : ICodeWriter
         }
     }
 
-    public void ContinueOnNewLine(string st, bool newLineContinuation = true)
+    private void ContinueOnNewLine(char ch, bool newLineContinuation = true)
     {
-        _output.Write(st);
+        _output.Write(ch);
         _output.WriteLine(newLineContinuation ? " _" : "");
-    }
+    }   
 }

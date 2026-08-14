@@ -24,7 +24,7 @@ internal sealed class ObjectFieldsDescriptor(BindingFlags getFieldsBindingFlags,
     {
         foreach (var field in GetFields(objectType))
         {
-            yield return new FieldDescription(() => ReflectionUtils.GetValue(field.FieldInfo, @object))
+            yield return new FieldDescription(field.FieldInfo, @object)
             {
                 DefaultValueAttributeValue = field.DefaultValueAttributeValue,
                 Name = field.Name,

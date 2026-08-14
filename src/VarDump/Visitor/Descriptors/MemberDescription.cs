@@ -1,24 +1,10 @@
-﻿using System;
-
 namespace VarDump.Visitor.Descriptors;
 
-public abstract record MemberDescription: ReflectionDescription
+public abstract record MemberDescription : ReflectionDescription
 {
-    private readonly Func<object> _getValueFunc;
-    private object _value;
     private bool _isValueInitialized;
 
-    protected MemberDescription(object value)
-    {
-        _value = value;
-        _isValueInitialized = true;
-    }
-
-    protected MemberDescription(Func<object> getValueFunc)
-    {
-        _getValueFunc = getValueFunc;
-        _isValueInitialized = false;
-    }
+    protected abstract object GetValueCore();
 
     public override object Value
     {
@@ -26,18 +12,18 @@ public abstract record MemberDescription: ReflectionDescription
         {
             if (_isValueInitialized)
             {
-                return _value;
+                return field;
             }
 
-            _value = _getValueFunc();
+            field = GetValueCore();
             _isValueInitialized = true;
-            return _value;
+            return field;
         }
 
         set
         {
             _isValueInitialized = true;
-            _value = value;
+            field = value;
         }
     }
 

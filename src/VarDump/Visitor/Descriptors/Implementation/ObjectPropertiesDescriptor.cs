@@ -29,7 +29,7 @@ internal sealed class ObjectPropertiesDescriptor(BindingFlags getPropertiesBindi
         for (var index = 0; index < properties.Count; index++)
         {
             var property = properties[index];
-            yield return new PropertyDescription(() => ReflectionUtils.GetValue(property.PropertyInfo, @object))
+            yield return new PropertyDescription(property.PropertyInfo, @object)
             {
                 CanWrite = property.CanWrite,
                 DefaultValueAttributeValue = property.DefaultValueAttributeValue,

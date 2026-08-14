@@ -60,9 +60,28 @@ public class LazinessSpec
             ignoreLineEndingDifferences: true);
     }
 
+    [Fact]
+    public void ReflectionBackedPropertyValueIsLazyAndMemoized()
+    {
+        var source = new CountingProperty();
+        var propertyInfo = typeof(CountingProperty).GetProperty(nameof(CountingProperty.Value));
+        var description = new PropertyDescription(propertyInfo, source);
+
+        Assert.Equal(0, source.ReadCount);
+        Assert.Equal("value", description.Value);
+        Assert.Equal("value", description.Value);
+        Assert.Equal(1, source.ReadCount);
+    }
+
     private sealed class ThrowingProperty
     {
         public string Value => throw new InvalidOperationException("The getter must not be evaluated.");
+    }
+
+    private sealed class CountingProperty
+    {
+        public int ReadCount { get; private set; }
+        public string Value => ++ReadCount == 1 ? "value" : throw new InvalidOperationException("The getter must only be evaluated once.");
     }
 
     private sealed class SkipPropertyMiddleware(string propertyName) : IObjectDescriptorMiddleware

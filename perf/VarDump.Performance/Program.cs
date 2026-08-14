@@ -1,63 +1,60 @@
-﻿using BenchmarkDotNet.Running;
+using System.Reflection;
+using BenchmarkDotNet.Running;
+using VarDump;
+using VarDump.Performance;
 
-BenchmarkRunner.Run(typeof(Program).Assembly);
+if (TryRunProfileWorkload(args))
+{
+    return;
+}
 
-//using VarDump;
+BenchmarkSwitcher.FromAssembly(typeof(Program).Assembly).Run(args);
 
-//var o = new
-//{
-//    Name = "Test".PadRight(50),
-//    Id = Guid.NewGuid(),
-//    GroupId = "Group Id".PadRight(50),
-//    ParentGroup = "Parent Group".PadRight(12),
-//    GroupName = "Group Name".PadRight(100),
-//    ObjectType = "Object Type",
-//    IsObject = true,
-//    IsActive = true,
-//    CreateDate = DateTime.Now,
-//    CreateUser = "Create User".PadRight(50),
-//    ObjectCode = (string?)null,
-//    IsOwned = true,
-//    IsValid = true,
-//    IsStandard = true,
-//    Description = "Description",
-//    Nested = new
-//    {
-//        Name = "Test".PadRight(50),
-//        Id = Guid.NewGuid(),
-//        GroupId = "Group Id".PadRight(50),
-//        ParentGroup = "Parent Group".PadRight(12),
-//        GroupName = "Group Name".PadRight(100),
-//        ObjectType = "Object Type",
-//        IsObject = true,
-//        IsActive = true,
-//        CreateDate = DateTime.Now,
-//        CreateUser = "Create User".PadRight(50),
-//        ObjectCode = (string?)null,
-//        IsOwned = true,
-//        IsValid = true,
-//        IsStandard = true,
-//        Description = "Description"
-//    }
-//};
+static bool TryRunProfileWorkload(string[] args)
+{
+    if (args.Length is < 1 or > 2)
+    {
+        return false;
+    }
 
-//var data = Enumerable.Range(0, 10000).Select(_ => o);
+    var iterations = args.Length == 2 && int.TryParse(args[1], out var parsedIterations)
+        ? parsedIterations
+        : 10;
 
-//using var streamWriter = new StreamWriter(Stream.Null);
+    if (iterations <= 0)
+    {
+        throw new ArgumentOutOfRangeException(nameof(args), "Iteration count must be positive.");
+    }
 
-//new CSharpDumper().Dump(data, streamWriter);
+    switch (args[0])
+    {
+        case "--profile-custom-csharp":
+            RunProfileWorkload(typeof(BenchmarkCustomObject), new CSharpDumper(), iterations);
+            return true;
+        case "--profile-custom-vb":
+            RunProfileWorkload(typeof(BenchmarkCustomObject), new VisualBasicDumper(), iterations);
+            return true;
+        case "--profile-anonymous-csharp":
+            RunProfileWorkload(typeof(BenchmarkAnonymousObject), new CSharpDumper(), iterations);
+            return true;
+        case "--profile-anonymous-vb":
+            RunProfileWorkload(typeof(BenchmarkAnonymousObject), new VisualBasicDumper(), iterations);
+            return true;
+        default:
+            return false;
+    }
+}
 
-//----------------------------------------------------
+static void RunProfileWorkload(Type benchmarkType, IDumper dumper, int iterations)
+{
+    var input = benchmarkType.GetField("Variable", BindingFlags.NonPublic | BindingFlags.Static)?.GetValue(null)
+                ?? throw new InvalidOperationException("Benchmark input was not found.");
 
-//using var file = new FileStream("./tmp/test.cs", FileMode.OpenOrCreate, FileAccess.Write);
+    string? result = null;
+    for (var iteration = 0; iteration < iterations; iteration++)
+    {
+        result = dumper.Dump(input);
+    }
 
-//using var streamWriter = new StreamWriter(file);
-
-//new CSharpDumper().Dump(data, streamWriter);
-
-//using var file1 = new FileStream("./tmp/test.json", FileMode.OpenOrCreate, FileAccess.Write);
-//JsonSerializer.Serialize(file1, data, new JsonSerializerOptions
-//{
-//    WriteIndented = true
-//});
-//file1.Flush(true);
+    GC.KeepAlive(result);
+}

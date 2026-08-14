@@ -8,9 +8,9 @@ using JsonSerializer = System.Text.Json.JsonSerializer;
 namespace VarDump.Performance;
 
 [MemoryDiagnoser]
-public class BenchmarkCustomObject
+public class BenchmarkAnonymousObject
 {
-    private static TestObject GetObjectInstance(int index) => new TestObject
+    private static object GetObjectInstance(int index) => new
     {
         Index = index,
         Name = "Test".PadRight(50),
@@ -23,12 +23,12 @@ public class BenchmarkCustomObject
         IsActive = true,
         CreateDate = DateTime.Now,
         CreateUser = "Create User".PadRight(50),
-        ObjectCode = null,
+        ObjectCode = (string?)null,
         IsOwned = true,
         IsValid = true,
         IsStandard = true,
         Description = "Description",
-        Nested = new TestObject
+        Nested = new
         {
             Name = "Test".PadRight(50),
             Id = Guid.NewGuid(),
@@ -40,14 +40,14 @@ public class BenchmarkCustomObject
             IsActive = true,
             CreateDate = DateTime.Now,
             CreateUser = "Create User".PadRight(50),
-            ObjectCode = null,
+            ObjectCode = (string?)null,
             IsOwned = true,
             IsValid = true,
             IsStandard = true,
             Description = "Description"
         }
     };
-    
+
     private static readonly object Variable = Enumerable.Range(0, 10000).Select(GetObjectInstance).ToArray();
 
     private static readonly CSharpDumper CSharpDumper = new CSharpDumper();
@@ -106,25 +106,4 @@ public class BenchmarkCustomObject
     {
         return JsonConvert.SerializeObject(Variable, NkSettings);
     }
-}
-
-internal class TestObject
-{
-    public int Index { get; set; }
-    public string? Name { get; set; }
-    public Guid Id { get; set; }
-    public string? GroupId { get; set; }
-    public string? ParentGroup { get; set; }
-    public string? GroupName { get; set; }
-    public string? ObjectType { get; set; }
-    public bool IsObject { get; set; }
-    public bool IsActive { get; set; }
-    public DateTime CreateDate { get; set; }
-    public string? CreateUser { get; set; }
-    public string? ObjectCode { get; set; }
-    public bool IsOwned { get; set; }
-    public bool IsValid { get; set; }
-    public bool IsStandard { get; set; }
-    public string? Description { get; set; }
-    public TestObject? Nested { get; set; }
 }

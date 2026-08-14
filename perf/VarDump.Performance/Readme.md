@@ -1,3 +1,28 @@
+# Running isolated benchmarks
+
+The benchmark entry point accepts BenchmarkDotNet command-line filters.
+
+```powershell
+# List the methods selected by a filter.
+dotnet run -c Release --project perf/VarDump.Performance/VarDump.Performance.csproj -- --filter "*BenchmarkCustomObject*" --list flat
+
+# Run only VarDump's C# custom-object workload.
+dotnet run -c Release --project perf/VarDump.Performance/VarDump.Performance.csproj -- --filter "*BenchmarkCustomObject.CSharpDumper_Perf*"
+```
+
+`*_Perf` writes to and returns a string. `*_TextWriterNull` renders the same object graph into `TextWriter.Null`, isolating traversal and formatting from the final output-string allocation.
+
+## Profiling workloads
+
+These commands run the same static benchmark input directly, without BenchmarkDotNet's generated child process. The optional final argument is the iteration count (default: 10).
+
+```powershell
+dotnet run -c Release --project perf/VarDump.Performance/VarDump.Performance.csproj -- --profile-custom-csharp 10
+dotnet run -c Release --project perf/VarDump.Performance/VarDump.Performance.csproj -- --profile-anonymous-csharp 10
+```
+
+## Historical result
+
 // * Summary *
 
 BenchmarkDotNet v0.14.0, Windows 11 (10.0.26100.3775)

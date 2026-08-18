@@ -1,0 +1,7 @@
+<Solution>
+  <Project Path="perf/VarDump.Performance/VarDump.Performance.csproj" />
+  <Project Path="src/VarDump.Extensions/VarDump.Extensions.csproj" />
+  <Project Path="src/VarDump/VarDump.csproj" />
+  <Project Path="test/VarDump.Extensions.UnitTests/VarDump.Extensions.UnitTests.csproj" />
+  <Project Path="test/VarDump.UnitTests/VarDump.UnitTests.csproj" />
+</Solution>

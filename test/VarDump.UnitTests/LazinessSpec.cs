@@ -1,9 +1,12 @@
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using VarDump.Visitor;
 using VarDump.Visitor.Descriptors;
+using VarDump.Visitor.Descriptors.Implementation;
 using Xunit;
 
 namespace VarDump.UnitTests;
@@ -73,6 +76,22 @@ public class LazinessSpec
         Assert.Equal(1, source.ReadCount);
     }
 
+    [Fact]
+    public void CachingDescriptorCachesMetadataButBindsEachObjectSeparately()
+    {
+        CountingDefaultValueAttribute.InstanceCount = 0;
+        var descriptor = new CachingObjectPropertiesDescriptor(
+            new ObjectPropertiesDescriptor(BindingFlags.Public | BindingFlags.Instance, writablePropertiesOnly: false));
+
+        var first = descriptor.GetObjectDescription(new CachedPropertySource("first"), typeof(CachedPropertySource));
+        var second = descriptor.GetObjectDescription(new CachedPropertySource("second"), typeof(CachedPropertySource));
+
+        Assert.Equal(0, CountingDefaultValueAttribute.InstanceCount);
+        Assert.Equal("first", Assert.Single(first.Properties).Value);
+        Assert.Equal("second", Assert.Single(second.Properties).Value);
+        Assert.Equal(1, CountingDefaultValueAttribute.InstanceCount);
+    }
+
     private sealed class ThrowingProperty
     {
         public string Value => throw new InvalidOperationException("The getter must not be evaluated.");
@@ -82,6 +101,23 @@ public class LazinessSpec
     {
         public int ReadCount { get; private set; }
         public string Value => ++ReadCount == 1 ? "value" : throw new InvalidOperationException("The getter must only be evaluated once.");
+    }
+
+    private sealed class CachedPropertySource(string value)
+    {
+        [CountingDefaultValue]
+        public string Value { get; } = value;
+    }
+
+    private sealed class CountingDefaultValueAttribute : DefaultValueAttribute
+    {
+        public static int InstanceCount { get; set; }
+
+        public CountingDefaultValueAttribute()
+            : base(null)
+        {
+            InstanceCount++;
+        }
     }
 
     private sealed class SkipPropertyMiddleware(string propertyName) : IObjectDescriptorMiddleware

@@ -19,7 +19,8 @@ internal sealed class AnonymousVisitor : IKnownObjectVisitor
     {
         _nextDepthVisitor = nextDepthVisitor;
         _codeWriter = codeWriter;
-        _anonymousObjectDescriptor = new ObjectPropertiesDescriptor(options.GetPropertiesBindingFlags, false);
+        _anonymousObjectDescriptor = new CachingObjectPropertiesDescriptor(
+            new ObjectPropertiesDescriptor(options.GetPropertiesBindingFlags, false));
 
         if (options.Descriptors?.Count > 0)
             _anonymousObjectDescriptor = _anonymousObjectDescriptor.ApplyMiddleware(options.Descriptors);

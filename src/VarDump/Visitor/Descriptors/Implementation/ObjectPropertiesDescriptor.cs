@@ -6,13 +6,9 @@ using VarDump.Utils;
 
 namespace VarDump.Visitor.Descriptors.Implementation;
 
-internal sealed class ObjectPropertiesDescriptor(BindingFlags getPropertiesBindingFlags, bool writablePropertiesOnly, bool cacheProperties = true)
+internal sealed class ObjectPropertiesDescriptor(BindingFlags getPropertiesBindingFlags, bool writablePropertiesOnly)
     : IObjectDescriptor
 {
-    // The descriptor is scoped to a single dump operation, so this avoids global
-    // type retention while still reusing metadata for repeated objects.
-    private readonly Dictionary<Type, List<CachedProperty>> _propertiesByType = [];
-
     public IObjectDescription GetObjectDescription(object @object, Type objectType)
     {
         return new ObjectDescription
@@ -24,29 +20,28 @@ internal sealed class ObjectPropertiesDescriptor(BindingFlags getPropertiesBindi
 
     private IEnumerable<PropertyDescription> GetProperties(object @object, Type objectType)
     {
-        var properties = GetProperties(objectType);
+        var properties = GetPropertyMetadata(objectType);
 
         for (var index = 0; index < properties.Count; index++)
         {
-            var property = properties[index];
-            yield return new PropertyDescription(property.PropertyInfo, @object)
-            {
-                CanWrite = property.CanWrite,
-                DefaultValueAttributeValue = property.DefaultValueAttributeValue,
-                Name = property.Name,
-                Type = property.Type
-            };
+            yield return CreatePropertyDescription(@object, properties[index]);
         }
     }
 
-    private List<CachedProperty> GetProperties(Type objectType)
+    internal static PropertyDescription CreatePropertyDescription(object @object, PropertyMetadata property)
     {
-        if (cacheProperties && _propertiesByType.TryGetValue(objectType, out var properties))
+        return new PropertyDescription(property.PropertyInfo, @object)
         {
-            return properties;
-        }
+            CanWrite = property.CanWrite,
+            DefaultValueAttributeValue = property.DefaultValueAttributeValue,
+            Name = property.Name,
+            Type = property.Type
+        };
+    }
 
-        var cachedProperties = new List<CachedProperty>();
+    internal List<PropertyMetadata> GetPropertyMetadata(Type objectType)
+    {
+        var properties = new List<PropertyMetadata>();
 
         foreach (var property in objectType.GetProperties(getPropertiesBindingFlags))
         {
@@ -57,7 +52,7 @@ internal sealed class ObjectPropertiesDescriptor(BindingFlags getPropertiesBindi
                 continue;
             }
 
-            cachedProperties.Add(new CachedProperty(
+            properties.Add(new PropertyMetadata(
                 property,
                 property.Name,
                 property.PropertyType,
@@ -65,11 +60,7 @@ internal sealed class ObjectPropertiesDescriptor(BindingFlags getPropertiesBindi
                 property.GetCustomAttribute<DefaultValueAttribute>()?.Value));
         }
 
-        if (cacheProperties)
-        {
-            _propertiesByType.Add(objectType, cachedProperties);
-        }
-        return cachedProperties;
+        return properties;
     }
 
     private static bool MatchesAccessibility(MethodInfo methodInfo, BindingFlags flags)
@@ -98,7 +89,7 @@ internal sealed class ObjectPropertiesDescriptor(BindingFlags getPropertiesBindi
                methodInfo.IsFamilyAndAssembly;   // private protected
     }
 
-    private sealed class CachedProperty(
+    internal sealed class PropertyMetadata(
         PropertyInfo propertyInfo,
         string name,
         Type type,

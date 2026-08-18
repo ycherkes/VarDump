@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Reflection;
-using VarDump.Utils;
 
 namespace VarDump.Visitor.Descriptors.Implementation;
 

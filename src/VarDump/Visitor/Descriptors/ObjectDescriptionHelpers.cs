@@ -7,7 +7,7 @@ namespace VarDump.Visitor.Descriptors;
 
 public sealed partial class ObjectDescription
 {
-    private static readonly IObjectDescriptor PropertiesInfoProvider = new ObjectPropertiesDescriptor(BindingFlags.Public | BindingFlags.Instance, false);
+    private static readonly IObjectDescriptor PropertiesInfoProvider = new ObjectPropertiesDescriptor(BindingFlags.Public | BindingFlags.Instance, writablePropertiesOnly: false, cacheProperties: false);
 
     public static IObjectDescription FromObject(object @object, Type declaredType)
     {

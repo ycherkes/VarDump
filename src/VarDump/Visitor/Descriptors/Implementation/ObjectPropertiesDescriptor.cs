@@ -6,7 +6,7 @@ using VarDump.Utils;
 
 namespace VarDump.Visitor.Descriptors.Implementation;
 
-internal sealed class ObjectPropertiesDescriptor(BindingFlags getPropertiesBindingFlags, bool writablePropertiesOnly)
+internal sealed class ObjectPropertiesDescriptor(BindingFlags getPropertiesBindingFlags, bool writablePropertiesOnly, bool cacheProperties = true)
     : IObjectDescriptor
 {
     // The descriptor is scoped to a single dump operation, so this avoids global
@@ -41,7 +41,7 @@ internal sealed class ObjectPropertiesDescriptor(BindingFlags getPropertiesBindi
 
     private List<CachedProperty> GetProperties(Type objectType)
     {
-        if (_propertiesByType.TryGetValue(objectType, out var properties))
+        if (cacheProperties && _propertiesByType.TryGetValue(objectType, out var properties))
         {
             return properties;
         }
@@ -65,7 +65,10 @@ internal sealed class ObjectPropertiesDescriptor(BindingFlags getPropertiesBindi
                 property.GetCustomAttribute<DefaultValueAttribute>()?.Value));
         }
 
-        _propertiesByType.Add(objectType, cachedProperties);
+        if (cacheProperties)
+        {
+            _propertiesByType.Add(objectType, cachedProperties);
+        }
         return cachedProperties;
     }
 

@@ -20,7 +20,8 @@ internal sealed class DescriptionBasedVisitor : ISpecificVisitor
         _codeWriter = codeWriter;
         _options = options;
 
-        _objectDescriptor = new ObjectPropertiesDescriptor(options.GetPropertiesBindingFlags, options.IgnoreReadonlyProperties);
+        _objectDescriptor = new CachingObjectPropertiesDescriptor(
+            new ObjectPropertiesDescriptor(options.GetPropertiesBindingFlags, options.IgnoreReadonlyProperties));
 
         if (options.GetFieldsBindingFlags != null)
         {

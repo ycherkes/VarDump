@@ -1,5 +1,4 @@
-﻿using System.Diagnostics;
-using VarDump;
+﻿using VarDump;
 using VarDump.Extensions.TextWriters;
 using VarDump.Visitor;
 

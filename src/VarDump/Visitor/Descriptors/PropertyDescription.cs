@@ -1,16 +1,21 @@
-﻿using System;
+using System;
+using System.Reflection;
+using VarDump.Utils;
 
 namespace VarDump.Visitor.Descriptors;
 
 public sealed record PropertyDescription : MemberDescription
 {
-    public PropertyDescription(object value) : base(value)
+    private readonly PropertyInfo _propertyInfo;
+    private readonly object _instance;
+
+    public PropertyDescription(PropertyInfo propertyInfo, object instance)
     {
+        _propertyInfo = propertyInfo ?? throw new ArgumentNullException(nameof(propertyInfo));
+        _instance = instance;
     }
 
-    public PropertyDescription(Func<object> getValueFunc) : base(getValueFunc)
-    {
-    }
+    protected override object GetValueCore() => ReflectionUtils.GetValue(_propertyInfo, _instance);
     
     public bool CanWrite { get; set; }
     public override string Name { get; set; }

@@ -1,55 +1,88 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.Linq;
 using System.Reflection;
-using VarDump.Utils;
 
 namespace VarDump.Visitor.Descriptors.Implementation;
 
 internal sealed class ObjectFieldsDescriptor(BindingFlags getFieldsBindingFlags, bool getBaseClassFields) : IObjectDescriptor
 {
+    // Values remain per-object and lazy; only immutable field metadata is shared.
+    private readonly Dictionary<Type, List<CachedField>> _fieldsByType = [];
+
     public IObjectDescription GetObjectDescription(object @object, Type objectType)
     {
-        var fields = GetFields(objectType)
-            .Select(f => new FieldDescription(() => ReflectionUtils.GetValue(f, @object))
-            {
-                DefaultValueAttributeValue = f.GetCustomAttribute<DefaultValueAttribute>()?.Value,
-                Name = f.Name,
-                Type = f.FieldType
-            });
-
         return new ObjectDescription
         {
-            Fields = fields,
+            Fields = GetFields(@object, objectType),
             Type = objectType
         };
     }
 
-    private IEnumerable<FieldInfo> GetFields(Type type)
+    private IEnumerable<FieldDescription> GetFields(object @object, Type objectType)
     {
-        if (!getBaseClassFields)
+        foreach (var field in GetFields(objectType))
         {
-            foreach (var field in type.GetFields(getFieldsBindingFlags))
+            yield return new FieldDescription(field.FieldInfo, @object)
             {
-                yield return field;
-            }
-
-            yield break;
-        }
-
-        foreach (var currentType in GetInheritanceHierarchy(type).Reverse())
-        {
-            foreach (var field in currentType.GetFields(getFieldsBindingFlags))
-            {
-                yield return field;
-            }
+                DefaultValueAttributeValue = field.DefaultValueAttributeValue,
+                Name = field.Name,
+                Type = field.Type
+            };
         }
     }
 
-    private static IEnumerable<Type> GetInheritanceHierarchy(Type type)
+    private List<CachedField> GetFields(Type objectType)
     {
-        for (var current = type; current != null; current = current.BaseType)
-            yield return current;
+        if (_fieldsByType.TryGetValue(objectType, out var cachedFields))
+            return cachedFields;
+
+        cachedFields = [];
+
+        if (!getBaseClassFields)
+        {
+            AddFields(objectType, getFieldsBindingFlags, cachedFields);
+        }
+        else
+        {
+            var hierarchy = new Stack<Type>();
+
+            for (var currentType = objectType; currentType is not null; currentType = currentType.BaseType)
+                hierarchy.Push(currentType);
+
+            while (hierarchy.Count > 0)
+                AddFields(hierarchy.Pop(), getFieldsBindingFlags | BindingFlags.DeclaredOnly, cachedFields);
+        }
+
+        _fieldsByType.Add(objectType, cachedFields);
+
+        return cachedFields;
+    }
+
+    private static void AddFields(Type type, BindingFlags bindingFlags, List<CachedField> cachedFields)
+    {
+        var fields = type.GetFields(bindingFlags);
+
+        for (var index = 0; index < fields.Length; index++)
+        {
+            var field = fields[index];
+            cachedFields.Add(new CachedField(
+                field,    
+                field.Name,
+                field.FieldType,
+                field.GetCustomAttribute<DefaultValueAttribute>()?.Value));
+        }
+    }
+
+    private sealed class CachedField(
+        FieldInfo fieldInfo,
+        string name,
+        Type type,
+        object defaultValueAttributeValue)
+    {
+        public FieldInfo FieldInfo { get; } = fieldInfo;
+        public string Name { get; } = name;
+        public Type Type { get; } = type;
+        public object DefaultValueAttributeValue { get; } = defaultValueAttributeValue;
     }
 }

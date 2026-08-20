@@ -1,3 +1,5 @@
+
+
 [![Stand With Ukraine](https://raw.githubusercontent.com/vshymanskyy/StandWithUkraine/main/banner2-direct.svg)](https://stand-with-ukraine.pp.ua)
 
 # VarDump
@@ -123,6 +125,8 @@ Install the separate extension package when you want `DumpText()`, `DumpConsole(
 ```powershell
 dotnet add package VarDump.Extensions
 ```
+
+`DumpConsole()` writes to `Console.Out`, while `DumpDebug()` and `DumpTrace()` write to `Debug` and `Trace`, respectively.
 
 ### Object Extension Methods
 

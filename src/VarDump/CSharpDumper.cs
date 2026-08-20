@@ -1,6 +1,5 @@
 ﻿using System;
 using System.IO;
-using System.Linq;
 using VarDump.CodeDom.Common;
 using VarDump.CodeDom.Compiler;
 using VarDump.CodeDom.CSharp;
@@ -88,27 +87,31 @@ public sealed class CSharpDumper : IDumper
 
         var objectVisitor = new ObjectVisitor(_options, codeWriter);
 
+        var canEmitCollectionExpressionDirectly = _options.CollectionLiteralStyle == CollectionLiteralStyle.Expression
+                                                  && obj != null
+                                                  && CollectionExpressionUtils.CanEmitDirectly(obj, obj.GetType());
+
         if (_options.GenerateVariableInitializer)
         {
-            CodeTypeInfo declarationType = new CodeVarTypeInfo();
-
-            if (_options.CollectionLiteralStyle == CollectionLiteralStyle.Expression
-                && obj is System.Collections.IEnumerable)
-            {
-                var objectType = obj.GetType();
-                var queryableType = objectType.GetInterfaces()
-                    .FirstOrDefault(x => x.IsGenericType && x.GetGenericTypeDefinition() == typeof(IQueryable<>));
-
-                if(queryableType == null && !objectType.ContainsAnonymousType())
-                    declarationType = objectType;
-            }
+            var declarationType = canEmitCollectionExpressionDirectly
+                ? new CodeTypeInfo(obj.GetType())
+                : new CodeVarTypeInfo();
 
             codeWriter.WriteVariableDeclarationStatement(declarationType,
-                obj != null ? ReflectionUtils.ComposeCSharpVariableName(obj.GetType()) : "nullValue", () => objectVisitor.Visit(obj));
+                obj != null
+                    ? ReflectionUtils.ComposeCSharpVariableName(obj.GetType())
+                    : "nullValue", () => objectVisitor.Visit(obj));
         }
         else
         {
-            objectVisitor.Visit(obj);
+            if (canEmitCollectionExpressionDirectly)
+            {
+                codeWriter.WriteCast(new CodeTypeInfo(obj.GetType()), () => objectVisitor.Visit(obj));
+            }
+            else
+            {
+                objectVisitor.Visit(obj);
+            }
         }
     }
 }

@@ -64,6 +64,8 @@ public class DumpOptions
 
     /// <summary>
     /// Ignore readonly properties when dumping, default is <c>true</c>.
+    /// In C# initializer mode, get-only collections with an applicable <c>Add</c> method are emitted
+    /// as nested collection initializers because they can be populated without assigning the property.
     /// </summary>
     public bool IgnoreReadonlyProperties { get; set; } = true;
 

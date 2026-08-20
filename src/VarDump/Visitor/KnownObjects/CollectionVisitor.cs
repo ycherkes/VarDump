@@ -11,7 +11,7 @@ using VarDump.Visitor.Format;
 
 namespace VarDump.Visitor.KnownObjects;
 
-internal sealed class CollectionVisitor : IKnownObjectVisitor
+internal sealed class CollectionVisitor : IKnownObjectVisitor, ICollectionInitializerBodyWriter
 {
     private readonly INextDepthVisitor _nextDepthVisitor;
     private readonly ICodeWriter _codeWriter;
@@ -76,6 +76,32 @@ internal sealed class CollectionVisitor : IKnownObjectVisitor
         }
     }
 
+    public void WriteCollectionInitializerBody(object value, Type valueType, VisitContext context)
+    {
+        if (!context.TryAddVisited(value))
+        {
+            _codeWriter.WriteCircularReferenceDetected();
+            return;
+        }
+
+        try
+        {
+            var collection = (IEnumerable)value;
+            var elementType = ReflectionUtils.GetInnerElementType(valueType);
+            var items = GetItems(collection);
+            var singleLine = typeof(string) != elementType
+                             && ReflectionUtils.IsPrimitive(elementType)
+                             && _options.PrimitiveCollectionLayout == CollectionLayout.SingleLine;
+
+            _codeWriter.WriteArrayDimensionItems(items,
+                item => WriteCollectionItem(item, context, singleLine), singleLine);
+        }
+        finally
+        {
+            context.RemoveVisited(value);
+        }
+    }
+
     private void VisitGroupingCollection(IEnumerable collection, VisitContext context)
     {
         var type = collection.GetType();
@@ -134,6 +160,10 @@ internal sealed class CollectionVisitor : IKnownObjectVisitor
 
         var isImmutableOrFrozen = type.IsPublicImmutableOrFrozenCollection();
         var isCollection = IsCollection(enumerable);
+        var useCollectionExpression = _options.CollectionLiteralStyle == CollectionLiteralStyle.Expression
+                                      && _codeWriter.SupportsCollectionExpression;
+        var canEmitCollectionExpressionDirectly = useCollectionExpression
+                                                  && CollectionExpressionUtils.CanEmitDirectly(enumerable, type);
 
         var singleLine = typeof(string) != elementType
                          && ReflectionUtils.IsPrimitive(elementType)
@@ -152,16 +182,33 @@ internal sealed class CollectionVisitor : IKnownObjectVisitor
             var arrayType = isImmutableOrFrozen || !type.IsPublic || isQueryable ? elementType.MakeArrayType() : type;
 
             void WriteArrayCreate() => _codeWriter.WriteArrayCreateItems(
-                arrayType, items, item => WriteArrayItem(item, context), singleLine);
+                arrayType, items, item => WriteArrayItem(item, context, singleLine), singleLine);
+
+            void WriteArrayCollectionExpression() => _codeWriter.WriteCollectionExpressionItems(
+                items, item => WriteArrayItem(item, context, singleLine), singleLine);
+
+            void WriteTypedArrayCollectionExpression() =>
+                _codeWriter.WriteCast(arrayType, WriteArrayCollectionExpression);
+
+            void WriteStaticCollectionConversion(Type conversionType, string methodName) =>
+                _codeWriter.WriteMethodInvoke(
+                    () => _codeWriter.WriteMethodReference(
+                        () => _codeWriter.WriteType(conversionType), methodName, elementType),
+                    [WriteArrayCollectionExpression]);
 
             void WriteArrayOrCollectionExpression()
             {
-                if (type.IsArray
-                    && ((Array)enumerable).Rank == 1
-                    && _options.CollectionLiteralStyle == CollectionLiteralStyle.Expression
-                    && _codeWriter.SupportsCollectionExpression)
+                if (canEmitCollectionExpressionDirectly)
                 {
-                    _codeWriter.WriteCollectionExpressionItems(items, item => WriteArrayItem(item, context), singleLine);
+                    WriteArrayCollectionExpression();
+                    return;
+                }
+
+                if (useCollectionExpression
+                    && !type.IsArray
+                    && (!type.IsPublic || isQueryable))
+                {
+                    WriteTypedArrayCollectionExpression();
                     return;
                 }
 
@@ -170,13 +217,37 @@ internal sealed class CollectionVisitor : IKnownObjectVisitor
 
             if (isImmutableOrFrozen)
             {
-                _codeWriter.WriteMethodInvoke(() =>
-                     _codeWriter.WriteMethodReference(WriteArrayCreate, $"To{type.GetImmutableOrFrozenTypeName()}"), []);
+                if (canEmitCollectionExpressionDirectly)
+                {
+                    WriteArrayCollectionExpression();
+                }
+                else
+                {
+                    var methodName = $"To{type.GetImmutableOrFrozenTypeName()}";
+                    var conversionType = type.Assembly.GetType($"{type.Namespace}.{type.GetImmutableOrFrozenTypeName()}");
+
+                    if (useCollectionExpression && conversionType != null)
+                    {
+                        WriteStaticCollectionConversion(conversionType, methodName);
+                    }
+                    else
+                    {
+                        _codeWriter.WriteMethodInvoke(() =>
+                            _codeWriter.WriteMethodReference(WriteArrayCreate, methodName), []);
+                    }
+                }
             }
             else if (isQueryable)
             {
-                _codeWriter.WriteMethodInvoke(() => 
-                    _codeWriter.WriteMethodReference(WriteArrayCreate, "AsQueryable"), []);
+                if (useCollectionExpression)
+                {
+                    WriteStaticCollectionConversion(typeof(Queryable), "AsQueryable");
+                }
+                else
+                {
+                    _codeWriter.WriteMethodInvoke(() =>
+                        _codeWriter.WriteMethodReference(WriteArrayCreate, "AsQueryable"), []);
+                }
             }
             else
             {
@@ -190,6 +261,17 @@ internal sealed class CollectionVisitor : IKnownObjectVisitor
         {
             var typeInfo =
                 new CodeCollectionTypeInfo(typeof(List<>).MakeGenericType(elementType));
+
+            if (useCollectionExpression)
+            {
+                _codeWriter.WriteObjectCreate(type,
+                [
+                    () => _codeWriter.WriteCollectionExpressionItems(items,
+                        item => WriteCollectionItem(item, context, singleLine), singleLine)
+                ]);
+
+                return;
+            }
 
             var createAction = ResolveCollectionCreateAction(typeInfo, items, singleLine);
 
@@ -205,15 +287,14 @@ internal sealed class CollectionVisitor : IKnownObjectVisitor
 
         Action ResolveCollectionCreateAction(CodeTypeInfo collectionType, IEnumerable initializers, bool useSingleLine)
         {
-            if (_options.CollectionLiteralStyle == CollectionLiteralStyle.Expression
-                && _codeWriter.SupportsCollectionExpression)
+            if (canEmitCollectionExpressionDirectly)
             {
                 return () => _codeWriter.WriteCollectionExpressionItems(initializers,
-                    item => WriteCollectionItem(item, context), useSingleLine);
+                    item => WriteCollectionItem(item, context, useSingleLine), useSingleLine);
             }
 
             return () => _codeWriter.WriteObjectCreateAndInitializeItems(collectionType, [], initializers,
-                item => WriteCollectionItem(item, context), useSingleLine);
+                item => WriteCollectionItem(item, context, useSingleLine), useSingleLine);
         }
     }
 
@@ -303,23 +384,23 @@ internal sealed class CollectionVisitor : IKnownObjectVisitor
         return new KeyValuePair<object, IEnumerable>(fieldValues[0], (IEnumerable)fieldValues[1]);
     }
 
-    private void WriteArrayItem(object item, VisitContext context)
+    private void WriteArrayItem(object item, VisitContext context, bool singleLine = false)
     {
         if (item is ArrayDimension dimension)
         {
             _codeWriter.WriteArrayDimensionItems(dimension.Items,
-                nestedItem => WriteArrayItem(nestedItem, context), dimension.SingleLine);
+                nestedItem => WriteArrayItem(nestedItem, context, dimension.SingleLine), dimension.SingleLine);
             return;
         }
 
-        WriteCollectionItem(item, context);
+        WriteCollectionItem(item, context, singleLine);
     }
 
-    private void WriteCollectionItem(object item, VisitContext context)
+    private void WriteCollectionItem(object item, VisitContext context, bool singleLine = false)
     {
         if (ReferenceEquals(item, CollectionItemMarker.TooManyItems))
         {
-            _codeWriter.WriteTooManyItems(_options.MaxCollectionSize);
+            _codeWriter.WriteTooManyItems(_options.MaxCollectionSize, terminateLine: singleLine);
             return;
         }
 

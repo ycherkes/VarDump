@@ -30,6 +30,7 @@ internal sealed class CSharpCodeWriter : ICodeWriter
 
     public string NullToken => "null";
     public bool SupportsCollectionExpression => true;
+    public bool SupportsReadonlyCollectionInitializers => true;
 
     public CSharpCodeWriter(TextWriter w, CodeWriterOptions o)
     {
@@ -269,7 +270,7 @@ internal sealed class CSharpCodeWriter : ICodeWriter
         var enumerator = items.GetEnumerator();
         using var enumeratorDisposable = enumerator as IDisposable;
         var hasItems = enumerator.MoveNext();
-        
+
         if (singleLine)
         {
             _output.Write("{ ");
@@ -319,10 +320,17 @@ internal sealed class CSharpCodeWriter : ICodeWriter
         action();
     }
 
-    public void WriteMemberAssignmentStart(string memberName)
+    public void WriteMemberAssignmentStart(string memberName, bool valueOnNewLine = false)
     {
         WritePropertyReference(memberName, null);
-        _output.Write(" = ");
+        if (valueOnNewLine)
+        {
+            _output.WriteLine(" =");
+        }
+        else
+        {
+            _output.Write(" = ");
+        }
     }
 
     public void WriteDefaultValue(CodeTypeInfo typeInfo)

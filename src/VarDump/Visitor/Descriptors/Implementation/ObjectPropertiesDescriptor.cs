@@ -6,7 +6,10 @@ using VarDump.Utils;
 
 namespace VarDump.Visitor.Descriptors.Implementation;
 
-internal sealed class ObjectPropertiesDescriptor(BindingFlags getPropertiesBindingFlags, bool writablePropertiesOnly)
+internal sealed class ObjectPropertiesDescriptor(
+    BindingFlags getPropertiesBindingFlags,
+    bool writablePropertiesOnly,
+    bool includeReadonlyCollectionInitializers = false)
     : IObjectDescriptor
 {
     public IObjectDescription GetObjectDescription(object @object, Type objectType)
@@ -45,8 +48,12 @@ internal sealed class ObjectPropertiesDescriptor(BindingFlags getPropertiesBindi
 
         foreach (var property in objectType.GetProperties(getPropertiesBindingFlags))
         {
+            var canWrite = property.CanWrite && MatchesAccessibility(property.SetMethod, getPropertiesBindingFlags);
+            var canPopulate = includeReadonlyCollectionInitializers
+                              && property.PropertyType.CanPopulateCollectionInitializer();
+
             if (!property.CanRead ||
-                ((property.CanWrite && MatchesAccessibility(property.SetMethod, getPropertiesBindingFlags)) || !writablePropertiesOnly) == false ||
+                (canWrite || canPopulate || !writablePropertiesOnly) == false ||
                 ReflectionUtils.IsIndexer(property))
             {
                 continue;
@@ -56,7 +63,7 @@ internal sealed class ObjectPropertiesDescriptor(BindingFlags getPropertiesBindi
                 property,
                 property.Name,
                 property.PropertyType,
-                property.CanWrite,
+                canWrite,
                 property.GetCustomAttribute<DefaultValueAttribute>()?.Value));
         }
 

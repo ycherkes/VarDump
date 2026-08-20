@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
@@ -33,7 +34,20 @@ public sealed class ObjectDescriptionWriter(INextDepthVisitor nextDepthVisitor, 
             member =>
             {
                 var description = (MemberDescription)member;
-                codeWriter.WriteMemberAssignmentStart(description.Name);
+                var writeCollectionInitializerOnly = codeWriter.SupportsReadonlyCollectionInitializers
+                                                     && description is PropertyDescription { CanWrite: false }
+                                                     && description.Value is IEnumerable
+                                                     && description.Type.CanPopulateCollectionInitializer();
+                codeWriter.WriteMemberAssignmentStart(description.Name,
+                    valueOnNewLine: writeCollectionInitializerOnly);
+
+                if (writeCollectionInitializerOnly
+                    && nextDepthVisitor is ICollectionInitializerBodyDispatcher collectionInitializerBodyDispatcher
+                    && collectionInitializerBodyDispatcher.TryWriteCollectionInitializerBody(description.Value, context))
+                {
+                    return;
+                }
+
                 nextDepthVisitor.Visit(description.Value, context);
             });
     }

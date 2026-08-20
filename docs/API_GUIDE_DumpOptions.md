@@ -42,7 +42,7 @@ var text = dumper.Dump(new { Name = "Nick", Age = 23, Tags = new[] { "a", "b" } 
 | `GetPropertiesBindingFlags` | `BindingFlags` | `BindingFlags.Public \| BindingFlags.Instance` | Controls **which properties** are inspected. | Default includes public instance properties only. Add `NonPublic` for private/protected/internal properties, and `Static` for static properties. |
 | `IgnoreDefaultValues` | `bool` | `true` | Skips members equal to type default values. | Set `false` to always include defaults like `0`, `false`, etc. |
 | `IgnoreNullValues` | `bool` | `true` | Skips members with `null` values. | Set `false` to include explicit `null` assignments. |
-| `IgnoreReadonlyProperties` | `bool` | `true` | Skips read-only properties. | Set `false` to include read-only properties in output. |
+| `IgnoreReadonlyProperties` | `bool` | `true` | Skips read-only properties. | In C# initializer mode, get-only collections with an applicable `Add` method are emitted as nested collection initializers. Set `false` to include other read-only properties. |
 | `IndentString` | `string` | four spaces | Indentation text for multiline formatting. | Common values: `"  "` (2 spaces), `"    "` (4 spaces), `"\t"` (tab). |
 | `IntegralNumericFormat` | `string` | `""` | Numeric format string for integral values (`sbyte`, `byte`, `short`, `ushort`, `int`, `uint`, `long`, `ulong`). | VarDump-specific grammar: `<fmt><digits>_<groupSize>` where `<fmt>` is `d/D` (decimal), `b/B` (binary), `x/X` (hex). `digits` and `_groupSize` are optional. |
 | `MaxCollectionSize` | `int` | `int.MaxValue` | Maximum number of items emitted per collection. | Lower value truncates output after limit. |

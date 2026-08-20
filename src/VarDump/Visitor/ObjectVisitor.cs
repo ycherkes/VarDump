@@ -5,7 +5,7 @@ using VarDump.Visitor.KnownObjects;
 
 namespace VarDump.Visitor;
 
-internal sealed class ObjectVisitor : IObjectVisitor, INextDepthVisitor
+internal sealed class ObjectVisitor : IObjectVisitor, INextDepthVisitor, ICollectionInitializerBodyDispatcher
 {
     private readonly ICodeWriter _codeWriter;
     private readonly IKnownObjectsCollection _knownObjects;
@@ -72,6 +72,33 @@ internal sealed class ObjectVisitor : IObjectVisitor, INextDepthVisitor
             var specificVisitor = FindSpecificVisitor(@object, objectType);
 
             specificVisitor.Visit(@object, objectType, context);
+        }
+        finally
+        {
+            context.CurrentDepth--;
+        }
+    }
+
+    public bool TryWriteCollectionInitializerBody(object value, VisitContext context)
+    {
+        if (context.IsMaxDepth())
+        {
+            return false;
+        }
+
+        try
+        {
+            context.CurrentDepth++;
+
+            var valueType = value?.GetType();
+            var specificVisitor = FindSpecificVisitor(value, valueType);
+            if (specificVisitor is not ICollectionInitializerBodyWriter collectionInitializerBodyWriter)
+            {
+                return false;
+            }
+
+            collectionInitializerBodyWriter.WriteCollectionInitializerBody(value, valueType, context);
+            return true;
         }
         finally
         {

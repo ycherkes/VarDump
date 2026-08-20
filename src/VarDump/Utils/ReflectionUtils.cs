@@ -234,6 +234,30 @@ internal static class ReflectionUtils
         return hasICollection;
     }
 
+    public static bool CanPopulateCollectionInitializer(this Type type)
+    {
+        if (!typeof(IEnumerable).IsAssignableFrom(type))
+        {
+            return false;
+        }
+
+        var isDictionary = typeof(IDictionary).IsAssignableFrom(type)
+                           || type.GetInterfaces().Concat([type])
+                               .Any(candidate => candidate.IsGenericType
+                                                 && candidate.GetGenericTypeDefinition() == typeof(IDictionary<,>));
+
+        return HasCollectionInitializerAddMethod(type, isDictionary ? 2 : 1);
+    }
+
+    private static bool HasCollectionInitializerAddMethod(Type type, int addParameterCount)
+    {
+        var types = type.IsInterface ? type.GetInterfaces().Concat([type]) : [type];
+
+        return types.SelectMany(candidate => candidate.GetMethods(BindingFlags.Instance | BindingFlags.Public))
+            .Any(method => method.Name == "Add"
+                           && method.GetParameters().Length == addParameterCount);
+    }
+
     public static bool IsPublicImmutableOrFrozenCollection(this Type type)
     {
         var typeFullName = type.FullName ?? "";

@@ -9,7 +9,7 @@ using VarDump.Utils;
 
 namespace VarDump.Visitor.KnownObjects;
 
-internal sealed class DictionaryVisitor : IKnownObjectVisitor
+internal sealed class DictionaryVisitor : IKnownObjectVisitor, ICollectionInitializerBodyWriter
 {
     private readonly INextDepthVisitor _nextDepthVisitor;
     private readonly ICodeWriter _codeWriter;
@@ -66,6 +66,26 @@ internal sealed class DictionaryVisitor : IKnownObjectVisitor
         finally
         {
             context.RemoveVisited(dict);
+        }
+    }
+
+    public void WriteCollectionInitializerBody(object value, Type valueType, VisitContext context)
+    {
+        var dictionary = (IDictionary)value;
+        if (!context.TryAddVisited(dictionary))
+        {
+            _codeWriter.WriteCircularReferenceDetected();
+            return;
+        }
+
+        try
+        {
+            _codeWriter.WriteArrayDimensionItems(GetItems(dictionary),
+                item => WriteDictionaryItem(item, context));
+        }
+        finally
+        {
+            context.RemoveVisited(dictionary);
         }
     }
 

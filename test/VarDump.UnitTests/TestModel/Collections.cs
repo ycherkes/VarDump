@@ -27,6 +27,11 @@ namespace VarDump.UnitTests.TestModel
         public ICollection<Cat> Cats { get; init; } = new List<Cat>();
     }
 
+    public class ReadonlyCatCollectionOwner
+    {
+        public ICollection<Cat> Cats { get; } = new List<Cat>();
+    }
+
     public class CatPublicCollection : IEnumerable
     {
         private readonly ArrayList _list = new();

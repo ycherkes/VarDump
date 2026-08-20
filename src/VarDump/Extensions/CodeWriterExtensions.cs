@@ -20,9 +20,11 @@ public static class CodeWriterExtensions
         codeWriter.WriteComment("Circular reference detected", true);
     }
 
-    public static void WriteTooManyItems(this ICodeWriter codeWriter, int maxCollectionSize)
+    public static void WriteTooManyItems(this ICodeWriter codeWriter, int maxCollectionSize,
+        bool terminateLine = false)
     {
-        codeWriter.WriteComment($"Too many items (> {maxCollectionSize}). Consider increasing the {nameof(DumpOptions.MaxCollectionSize)} option.", noNewLine: true);
+        codeWriter.WriteComment($"Too many items (> {maxCollectionSize}). Consider increasing the {nameof(DumpOptions.MaxCollectionSize)} option.",
+            noNewLine: !terminateLine);
     }
 
     public static void WriteMaxDepthExpression(this ICodeWriter codeWriter, object @object)

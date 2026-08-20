@@ -10,13 +10,18 @@ public interface ICodeWriter
     int Indent { get; set; }
     bool SupportsCollectionExpression { get; }
 
+    /// <summary>
+    /// Indicates whether the target language can populate a get-only collection property from an object initializer.
+    /// </summary>
+    bool SupportsReadonlyCollectionInitializers { get; }
+
     void WriteArrayCreateItems(CodeTypeInfo typeInfo, IEnumerable items, Action<object> writeItem, bool singleLine, int size = 0);
     void WriteDictionaryCreateItems(CodeTypeInfo typeInfo, IEnumerable items, Action<object> writeItem);
     void WriteCast(CodeTypeInfo typeInfo, Action action);
 
     void WriteArrayDimensionItems(IEnumerable items, Action<object> writeItem, bool singleLine = false);
     void WriteCollectionExpressionItems(IEnumerable items, Action<object> writeItem, bool singleLine = false);
-    void WriteMemberAssignmentStart(string memberName);
+    void WriteMemberAssignmentStart(string memberName, bool valueOnNewLine = false);
 
     void WriteImplicitKeyValuePairCreate(Action keyAction, Action valueAction);
 

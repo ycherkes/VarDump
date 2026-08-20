@@ -30,6 +30,7 @@ internal sealed class VisualBasicCodeWriter : ICodeWriter
 
     public string NullToken => "Nothing";
     public bool SupportsCollectionExpression => false;
+    public bool SupportsReadonlyCollectionInitializers => false;
 
 
     public VisualBasicCodeWriter(TextWriter w, CodeWriterOptions o)
@@ -192,10 +193,17 @@ internal sealed class VisualBasicCodeWriter : ICodeWriter
         value();
     }
 
-    public void WriteMemberAssignmentStart(string memberName)
+    public void WriteMemberAssignmentStart(string memberName, bool valueOnNewLine = false)
     {
         WritePropertyReference(memberName, null);
-        _output.Write(" = ");
+        if (valueOnNewLine)
+        {
+            _output.WriteLine(" = _");
+        }
+        else
+        {
+            _output.Write(" = ");
+        }
     }
 
     public void WriteDefaultValue(CodeTypeInfo typeInfo)

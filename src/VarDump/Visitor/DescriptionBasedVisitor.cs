@@ -21,7 +21,11 @@ internal sealed class DescriptionBasedVisitor : ISpecificVisitor
         _options = options;
 
         _objectDescriptor = new CachingObjectPropertiesDescriptor(
-            new ObjectPropertiesDescriptor(options.GetPropertiesBindingFlags, options.IgnoreReadonlyProperties));
+            new ObjectPropertiesDescriptor(
+                options.GetPropertiesBindingFlags,
+                options.IgnoreReadonlyProperties,
+                includeReadonlyCollectionInitializers: codeWriter.SupportsReadonlyCollectionInitializers
+                                                       && options.CollectionLiteralStyle == CollectionLiteralStyle.Initializer));
 
         if (options.GetFieldsBindingFlags != null)
         {

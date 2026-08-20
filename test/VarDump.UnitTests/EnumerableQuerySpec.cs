@@ -35,14 +35,13 @@ public class EnumerableQuerySpec
 
         var result = dumper.Dump(query);
 
-        // Queryable must be output as an initializer regardless of the CollectionLiteralStyle
         Assert.Equal(
             """
-            var enumerableQueryOfInt = new int[]
-            {
-                5,
-                6
-            }.AsQueryable();
+            var enumerableQueryOfInt = Queryable.AsQueryable<int>(
+                [
+                    5,
+                    6
+                ]);
 
             """, result, ignoreLineEndingDifferences: true);
     }

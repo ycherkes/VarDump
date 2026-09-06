@@ -37,8 +37,9 @@
     </None>
   </ItemGroup>
   
+  <!-- Build against the sibling project; `dotnet pack` emits VarDump as a NuGet dependency. -->
   <ItemGroup>
-    <PackageReference Include="VarDump" Version="2.0.9" />
+    <ProjectReference Include="..\VarDump\VarDump.csproj" />
   </ItemGroup>
   
   <ItemGroup>

@@ -1,4 +1,5 @@
 ﻿using BenchmarkDotNet.Attributes;
+using BenchmarkDotNet.Configs;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using Newtonsoft.Json;
@@ -6,6 +7,7 @@ using JsonSerializer = System.Text.Json.JsonSerializer;
 
 namespace VarDump.Performance;
 
+[Config(typeof(PreciseConfig))]
 [MemoryDiagnoser]
 public class BenchmarkAnonymousObject
 {
